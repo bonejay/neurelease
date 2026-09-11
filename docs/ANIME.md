@@ -22,7 +22,7 @@ name does announce, through the title, the group, the numbering and the tags. Th
 
 No other parser answers this, so it is left out of the tables below.
 
-## Six names
+## Five names
 
 ### A season and an episode, read as a range
 
@@ -78,17 +78,6 @@ A group with a title glued to it matches no group that exists.
 | audio, platform | dual audio, DDP 2.0, Crunchyroll | Dual Audio, Dolby Digital Plus 2.0, Crunchy Roll |
 
 `MSubs` means several unnamed subtitle tracks, not the first half of a group name.
-
-### Absolute numbering with no season
-
-`[SubsPlease] Sousou no Frieren - 28 (1080p) [F02B9CEB].mkv`
-
-| | NeuRelease | GuessIt 4.4.0 |
-|---|---|---|
-| title, release group, crc32 | Sousou no Frieren, SubsPlease, F02B9CEB | same |
-| numbering | absolute episode 28 | **episode 28** |
-
-Absolute numbering is a different fact: treat 28 as season 1 episode 28 and the lookup fails.
 
 ### A dash inside the title
 

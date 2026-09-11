@@ -128,7 +128,7 @@ the optional GuessIt-corpus test, and benchmark instructions are in
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Model, conversion layer, performance, build options, model versions |
 | [docs/C_ABI.md](docs/C_ABI.md) | The C binary interface |
 | [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md) | Method and per-field numbers of the GuessIt comparison |
-| [docs/ANIME.md](docs/ANIME.md) | The anime verdict, and six anime names read by both parsers |
+| [docs/ANIME.md](docs/ANIME.md) | The anime verdict, and five anime names read by both parsers |
 | [docs/LIVE_ACTION.md](docs/LIVE_ACTION.md) | Fourteen live-action names, in four languages, read by both parsers |
 
 ## License
