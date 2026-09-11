@@ -4,7 +4,7 @@
 
 [![build](https://github.com/bonejay/neurelease/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/bonejay/neurelease/actions/workflows/build.yml)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![demo](https://img.shields.io/badge/demo-try%20it%20in%20the%20browser-2f62f0)](https://github.com/bonejay/neurelease-demo)
+[![demo](https://img.shields.io/badge/demo-try%20it%20in%20the%20browser-2f62f0)](https://neurelease-demo.vercel.app)
 
 NeuRelease is a fast, high-performance, multilingual neural parser for torrent and release names.
 It reads a name, extracts its fields - title, season and episode, year, quality, codecs, languages,

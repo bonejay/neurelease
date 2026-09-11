@@ -253,9 +253,9 @@ bool CharacterPreprocessor::decode(std::string_view utf8,
     }
     // AN EMBEDDED NUL IS NOT A NAME. No release name contains one; a caller that hands one over
     // has passed a buffer, not a string, and the bytes after it are not ours to read. The 2026-09-07
-    // weights found a title in `" abc"` where the earlier ones did not, which is a change in the
+    // weights found a title in `"\0abc"` where the earlier ones did not, which is a change in the
     // model and not a reason to parse garbage - so it is refused here, before the model sees it.
-    if (utf8.find(' ') != std::string_view::npos) {
+    if (utf8.find('\0') != std::string_view::npos) {
         codepoints.clear();
         return false;
     }
