@@ -17,12 +17,6 @@ It combines a character-level CNN with a Transformer encoder, running as int8 in
 runtime-dispatched SIMD kernels. No ML runtime, no model download: the wheel carries the compiled
 library and the weights, about 5 MB, and `Parser()` needs no paths.
 
-[![What the model read: every field of an anime release name, with its span and confidence](https://raw.githubusercontent.com/bonejay/neurelease/main/docs/images/what-the-model-read.png)](https://neurelease-demo.vercel.app)
-
-Fifteen facts located in one name, each one showing the characters it was read from and how sure
-the model was. `MULTi` is the honest case: 59% confident it names the audio language, and the
-dashed border says so rather than presenting a guess as a fact.
-
 Pattern-based parsers recognise known markers and guess the rest by position, so anything
 ambiguous - a number that may be a year or an episode, a word that may be a language or part of
 the title - is settled the same way every time, right or wrong. NeuRelease decides from context. It
