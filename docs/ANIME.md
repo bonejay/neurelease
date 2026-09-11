@@ -6,8 +6,8 @@ carries an English and a romanised title at once, a dash may be a separator or p
 and packs are advertised in prose (`(Season 1 & 2) + NC`, `[Batch]`, `01~13`).
 
 Everything below is real output from the shipped model and from GuessIt 4.4.0 on the same string.
-The aggregate numbers are in [GUESSIT_COMPARISON.md](GUESSIT_COMPARISON.md); live-action names are
-in [LIVE_ACTION.md](LIVE_ACTION.md).
+None of these names is in the labelled corpus at all, so none was trained on. Aggregates:
+[GUESSIT_COMPARISON.md](GUESSIT_COMPARISON.md). Live action: [LIVE_ACTION.md](LIVE_ACTION.md).
 
 ## The anime verdict
 

@@ -1,8 +1,9 @@
 # Live action, name by name
 
-Real names from the validation split of a large torrent index, swept for disagreements. Both
-columns are real output: the shipped model, and GuessIt 4.4.0 with `name_only`. **Bold** marks the
-wrong reading. Anime: [ANIME.md](ANIME.md). Aggregates: [GUESSIT_COMPARISON.md](GUESSIT_COMPARISON.md).
+Real names from a large torrent index, swept for disagreements. Both columns are real output: the
+shipped model, and GuessIt 4.4.0 with `name_only`. **Bold** marks the wrong reading. Every name
+here is in the **validation** split, so the model was not trained on any of them, and the split is
+by title family, so no other release of the same work was either. Anime: [ANIME.md](ANIME.md). Aggregates: [GUESSIT_COMPARISON.md](GUESSIT_COMPARISON.md).
 
 ### `Kon-Tiki.2012.1080p.BluRay.x264.anoXmous`
 
