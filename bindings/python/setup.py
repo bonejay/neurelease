@@ -74,6 +74,15 @@ class build_py(_build_py):
         if models.exists():
             shutil.rmtree(models)
         shutil.copytree(find_models(), models)
+        # THE LICENCES TRAVEL WITH THE BINARY. PCRE2 is statically linked into the library this
+        # wheel carries, and its BSD terms ask that the notice accompany a binary redistribution.
+        # A wheel is one. Copied rather than referenced, because nothing else from the repository
+        # is installed beside it.
+        for notice in ("LICENSE", "THIRD_PARTY_NOTICES.md"):
+            source = REPOSITORY / notice
+            if not source.is_file():
+                raise SystemExit(f"neurelease: {notice} is missing; the wheel must carry it")
+            shutil.copy2(source, package / notice)
 
 
 class BinaryDistribution(Distribution):
@@ -83,4 +92,27 @@ class BinaryDistribution(Distribution):
         return True
 
 
-setup(cmdclass={"build_py": build_py}, distclass=BinaryDistribution)
+# PLATFORM-SPECIFIC, BUT NOT PYTHON-VERSION-SPECIFIC. Declaring a binary distribution makes
+# setuptools tag the wheel with the building interpreter - `cp313-cp313-win_amd64` - and pip then
+# refuses it on every other Python, so the four platforms would need a wheel per version each.
+# Nothing here is a C extension: the library is loaded through ctypes, which speaks the stable C
+# ABI and cares nothing for the interpreter. `py3-none-<platform>` says exactly that, and four
+# wheels cover everything.
+try:                                                        # setuptools >= 70.1 vendors it
+    from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
+except ImportError:                                         # older setuptools, separate package
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
+
+class bdist_wheel(_bdist_wheel):
+    def finalize_options(self) -> None:
+        super().finalize_options()
+        self.root_is_pure = False
+
+    def get_tag(self) -> tuple[str, str, str]:
+        _python, _abi, platform = super().get_tag()
+        return "py3", "none", platform
+
+
+setup(cmdclass={"build_py": build_py, "bdist_wheel": bdist_wheel},
+      distclass=BinaryDistribution)

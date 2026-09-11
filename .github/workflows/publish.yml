@@ -1,0 +1,101 @@
+name: publish
+# Wheels for PyPI, built on the three operating systems the library supports.
+#
+# WHY NOT cibuildwheel. That tool exists to build one C extension per Python version per platform,
+# and this package is not that: the binding is ctypes, so a single `py3-none-<platform>` wheel
+# serves every interpreter on that platform. What varies is the SHARED LIBRARY inside, which CMake
+# must build natively on each system. So the matrix is three operating systems, one wheel each,
+# and the Python version used to build is irrelevant to the result.
+#
+# EVERY PUSH BUILDS, NOTHING PUBLISHES. The wheels are uploaded as artifacts so they can be
+# installed and tried before anything reaches PyPI, where a version number can never be reused.
+# Publishing happens only for a pushed tag, and through Trusted Publishing: GitHub proves the
+# workflow's identity to PyPI directly, so there is no API token in this repository to leak.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wheels:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux-x86_64
+          - os: macos-latest
+            name: macos-arm64
+          - os: windows-latest
+            name: windows-x86_64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build the library
+        shell: bash
+        run: |
+          cmake --preset release
+          cmake --build --preset release --parallel
+
+      - name: Build the wheel
+        shell: bash
+        working-directory: bindings/python
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build --wheel --outdir dist
+
+      # THE WHEEL IS INSTALLED SOMEWHERE ELSE AND USED. A wheel that builds and then cannot find
+      # its own library is the failure this package is most exposed to, and it looks like success
+      # right up to the first import. The test runs from a directory that is not the repository,
+      # so nothing can fall back to the build tree.
+      - name: Install it clean and parse a name
+        shell: bash
+        run: |
+          python -m venv "${RUNNER_TEMP}/check"
+          if [ -x "${RUNNER_TEMP}/check/bin/python" ]; then
+            PY="${RUNNER_TEMP}/check/bin/python"
+          else
+            PY="${RUNNER_TEMP}/check/Scripts/python.exe"
+          fi
+          "$PY" -m pip install --quiet bindings/python/dist/*.whl
+          cd "${RUNNER_TEMP}"
+          "$PY" -c "
+          import neurelease
+          result = neurelease.Parser().parse('Ted.Lasso.S03E03.4-5-1.1080p.ATVP.WEB-DL.DDP5.1.H.264-NTb')
+          fields = result.to_dict()
+          assert fields['title'] == 'Ted Lasso', fields
+          assert fields['season'] == 3 and fields['episode'] == 3, fields
+          assert fields['anime'] is False, fields
+          print('wheel works:', neurelease.__file__)
+          print(fields)
+          "
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.name }}
+          path: bindings/python/dist/*.whl
+
+  publish:
+    # Only for a tag, and only after all three wheels built and proved themselves.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: wheels
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write        # Trusted Publishing: the OIDC token PyPI verifies. No secrets.
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheel-*
+          path: dist
+          merge-multiple: true
+      - run: ls -la dist
+      - uses: pypa/gh-action-pypi-publish@release/v1

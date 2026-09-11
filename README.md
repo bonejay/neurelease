@@ -124,3 +124,7 @@ the optional GuessIt-corpus test, and benchmark instructions are in
 ## License
 
 [MIT](LICENSE).
+
+PCRE2 is statically linked into the library and travels inside every binary this project
+distributes, including the Python wheels; its licence is in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
