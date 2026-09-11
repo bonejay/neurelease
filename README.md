@@ -3,6 +3,7 @@
 **A fast neural parser for torrent and release names.**
 
 [![build](https://github.com/bonejay/neurelease/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/bonejay/neurelease/actions/workflows/build.yml)
+![platforms](https://img.shields.io/badge/Linux%20%7C%20Windows%20%7C%20macOS-555)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![demo](https://img.shields.io/badge/demo-try%20it%20in%20the%20browser-2f62f0)](https://neurelease-demo.vercel.app)
 
