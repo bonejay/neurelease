@@ -16,6 +16,13 @@ it was read from.
 It combines a character-level CNN with a Transformer encoder, running as int8 inference with
 runtime-dispatched SIMD kernels, behind C++, C and Python APIs. No ML runtime; nothing to download.
 
+[![What the model read: every field of an anime release name, with its span and confidence](docs/images/what-the-model-read.png)](https://neurelease-demo.vercel.app)
+
+Fifteen facts located in one name, each one showing the characters it was read from and how sure
+the model was. `MULTi` is the honest case: 59% confident it names the audio language, and the
+dashed border says so rather than presenting a guess as a fact.
+[Try it in the browser](https://neurelease-demo.vercel.app).
+
 Pattern-based parsers recognise known markers and guess the rest by position, so anything
 ambiguous - a number that may be a year or an episode, a word that may be a language or part of
 the title - is settled the same way every time, right or wrong. NeuRelease decides from context. It
