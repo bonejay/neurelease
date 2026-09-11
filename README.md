@@ -18,9 +18,7 @@ runtime-dispatched SIMD kernels, behind C++, C and Python APIs. No ML runtime; n
 
 [![What the model read: every field of an anime release name, with its span and confidence](docs/images/what-the-model-read.png)](https://neurelease-demo.vercel.app)
 
-Fifteen facts located in one name, each one showing the characters it was read from and how sure
-the model was. `MULTi` is the honest case: 59% confident it names the audio language, and the
-dashed border says so rather than presenting a guess as a fact.
+Fifteen fields read out of one name, each shown against the characters it came from.
 [Try it in the browser](https://neurelease-demo.vercel.app).
 
 Pattern-based parsers recognise known markers and guess the rest by position, so anything
