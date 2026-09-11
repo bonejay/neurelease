@@ -1,43 +1,30 @@
 # Anime
 
-Anime naming is not scene naming. The conventions came from fansubbing rather than from the
-release groups whose patterns most parsers were written against, and almost every one of them
-breaks an assumption those parsers make:
+Anime naming came from fansubbing, not from the scene, and breaks most of what a rule-based parser
+assumes: the group is written first in brackets, episodes are often absolute with no season, a work
+carries an English and a romanised title at once, a dash may be a separator or part of the title,
+and packs are advertised in prose (`(Season 1 & 2) + NC`, `[Batch]`, `01~13`).
 
-- The group is written **first**, in brackets, not last after a dash.
-- Episodes are often **absolute**, with no season anywhere in the name.
-- A work carries **two titles at once**, English and romanised, and either can come first.
-- A dash can be a separator, or part of the title, or both in one name.
-- Batches, season packs and non-credit openings are advertised in prose: `(Season 1 & 2) + NC`,
-  `[Batch]`, `01~13`.
-- The audio and subtitle situation is a tag rather than a language: `Dual Audio`, `MSubs`,
-  `Multi-Subs`, `Eng Sub`.
-
-This document is what NeuRelease does with all of that, and what a rule-based parser does beside
-it. Everything below is real output, produced by the shipped model and by GuessIt 4.4.0 on the same
-strings.
+Everything below is real output from the shipped model and from GuessIt 4.4.0 on the same string.
+The aggregate numbers are in [GUESSIT_COMPARISON.md](GUESSIT_COMPARISON.md); live-action names are
+in [LIVE_ACTION.md](LIVE_ACTION.md).
 
 ## The anime verdict
 
-`anime` is a boolean on every result, with its own confidence. It means **animation from Japan,
-China or Korea** - the animation the anime databases catalogue. Chinese donghua and Korean
-animation count, because they are made, released and numbered the same way and those databases
-list them beside Japanese works. Everything else is `false`, including Western animation however
-anime-influenced, live-action adaptations, tokusatsu, and manga or light novel releases.
+A boolean on every result, **96.50% accurate** through the int8 runtime, the best-scoring of the
+model's six classifications. It means animation from **Japan, China or Korea** - donghua and Korean
+animation count; Western animation, live-action adaptations, tokusatsu and manga scans do not.
 
-It reads at **96.50% accuracy** through the int8 runtime on the validation split, and it is the
-best-scoring of the model's six classifications.
+Earlier models answered whether a work was *animated*, which a name does not say:
+`Shrek.2001.1080p.BluRay.x264` tells you nothing unless you already know what Shrek is. Anime a
+name does announce, through the title, the group, the numbering and the tags. The form of the work,
+`movie` or `series`, is the separate `content` field.
 
-Earlier models answered a different question - whether a work was *animated* - and that question
-turned out to be unanswerable from a name. `Shrek.2001.1080p.BluRay.x264` says nothing about
-animation; you have to already know what Shrek is. Whether something is anime, a name does
-announce, through the title, the group, the numbering and the tags. So model 3 dropped the
-guess and kept the readable question. The form of the work, `movie` or `series`, became a separate
-field, which is what `content` now carries.
+No other parser answers this, so it is left out of the tables below.
 
-## Seven names, both parsers
+## Six names
 
-### Season and episode written as a range
+### A season and an episode, read as a range
 
 `[Golumpa] Re ZERO -Starting Life in Another World- Season 2 - 15 [CR-Dub 1080p x264].mkv`
 
@@ -47,11 +34,8 @@ field, which is what `content` now carries.
 | alternative title | — | Starting Life in Another World |
 | season | 2 | **2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15** |
 | episode | 15 | — |
-| anime | true | not answered |
 
-`Season 2 - 15` is a season and an episode. Read as a range it produces fourteen seasons that do
-not exist. The dashes around the stylised subtitle are also part of the title here, not separators,
-which is why the title should not split at them.
+Fourteen of those seasons do not exist.
 
 ### An alternative title in brackets, and a batch
 
@@ -62,15 +46,11 @@ which is why the title should not split at them.
 | title | Fire Force | Fire Force |
 | alternative title | Enen no Shouboutai | — |
 | season | 1–2 | 1, 2 |
-| pack | multi-season | — |
 | episode title | — | **NC** |
 | release group | Anime Time | **Batch** |
 | source, codec, audio | BluRay, HEVC, Dual Audio | Blu-ray, H.265, 10-bit, Opus, Dual Audio |
-| anime | true | not answered |
 
-Both read the media facts. The difference is everything that identifies the work: the romanised
-title is lost, `NC` (non-credit opening and ending) becomes an episode title, and the group becomes
-the word `Batch`.
+Both read the media facts. The difference is everything that identifies the work.
 
 ### A romanised title after the group
 
@@ -78,17 +58,13 @@ the word `Batch`.
 
 | | NeuRelease | GuessIt 4.4.0 |
 |---|---|---|
-| title | Smoking Behind the Supermarket with You | Smoking Behind the Supermarket with You |
+| title | Smoking Behind the Supermarket with You | same |
 | alternative title | Super no Ura de Yani Suu Futari | — |
-| season, episode | 1, 7 | 1, 7 |
-| episode title | The End of Summer Behind the Supermarket with You | same |
+| season, episode, episode title | 1, 7, The End of Summer… | same |
 | release group | VARYG | **VARYG (Super no Ura de Yani Suu Futari** |
 | audio, subtitles | multi-audio, multi-subs | language mul, subtitle language mul |
-| anime | true | not answered |
 
-The group swallows the romanised title, so it matches no group that exists and the second title is
-gone. Both parsers read the season, the episode and the episode title correctly, which are the hard
-parts of this name; the group boundary is where the conventions differ.
+A group with a title glued to it matches no group that exists.
 
 ### A subtitle tag that is not a language
 
@@ -99,13 +75,9 @@ parts of this name; the group boundary is where the conventions differ.
 | title, season, episode | Go For It Nakamura-kun, 1, 4 | same |
 | release group | ToonsHub | **MSubs-ToonsHub** |
 | subtitles | multi-subs, value `several` | — |
-| audio | dual audio, DDP 2.0 | Dual Audio, Dolby Digital Plus 2.0 |
-| platform | Crunchyroll | Crunchy Roll |
-| anime | true | not answered |
+| audio, platform | dual audio, DDP 2.0, Crunchyroll | Dual Audio, Dolby Digital Plus 2.0, Crunchy Roll |
 
-`MSubs` means several subtitle tracks, none of them named. NeuRelease records it as a subtitle
-language whose value is `several` and sets the `multi_subs` flag; GuessIt reads it as the first
-half of the group name.
+`MSubs` means several unnamed subtitle tracks, not the first half of a group name.
 
 ### Absolute numbering with no season
 
@@ -113,15 +85,10 @@ half of the group name.
 
 | | NeuRelease | GuessIt 4.4.0 |
 |---|---|---|
-| title | Sousou no Frieren | Sousou no Frieren |
-| numbering | absolute episode 28 | episode 28 |
-| release group | SubsPlease | SubsPlease |
-| crc32 | — | **F02B9CEB** |
-| anime | true | not answered |
+| title, release group, crc32 | Sousou no Frieren, SubsPlease, F02B9CEB | same |
+| numbering | absolute episode 28 | **episode 28** |
 
-Agreement, with one distinction: absolute numbering is a different fact from a season-relative
-episode, and a library that treats episode 28 as season 1 episode 28 will look for the wrong file.
-GuessIt reads the CRC32 here and NeuRelease does not.
+Absolute numbering is a different fact: treat 28 as season 1 episode 28 and the lookup fails.
 
 ### A dash inside the title
 
@@ -132,42 +99,20 @@ GuessIt reads the CRC32 here and NeuRelease does not.
 | title | Garo - Vanishing Line | **Garo** |
 | alternative title | — | **Vanishing Line** |
 | numbering | absolute episode 1 | episode 1 |
-| anime | true | not answered |
 
-The work is called *Garo: Vanishing Line*. This is GuessIt's own documented limitation, issue
-#524, and one of the 22 cases in its known-limitations page.
-
-### Donghua
-
-`Douluo.Dalu.Soul.Land.S01E250.1080p.WEB-DL.AAC.H264-Lamb`
-
-| | NeuRelease | GuessIt 4.4.0 |
-|---|---|---|
-| title, season, episode | Douluo Dalu Soul Land, 1, 250 | same |
-| source, codecs | WEB-DL, H264, AAC | Web, H.264, AAC |
-| anime | **true** | not answered |
-
-Identical, apart from the classification. This is Chinese animation in a scene-shaped name, and
-`anime: true` is a fact no rule-based parser answers at all.
+The work is *Garo: Vanishing Line*. GuessIt's own issue #524, one of its 22 documented limitations.
 
 ## What NeuRelease gets wrong here
 
-Measured on the names above rather than claimed:
+- `pack_scope: season` on the Smoking Behind name, which states `S01E07` and advertises no pack.
+- The Re:Zero title keeps the leading dash of the stylised subtitle and drops the trailing one.
 
-- On the Smoking Behind name it returns `pack_scope: season` for a single stated episode. The name
-  says `S01E07` and advertises no pack.
-- On the Re:Zero name the title keeps the leading dash of the stylised subtitle while dropping the
-  trailing one: `Re ZERO -Starting Life in Another World`.
-- It does not read the CRC32 on the Frieren name, which GuessIt does.
-
-And on GuessIt's own regression corpus, GuessIt wins 804 cases to 683. That corpus is its test
-suite, written to exercise its rules; the method and the per-field numbers are in
-[GUESSIT_COMPARISON.md](GUESSIT_COMPARISON.md).
+On GuessIt's own regression corpus, GuessIt wins 804 cases to 683.
 
 ## Related
 
 | | |
 |---|---|
-| [GUESSIT_COMPARISON.md](GUESSIT_COMPARISON.md) | The full comparison: method, contract, per-field numbers |
-| [RESULT.md](RESULT.md) | Every field a result carries, including `anime` and `absolute_episode` |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | The model, and what changed in version 3 |
+| [LIVE_ACTION.md](LIVE_ACTION.md) | The same, for live-action names in five languages |
+| [GUESSIT_COMPARISON.md](GUESSIT_COMPARISON.md) | Method, contract and per-field numbers |
+| [RESULT.md](RESULT.md) | Every field, including `anime` and `absolute_episode` |
