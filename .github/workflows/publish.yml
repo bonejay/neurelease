@@ -31,6 +31,7 @@ jobs:
             manylinux: true
           - os: macos-latest
             name: macos-arm64
+            macos: true
           - os: windows-latest
             name: windows-x86_64
     runs-on: ${{ matrix.os }}
@@ -74,6 +75,11 @@ jobs:
       - name: Build the library
         if: '!matrix.manylinux'
         shell: bash
+        # macOS 11 is the floor this is compiled against. Without it the compiler targets whatever
+        # the runner happens to be - macOS 26 today - and the wheel then refuses to install on
+        # almost every Mac in existence.
+        env:
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
         run: |
           cmake --preset release
           cmake --build --preset release --parallel
@@ -82,9 +88,26 @@ jobs:
         if: '!matrix.manylinux'
         shell: bash
         working-directory: bindings/python
+        env:
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
         run: |
-          python -m pip install --upgrade pip build
+          python -m pip install --upgrade pip build wheel
           python -m build --wheel --outdir dist
+
+      # THE macOS TAG IS A CLAIM, AND THE DEFAULT ONE IS FALSE. setuptools derives the platform tag
+      # from the interpreter, and the runner's Python is itself universal2, so the wheel comes out
+      # `macosx_26_0_universal2`: it promises Intel code that is not in there, and demands a macOS
+      # version almost nobody runs. The library is arm64, compiled against the 11.0 floor above,
+      # so the tag is corrected to say exactly that. An Intel Mac then correctly finds no wheel
+      # rather than installing one that cannot load.
+      - name: Say what the macOS wheel actually is
+        if: matrix.macos
+        shell: bash
+        working-directory: bindings/python
+        run: |
+          file dist/../../../build/release/libneurelease.dylib || true
+          python -m wheel tags --platform-tag macosx_11_0_arm64 --remove dist/*.whl
+          ls -la dist
 
       # THE WHEEL IS INSTALLED SOMEWHERE ELSE AND USED. A wheel that builds and then cannot find
       # its own library is the failure this package is most exposed to, and it looks like success
