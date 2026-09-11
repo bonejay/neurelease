@@ -1,0 +1,7 @@
+build*/
+.vs/
+.cache/
+__pycache__/
+*.user
+dist/
+*.egg-info/

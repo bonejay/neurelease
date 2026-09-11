@@ -1,0 +1,43 @@
+{
+ "manifest_version": 1,
+ "model_version": "3",
+ "trained": "2026-09-11",
+ "training_run": "anime2/20260911-032100",
+ "files": [
+  {
+   "name": "segmenter.bin",
+   "format": "RPSEG2",
+   "format_version": 3,
+   "bytes": 4022176,
+   "sha256": "4a08a096be6a40b14434f2aa1de9bdb45bca7d0e8f4e61db37c7127bfd44d531"
+  },
+  {
+   "name": "character_map.bin",
+   "format": "RCTBL1",
+   "format_version": 1,
+   "bytes": 126050,
+   "sha256": "3beedfcb28c8bd20e0ffe5e7dfaccf4941e4798c36ee3c154f32b9311656490f"
+  },
+  {
+   "name": "chinese_japanese.bin",
+   "format": "CJHSM1",
+   "format_version": 1,
+   "bytes": 65572,
+   "sha256": "d90a887e20ab7cab36df6240023a37072be60db1166040300760775fd849f8c5"
+  },
+  {
+   "name": "transliteration_japanese.bin",
+   "format": "RCTXTR1",
+   "format_version": 1,
+   "bytes": 751108,
+   "sha256": "3989bcdb8ac8042b809e1769e775a30842e62669c07239a5834bd659d45fc23d"
+  },
+  {
+   "name": "transliteration_chinese.bin",
+   "format": "RCTXTR1",
+   "format_version": 1,
+   "bytes": 238069,
+   "sha256": "d6dafdf64e33e6d723fefd1834753dfbde2b718063c41a254fcc718a9c745c91"
+  }
+ ]
+}

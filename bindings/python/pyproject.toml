@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neurelease"
+version = "0.1.0"
+description = "Python bindings for the neurelease learned inference library"
+requires-python = ">=3.10"
+license = "MIT"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["neurelease*"]
+
+[tool.pytest.ini_options]
+# WEIGHT-SENSITIVE ASSERTIONS ARE MARKED, NOT DELETED. A `model` test asserts what the installed
+# segmenter reads, which changes when the weights change — CI stayed red from the moment a new
+# model shipped, for two assertions that describe the model rather than this source tree. The C++
+# suite already labels those tests `model` and excludes them in the preset; this is the same rule
+# for the binding suite. Run them deliberately: `pytest -m model`.
+markers = [
+    "model: asserts behaviour of the installed segmenter weights, not of the binding",
+]

@@ -1,0 +1,105 @@
+name: build
+# Every push to main and every pull request builds on three OSes and runs the source-level suite;
+# the weight-sensitive tests (GuessIt corpus floors) run in their own job against a fresh GuessIt
+# checkout. Coverage (gcovr over src/ and include/, Linux) and the corpus score are printed in
+# their own jobs' logs; neither is published as a badge. The README carries three: the build
+# status GitHub generates, the licence and the demo. A static number no reader can click through
+# to goes stale quietly, and the corpus score already lives in docs/GUESSIT_COMPARISON.md.
+on:
+  push:
+    branches: [main]
+    # Documentation-only pushes do not need three OS builds and the corpus job.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - 'LICENSE'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake --preset release
+      - name: Build
+        run: cmake --build --preset release --parallel
+      - name: Test
+        # `-LE model` excludes the weight-sensitive tests; they have their own job below.
+        run: ctest --preset release --label-exclude model
+      - name: Python binding tests
+        shell: bash
+        run: |
+          case "$RUNNER_OS" in
+            Windows) lib=$PWD/build/release/libneurelease.dll ;;
+            macOS)   lib=$PWD/build/release/libneurelease.dylib ;;
+            *)       lib=$PWD/build/release/libneurelease.so ;;
+          esac
+          export NEURELEASE_LIBRARY=$lib
+          pip install pytest
+          cd bindings/python && python -m pytest tests -q -m "not model"
+      - name: Install the package and use it from an unrelated directory
+        shell: bash
+        run: |
+          pip install ./bindings/python
+          cd "$RUNNER_TEMP"
+          unset NEURELEASE_LIBRARY NEURELEASE_MODELS
+          python -c "from neurelease import Parser; r = Parser().parse('Ted.Lasso.S03E03.4-5-1.1080p.ATVP.WEB-DL.DDP5.1.H.264-NTb'); assert (r.title, r.season, r.episode) == ('Ted Lasso', 3, 3), r.to_dict(); print('installed package works:', r.to_dict())"
+
+  model:
+    # The GuessIt corpus lives in a sibling checkout, so this job clones it and configures with
+    # the weight-sensitive tests enabled. Its floors are pinned in tests/guessit_corpus_tests.cpp
+    # and re-pinned only with the trade written beside them.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: NeuRelease
+      - name: Fetch the GuessIt corpus
+        run: git clone --depth 1 https://github.com/guessit-io/guessit.git guessit
+      - name: Configure with the model tests enabled
+        working-directory: NeuRelease
+        run: cmake --preset release -DRP_RUN_MODEL_TESTS=ON
+      - name: Build
+        working-directory: NeuRelease
+        run: cmake --build --preset release --parallel
+      - name: Weight-sensitive tests
+        working-directory: NeuRelease
+        shell: bash
+        run: |
+          set -o pipefail
+          ctest --test-dir build/release -L model --output-on-failure --verbose 2>&1 | tee corpus.log
+      - name: Weight-sensitive binding tests
+        working-directory: NeuRelease
+        shell: bash
+        run: |
+          export NEURELEASE_LIBRARY=$PWD/build/release/libneurelease.so
+          pip install pytest
+          cd bindings/python && python -m pytest tests -q -m model
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install gcovr
+        run: pip install gcovr
+      - name: Configure with coverage instrumentation
+        run: cmake --preset coverage
+      - name: Build
+        run: cmake --build --preset coverage --parallel
+      - name: Test
+        run: ctest --preset coverage --label-exclude model
+      - name: Measure
+        shell: bash
+        run: |
+          gcovr --root . --filter 'src/' --filter 'include/' --exclude 'third_party/' \
+                --gcov-ignore-parse-errors=negative_hits.warn --json-summary coverage.json --print-summary
+          python3 -c "import json; print('line coverage', json.load(open('coverage.json'))['line_percent'], '%')"

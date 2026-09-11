@@ -1,0 +1,666 @@
+{
+ "generated_at": "2026-09-11T08:38:41.061340+00:00",
+ "dataset": {
+  "path": "neurelease/tests/data/consensus_validation.jsonl",
+  "sha256": "d8d6a5373aba8f354cea5e3ddbcf07c70ed3bdc5202ab9a4f67777b1fbb13e66",
+  "split": "validation",
+  "selection": "consensus",
+  "scope": "video",
+  "examples": 3344
+ },
+ "hardware": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+ "python": "3.13.11 | packaged by Anaconda, Inc. | (main, Dec 10 2025, 21:21:58) [MSC v.1929 64 bit (AMD64)]",
+ "model": {
+  "version": "3",
+  "run": "anime2/20260911-032100",
+  "epoch": 17,
+  "sha256": "4a08a096be6a40b14434f2aa1de9bdb45bca7d0e8f4e61db37c7127bfd44d531"
+ },
+ "runtime": {
+  "revision": "727224edfb4c",
+  "library_sha256": "c0e74f892b885f55045435a32c394917b550ab2a7c2c4235f68de722261fec20"
+ },
+ "scoring": {
+  "training_revision": "c5d3905a35687330d0feec4e0fe0e84314303d70",
+  "subtitle_mode": "merge",
+  "repetitions": 3,
+  "headline_fields": [
+   "work_title",
+   "episode_title",
+   "year",
+   "season",
+   "season_end",
+   "episode",
+   "episode_end",
+   "resolution",
+   "source_family",
+   "platform",
+   "video_codec",
+   "audio_codec",
+   "audio_channels",
+   "audio_language",
+   "subtitle_language",
+   "bit_depth",
+   "container",
+   "crc32",
+   "release_group",
+   "release_variant"
+  ],
+  "source_sha256": {
+   "training/compare_parsers.py": "2860acae14ea2a40796a32de4c60afd1aaf9385786eec9212563c5148d14754b",
+   "training/dataset.py": "4c04f52d5a7b5d9d5dba76999410fbdef03b154ea9cccf27aa39b14367dd6ef1",
+   "training/parser_comparison/__init__.py": "1338c5b24192110fd7bef64f4e841f3483e8ca0df465d6fe00c50dc19063e243",
+   "training/parser_comparison/adapters/__init__.py": "ebd8377945f51eb8d48348aae5b54cf251ea208c988c7c3fb1f3d01b87a6ff3a",
+   "training/parser_comparison/adapters/guessit_adapter.py": "d55dbaea04059575617e2156d15bcad51b4554f5710f54f1968a6dad6337aa1e",
+   "training/parser_comparison/adapters/releaseparser_adapter.py": "10d38238ee5e83d0e4fcb5ec7afdff6c57c097fe3d39764886961c10b78aa003",
+   "training/parser_comparison/adapters/torch_adapter.py": "f4d36e103afb05207a0a7d41992c9b5739381713c2766ada5731dcee512c1074",
+   "training/parser_comparison/canonical.py": "8737d17f45d5025a8384da4486d8b22858bf652ea7c1e995cdc28c9687946bfa",
+   "training/parser_comparison/core.py": "9aba8a76b838f31402f036f62ab859c747bd63bc6d1d49a60b07881dbb23f092",
+   "training/parser_comparison/fields.py": "608aaf8268c9100e57339ab5ffef107a579e03a7920ed81c334879a04ab0c4c9",
+   "training/parser_comparison/gold.py": "ece1726ef0e97bbc37c20c2811822bdc05f47d5cbaac9dbb1fa877cb92d51545",
+   "training/parser_comparison/guessit_corpus.py": "0a5a80f198b0177ee3a08274488fab2eae55b8ea7af372da30b77c7c39ca95c4",
+   "training/parser_comparison/limitations.py": "94ff23c166ea23f2d51c3ddbf40723c46b661ce46d261d6d4612429ad79a579e",
+   "training/parser_comparison/report.py": "2a4932cf1bcca73ad3f8f09f87e6a527ef0397dd717494ab53acc8e46fbee48b",
+   "training/parser_comparison/scoring.py": "df67772a6ecd0312812b42e8e176397c53945fa783abe8ddf268538d5ab27d53"
+  }
+ },
+ "parsers": {
+  "neurelease": {
+   "version": "727224edfb4c",
+   "accuracy": {
+    "examples": 3344,
+    "exact_all_shared": 0.8944377990430622,
+    "macro_field_f1": 0.9756872618617176
+   },
+   "fields": {
+    "work_title": {
+     "support_names": 2997,
+     "evaluated_names": 2997,
+     "predicted_names": 2995,
+     "precision": 0.9787304752409438,
+     "recall": 0.9826493159826493,
+     "f1": 0.9806859806859807,
+     "exact_when_present": 0.9803136469803136,
+     "false_positive_rate_when_absent": null
+    },
+    "episode_title": {
+     "support_names": 173,
+     "evaluated_names": 3344,
+     "predicted_names": 181,
+     "precision": 0.9116022099447514,
+     "recall": 0.9428571428571428,
+     "f1": 0.9269662921348315,
+     "exact_when_present": 0.953757225433526,
+     "false_positive_rate_when_absent": 0.004415011037527594
+    },
+    "year": {
+     "support_names": 1176,
+     "evaluated_names": 3344,
+     "predicted_names": 1178,
+     "precision": 0.9830220713073005,
+     "recall": 0.9830220713073005,
+     "f1": 0.9830220713073005,
+     "exact_when_present": 0.9829931972789115,
+     "false_positive_rate_when_absent": 0.0013837638376383763
+    },
+    "season": {
+     "support_names": 1227,
+     "evaluated_names": 3344,
+     "predicted_names": 1239,
+     "precision": 0.9895076674737692,
+     "recall": 0.9951298701298701,
+     "f1": 0.9923108053419669,
+     "exact_when_present": 0.9975550122249389,
+     "false_positive_rate_when_absent": 0.006140765233821445
+    },
+    "season_end": {
+     "support_names": 25,
+     "evaluated_names": 3344,
+     "predicted_names": 23,
+     "precision": 1.0,
+     "recall": 0.92,
+     "f1": 0.9583333333333334,
+     "exact_when_present": 0.92,
+     "false_positive_rate_when_absent": 0.0
+    },
+    "episode": {
+     "support_names": 1280,
+     "evaluated_names": 3344,
+     "predicted_names": 1282,
+     "precision": 0.9937597503900156,
+     "recall": 0.9937597503900156,
+     "f1": 0.9937597503900156,
+     "exact_when_present": 0.99375,
+     "false_positive_rate_when_absent": 0.0029069767441860465
+    },
+    "episode_end": {
+     "support_names": 130,
+     "evaluated_names": 3344,
+     "predicted_names": 127,
+     "precision": 0.984251968503937,
+     "recall": 0.9615384615384616,
+     "f1": 0.9727626459143969,
+     "exact_when_present": 0.9615384615384616,
+     "false_positive_rate_when_absent": 0.0006222775357809583
+    },
+    "resolution": {
+     "support_names": 2372,
+     "evaluated_names": 3344,
+     "predicted_names": 2378,
+     "precision": 0.9974768713204374,
+     "recall": 0.9987368421052631,
+     "f1": 0.9981064590784767,
+     "exact_when_present": 0.9987352445193929,
+     "false_positive_rate_when_absent": 0.006172839506172839
+    },
+    "source_family": {
+     "support_names": 1913,
+     "evaluated_names": 3344,
+     "predicted_names": 1900,
+     "precision": 0.9889473684210527,
+     "recall": 0.9735751295336788,
+     "f1": 0.9812010443864229,
+     "exact_when_present": 0.9738630423418714,
+     "false_positive_rate_when_absent": 0.0
+    },
+    "platform": {
+     "support_names": 415,
+     "evaluated_names": 3344,
+     "predicted_names": 415,
+     "precision": 0.9783132530120482,
+     "recall": 0.9783132530120482,
+     "f1": 0.9783132530120482,
+     "exact_when_present": 0.9783132530120482,
+     "false_positive_rate_when_absent": 0.001707067258449983
+    },
+    "video_codec": {
+     "support_names": 1820,
+     "evaluated_names": 3344,
+     "predicted_names": 1835,
+     "precision": 0.9880108991825614,
+     "recall": 0.9961538461538462,
+     "f1": 0.9920656634746923,
+     "exact_when_present": 0.9961538461538462,
+     "false_positive_rate_when_absent": 0.012467191601049869
+    },
+    "audio_codec": {
+     "support_names": 927,
+     "evaluated_names": 3344,
+     "predicted_names": 930,
+     "precision": 0.9896049896049897,
+     "recall": 0.9937369519832986,
+     "f1": 0.9916666666666667,
+     "exact_when_present": 0.9924487594390508,
+     "false_positive_rate_when_absent": 0.0016549441456350847
+    },
+    "audio_channels": {
+     "support_names": 511,
+     "evaluated_names": 3344,
+     "predicted_names": 538,
+     "precision": 0.9260628465804066,
+     "recall": 0.9766081871345029,
+     "f1": 0.9506641366223908,
+     "exact_when_present": 0.9765166340508806,
+     "false_positive_rate_when_absent": 0.013413342746205436
+    },
+    "audio_language": {
+     "support_names": 264,
+     "evaluated_names": 3344,
+     "predicted_names": 260,
+     "precision": 0.9756838905775076,
+     "recall": 0.9668674698795181,
+     "f1": 0.9712556732223903,
+     "exact_when_present": 0.9583333333333334,
+     "false_positive_rate_when_absent": 0.001948051948051948
+    },
+    "subtitle_language": {
+     "support_names": 151,
+     "evaluated_names": 3344,
+     "predicted_names": 159,
+     "precision": 0.955719557195572,
+     "recall": 0.9664179104477612,
+     "f1": 0.961038961038961,
+     "exact_when_present": 0.9536423841059603,
+     "false_positive_rate_when_absent": 0.003758221108675227
+    },
+    "bit_depth": {
+     "support_names": 253,
+     "evaluated_names": 3344,
+     "predicted_names": 258,
+     "precision": 0.9806201550387597,
+     "recall": 1.0,
+     "f1": 0.9902152641878669,
+     "exact_when_present": 1.0,
+     "false_positive_rate_when_absent": 0.0016175994823681655
+    },
+    "container": {
+     "support_names": 1028,
+     "evaluated_names": 3344,
+     "predicted_names": 983,
+     "precision": 0.9989827060020345,
+     "recall": 0.9552529182879378,
+     "f1": 0.9766285430134262,
+     "exact_when_present": 0.9552529182879378,
+     "false_positive_rate_when_absent": 0.0
+    },
+    "crc32": {
+     "support_names": 164,
+     "evaluated_names": 3344,
+     "predicted_names": 164,
+     "precision": 1.0,
+     "recall": 1.0,
+     "f1": 1.0,
+     "exact_when_present": 1.0,
+     "false_positive_rate_when_absent": 0.0
+    },
+    "release_group": {
+     "support_names": 2320,
+     "evaluated_names": 3344,
+     "predicted_names": 2325,
+     "precision": 0.9923404255319149,
+     "recall": 0.9931856899488927,
+     "f1": 0.992762877820349,
+     "exact_when_present": 0.993103448275862,
+     "false_positive_rate_when_absent": 0.013671875
+    },
+    "release_variant": {
+     "support_names": 125,
+     "evaluated_names": 3344,
+     "predicted_names": 132,
+     "precision": 0.896551724137931,
+     "recall": 0.948905109489051,
+     "f1": 0.9219858156028369,
+     "exact_when_present": 0.944,
+     "false_positive_rate_when_absent": 0.0031065548306927616
+    }
+   },
+   "limitations": {
+    "cases": 22,
+    "passed_cases": 19,
+    "checks": 73,
+    "passed_checks": 69
+   },
+   "guessit_corpus": {
+    "cases": 859,
+    "passed_cases": 683,
+    "checks": 4613,
+    "passed_checks": 4381
+   },
+   "speed": {
+    "construction_ms": 56.73929999466054,
+    "first_parse_ms": 6.396199998562224,
+    "single_us_per_name": 2445.5337619630236,
+    "single_samples_us_per_name": [
+     2370.5955741620114,
+     2459.9591208121665,
+     2445.5337619630236
+    ],
+    "batch_us_per_name": 638.8772428233475,
+    "batch_samples_us_per_name": [
+     627.6925538285203,
+     651.6664772754414,
+     638.8772428233475
+    ]
+   }
+  },
+  "GuessIt": {
+   "version": "4.4.0 (3c73072b8971)",
+   "accuracy": {
+    "examples": 3344,
+    "exact_all_shared": 0.5143540669856459,
+    "macro_field_f1": 0.8644626120567681
+   },
+   "fields": {
+    "work_title": {
+     "support_names": 2997,
+     "evaluated_names": 2997,
+     "predicted_names": 2984,
+     "precision": 0.8922040423484119,
+     "recall": 0.9279279279279279,
+     "f1": 0.9097154072620216,
+     "exact_when_present": 0.9035702369035702,
+     "false_positive_rate_when_absent": null
+    },
+    "episode_title": {
+     "support_names": 173,
+     "evaluated_names": 3344,
+     "predicted_names": 235,
+     "precision": 0.6425531914893617,
+     "recall": 0.8628571428571429,
+     "f1": 0.7365853658536585,
+     "exact_when_present": 0.8728323699421965,
+     "false_positive_rate_when_absent": 0.023967202775149795
+    },
+    "year": {
+     "support_names": 1176,
+     "evaluated_names": 3344,
+     "predicted_names": 1164,
+     "precision": 0.9872340425531915,
+     "recall": 0.9847198641765704,
+     "f1": 0.9859753506162345,
+     "exact_when_present": 0.9753401360544217,
+     "false_positive_rate_when_absent": 0.0
+    },
+    "season": {
+     "support_names": 1227,
+     "evaluated_names": 3344,
+     "predicted_names": 1423,
+     "precision": 0.8517217146872804,
+     "recall": 0.9837662337662337,
+     "f1": 0.912994350282486,
+     "exact_when_present": 0.9861450692746536,
+     "false_positive_rate_when_absent": 0.09966934341048654
+    },
+    "season_end": {
+     "support_names": 25,
+     "evaluated_names": 3344,
+     "predicted_names": 31,
+     "precision": 0.7419354838709677,
+     "recall": 0.92,
+     "f1": 0.8214285714285714,
+     "exact_when_present": 0.92,
+     "false_positive_rate_when_absent": 0.0021090689966857487
+    },
+    "episode": {
+     "support_names": 1280,
+     "evaluated_names": 3344,
+     "predicted_names": 1461,
+     "precision": 0.8514715947980835,
+     "recall": 0.9703588143525741,
+     "f1": 0.9070360918702152,
+     "exact_when_present": 0.97109375,
+     "false_positive_rate_when_absent": 0.0998062015503876
+    },
+    "episode_end": {
+     "support_names": 130,
+     "evaluated_names": 3344,
+     "predicted_names": 121,
+     "precision": 0.859504132231405,
+     "recall": 0.8,
+     "f1": 0.8286852589641435,
+     "exact_when_present": 0.8,
+     "false_positive_rate_when_absent": 0.00373366521468575
+    },
+    "resolution": {
+     "support_names": 2372,
+     "evaluated_names": 3344,
+     "predicted_names": 2364,
+     "precision": 0.9995769881556683,
+     "recall": 0.9949473684210526,
+     "f1": 0.9972568052331715,
+     "exact_when_present": 0.9949409780775716,
+     "false_positive_rate_when_absent": 0.00102880658436214
+    },
+    "source_family": {
+     "support_names": 1913,
+     "evaluated_names": 3344,
+     "predicted_names": 1913,
+     "precision": 0.9691745036572623,
+     "recall": 0.961139896373057,
+     "f1": 0.9651404786680541,
+     "exact_when_present": 0.9607945635128071,
+     "false_positive_rate_when_absent": 0.0363382250174703
+    },
+    "platform": {
+     "support_names": 415,
+     "evaluated_names": 3344,
+     "predicted_names": 279,
+     "precision": 0.8637992831541219,
+     "recall": 0.5807228915662651,
+     "f1": 0.6945244956772334,
+     "exact_when_present": 0.5807228915662651,
+     "false_positive_rate_when_absent": 0.0003414134516899966
+    },
+    "video_codec": {
+     "support_names": 1820,
+     "evaluated_names": 3344,
+     "predicted_names": 1767,
+     "precision": 1.0,
+     "recall": 0.9708791208791209,
+     "f1": 0.9852244215221633,
+     "exact_when_present": 0.9708791208791209,
+     "false_positive_rate_when_absent": 0.0
+    },
+    "audio_codec": {
+     "support_names": 927,
+     "evaluated_names": 3344,
+     "predicted_names": 919,
+     "precision": 0.9663265306122449,
+     "recall": 0.988517745302714,
+     "f1": 0.977296181630547,
+     "exact_when_present": 0.9557713052858684,
+     "false_positive_rate_when_absent": 0.0012412081092263137
+    },
+    "audio_channels": {
+     "support_names": 511,
+     "evaluated_names": 3344,
+     "predicted_names": 548,
+     "precision": 0.925589836660617,
+     "recall": 0.9941520467836257,
+     "f1": 0.9586466165413533,
+     "exact_when_present": 0.9941291585127201,
+     "false_positive_rate_when_absent": 0.013766325450052947
+    },
+    "audio_language": {
+     "support_names": 264,
+     "evaluated_names": 3344,
+     "predicted_names": 292,
+     "precision": 0.5938242280285035,
+     "recall": 0.7530120481927711,
+     "f1": 0.6640106241699867,
+     "exact_when_present": 0.7007575757575758,
+     "false_positive_rate_when_absent": 0.021753246753246754
+    },
+    "subtitle_language": {
+     "support_names": 151,
+     "evaluated_names": 3344,
+     "predicted_names": 213,
+     "precision": 0.5161290322580645,
+     "recall": 0.417910447761194,
+     "f1": 0.4618556701030928,
+     "exact_when_present": 0.5231788079470199,
+     "false_positive_rate_when_absent": 0.031631694331349824
+    },
+    "bit_depth": {
+     "support_names": 253,
+     "evaluated_names": 3344,
+     "predicted_names": 260,
+     "precision": 0.9653846153846154,
+     "recall": 0.9920948616600791,
+     "f1": 0.9785575048732943,
+     "exact_when_present": 0.9920948616600791,
+     "false_positive_rate_when_absent": 0.0029116790682626984
+    },
+    "container": {
+     "support_names": 1028,
+     "evaluated_names": 3344,
+     "predicted_names": 1003,
+     "precision": 0.9920398009950249,
+     "recall": 0.9698443579766537,
+     "f1": 0.9808165272995574,
+     "exact_when_present": 0.9678988326848249,
+     "false_positive_rate_when_absent": 0.0025906735751295338
+    },
+    "crc32": {
+     "support_names": 164,
+     "evaluated_names": 3344,
+     "predicted_names": 166,
+     "precision": 0.9761904761904762,
+     "recall": 1.0,
+     "f1": 0.9879518072289156,
+     "exact_when_present": 0.9878048780487805,
+     "false_positive_rate_when_absent": 0.0006289308176100629
+    },
+    "release_group": {
+     "support_names": 2320,
+     "evaluated_names": 3344,
+     "predicted_names": 2414,
+     "precision": 0.6880695940347971,
+     "recall": 0.7074105621805792,
+     "f1": 0.6976060478790425,
+     "exact_when_present": 0.709051724137931,
+     "false_positive_rate_when_absent": 0.119140625
+    },
+    "release_variant": {
+     "support_names": 125,
+     "evaluated_names": 3344,
+     "predicted_names": 109,
+     "precision": 0.9137931034482759,
+     "recall": 0.7737226277372263,
+     "f1": 0.8379446640316207,
+     "exact_when_present": 0.768,
+     "false_positive_rate_when_absent": 0.0024852438645542093
+    }
+   },
+   "limitations": {
+    "cases": 22,
+    "passed_cases": 0,
+    "checks": 73,
+    "passed_checks": 31
+   },
+   "guessit_corpus": {
+    "cases": 859,
+    "passed_cases": 804,
+    "checks": 4613,
+    "passed_checks": 4552
+   },
+   "speed": {
+    "construction_ms": 131.31319999229163,
+    "first_parse_ms": 168.90999999304768,
+    "single_us_per_name": 8212.599013158673,
+    "single_samples_us_per_name": [
+     8353.887081341054,
+     8153.361244020174,
+     8212.599013158673
+    ],
+    "batch_us_per_name": null,
+    "batch_samples_us_per_name": []
+   }
+  }
+ },
+ "batch_four_workers": {
+  "workers": 4,
+  "names": 3344,
+  "repetitions": 3,
+  "origins": true,
+  "samples_us_per_name": [
+   666.9955143509917,
+   832.5394736853209,
+   867.386363637071
+  ],
+  "median_us_per_name": 832.5394736853209
+ },
+ "guessit_corpus_selection": {
+  "entries": 1048,
+  "cases": 859,
+  "path_entries": 165,
+  "dropped_type_checks": 854,
+  "dropped_out_of_vocabulary": [
+   {
+    "field": "source_family",
+    "value": "digitalmaster",
+    "checks": 6
+   },
+   {
+    "field": "container",
+    "value": "torrent",
+    "checks": 4
+   },
+   {
+    "field": "source_family",
+    "value": "vhs",
+    "checks": 3
+   },
+   {
+    "field": "source_family",
+    "value": "laserdisc",
+    "checks": 2
+   },
+   {
+    "field": "wrong:audio_language",
+    "value": "cat",
+    "checks": 2
+   },
+   {
+    "field": "wrong:episode_title",
+    "value": "spyro",
+    "checks": 2
+   },
+   {
+    "field": "wrong:release_group",
+    "value": "sdh",
+    "checks": 2
+   },
+   {
+    "field": "container",
+    "value": "nzb",
+    "checks": 1
+   },
+   {
+    "field": "container",
+    "value": "r00",
+    "checks": 1
+   },
+   {
+    "field": "container",
+    "value": "tbn",
+    "checks": 1
+   },
+   {
+    "field": "container",
+    "value": "tgz",
+    "checks": 1
+   },
+   {
+    "field": "video_codec",
+    "value": "h263",
+    "checks": 1
+   },
+   {
+    "field": "video_codec",
+    "value": "vp7",
+    "checks": 1
+   },
+   {
+    "field": "wrong:episode",
+    "value": "20",
+    "checks": 1
+   },
+   {
+    "field": "wrong:episode_title",
+    "value": "50thanniversaryspecialthedayofthedoctor3",
+    "checks": 1
+   },
+   {
+    "field": "wrong:episode_title",
+    "value": "cam",
+    "checks": 1
+   },
+   {
+    "field": "wrong:episode_title",
+    "value": "christmasspecialthetimeofthedoctor",
+    "checks": 1
+   },
+   {
+    "field": "wrong:episode_title",
+    "value": "headtotailspecial",
+    "checks": 1
+   },
+   {
+    "field": "wrong:release_group",
+    "value": "chaps",
+    "checks": 1
+   },
+   {
+    "field": "wrong:season",
+    "value": "7",
+    "checks": 1
+   },
+   {
+    "field": "wrong:subtitle_language",
+    "value": "ita",
+    "checks": 1
+   }
+  ]
+ }
+}

@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+set(PCRE2_USE_STATIC_LIBS ON)
+find_dependency(PCRE2 10.44 CONFIG COMPONENTS 8BIT)
+
+include("${CMAKE_CURRENT_LIST_DIR}/neureleaseTargets.cmake")
+check_required_components(neurelease)
