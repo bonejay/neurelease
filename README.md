@@ -94,6 +94,42 @@ NeuRelease parses a single release name as found in real traffic and classifies 
 anything, so on this corpus it scores 683 to 804 - and on real names the ranking reverses. The 22
 limitation cases are GuessIt's own documented failures, not a representative sample.
 
+### Three names, both parsers
+
+Anime naming is where the gap is widest, because the conventions are not the scene conventions
+either parser's rules were written for.
+
+```
+[Golumpa] Re ZERO -Starting Life in Another World- Season 2 - 15 [CR-Dub 1080p x264].mkv
+
+  NeuRelease   season 2, episode 15
+  GuessIt      season [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+```
+
+`Season 2 - 15` is a season and an episode, not a range. Fourteen of those seasons do not exist.
+
+```
+Smoking Behind the Supermarket with You S01E07 ... H.264-VARYG (Super no Ura de Yani Suu Futari,
+Multi-Audio, Multi-Subs)
+
+  NeuRelease   group VARYG, alternative title "Super no Ura de Yani Suu Futari"
+  GuessIt      group "VARYG (Super no Ura de Yani Suu Futari"
+```
+
+The romanised title is swallowed into the release group, so the group matches nothing and the
+second title is lost.
+
+```
+[Anime Time] Fire Force (Enen no Shouboutai) (Season 1 & 2) + NC [BD] [Dual Audio][1080p]...[Batch]
+
+  NeuRelease   title Fire Force, alternative title "Enen no Shouboutai", seasons 1-2,
+               multi-season pack, group Anime Time
+  GuessIt      title Fire Force, episode title "NC", group "Batch"
+```
+
+Both parsers read the resolution, the source and the codec here. The difference is everything that
+identifies the work.
+
 Method, exact model identity, scoring snapshot and reproduction:
 [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md).
 Hardware and native kernel timings: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
