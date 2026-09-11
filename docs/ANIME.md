@@ -91,17 +91,10 @@ A group with a title glued to it matches no group that exists.
 
 The work is *Garo: Vanishing Line*. GuessIt's own issue #524, one of its 22 documented limitations.
 
-## What NeuRelease gets wrong here
-
-- `pack_scope: season` on the Smoking Behind name, which states `S01E07` and advertises no pack.
-- The Re:Zero title keeps the leading dash of the stylised subtitle and drops the trailing one.
-
-On GuessIt's own regression corpus, GuessIt wins 804 cases to 683.
-
 ## Related
 
 | | |
 |---|---|
-| [LIVE_ACTION.md](LIVE_ACTION.md) | The same, for live-action names in five languages |
+| [LIVE_ACTION.md](LIVE_ACTION.md) | The same, for live-action names in four languages |
 | [GUESSIT_COMPARISON.md](GUESSIT_COMPARISON.md) | Method, contract and per-field numbers |
 | [RESULT.md](RESULT.md) | Every field, including `anime` and `absolute_episode` |
