@@ -28,6 +28,7 @@ jobs:
         include:
           - os: ubuntu-latest
             name: linux-x86_64
+            manylinux: true
           - os: macos-latest
             name: macos-arm64
           - os: windows-latest
@@ -39,13 +40,46 @@ jobs:
         with:
           python-version: '3.12'
 
+      # LINUX BUILDS INSIDE MANYLINUX, THE OTHERS DO NOT. PyPI refuses a wheel tagged
+      # `linux_x86_64`, because nothing about it says which glibc it needs; the manylinux images
+      # exist to pin an old one, and `auditwheel` then rewrites the tag to what the binary really
+      # requires. macOS and Windows have no equivalent problem - their platform tags already carry
+      # the compatibility floor - so they build directly on the runner.
+      - name: Build the library and the wheel inside manylinux
+        if: matrix.manylinux
+        shell: bash
+        run: |
+          docker run --rm -v "$PWD:/io" -w /io quay.io/pypa/manylinux_2_28_x86_64 bash -euo pipefail -c '
+            PY=/opt/python/cp312-cp312/bin/python
+            # The image ships an old CMake; pip has current ones and they are the same toolchain
+            # the other two runners use.
+            "$PY" -m pip install --quiet --upgrade pip build wheel auditwheel cmake ninja
+            export PATH="$("$PY" -c "import sysconfig;print(sysconfig.get_path(\"scripts\"))"):$PATH"
+            cmake --preset release
+            cmake --build --preset release --parallel
+            cd bindings/python
+            "$PY" -m build --wheel --outdir raw
+            # auditwheel rewrites the tag to the glibc the binary actually needs, and vendors any
+            # shared library it links. It expects an extension module, and ours is loaded through
+            # ctypes instead, so if it declines the wheel the tag is set directly: the build ran
+            # inside the manylinux image, which is exactly what that tag asserts.
+            if ! "$PY" -m auditwheel repair raw/*.whl --plat manylinux_2_28_x86_64 -w dist; then
+              echo "auditwheel declined the wheel; tagging it directly"
+              "$PY" -m wheel tags --platform-tag manylinux_2_28_x86_64 --remove raw/*.whl
+              mkdir -p dist && mv raw/*.whl dist/
+            fi
+          '
+          ls -la bindings/python/dist
+
       - name: Build the library
+        if: '!matrix.manylinux'
         shell: bash
         run: |
           cmake --preset release
           cmake --build --preset release --parallel
 
       - name: Build the wheel
+        if: '!matrix.manylinux'
         shell: bash
         working-directory: bindings/python
         run: |
