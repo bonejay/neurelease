@@ -11,6 +11,8 @@ date with `cmake --build --preset release` before evaluation, which for this run
 weights and the conversion layer both changed with the new form and anime fields.
 
 The headline table is in the [README](../README.md); this document is the method behind it.
+Name-by-name readings, where a difference can be seen rather than averaged, are in
+[ANIME.md](ANIME.md) and [LIVE_ACTION.md](LIVE_ACTION.md).
 
 ## How accuracy is scored
 
