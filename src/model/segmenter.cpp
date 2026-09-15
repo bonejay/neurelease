@@ -139,6 +139,11 @@ struct NameSegmenter::Implementation {
             // Everything older than that is still required: those are types every model has had,
             // and a file missing one of them is a file that does not match this schema.
             if (index == static_cast<std::size_t>(SpanType::SeasonEpisodeMarker)) continue;
+            // A SPAN TYPE RETIRED FROM THE LABELLING IS ALLOWED TO BE ABSENT TOO. `subtitle_part`
+            // left the labelling on 2026-09-15 - a title's subtitle is title text now - and no
+            // model trained since predicts it. The enumerator stays, because it is public ABI and
+            // older weights still carry the label; a file that drops it is not a mismatch either.
+            if (index == static_cast<std::size_t>(SpanType::SubtitlePart)) continue;
             if (!seen[index])
                 throw std::runtime_error("segmenter schema is missing span type: " +
                                          std::string(spanTypeName(static_cast<SpanType>(index))));

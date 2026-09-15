@@ -255,7 +255,6 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
     // what keeps the correction below from touching the many names where a season marker sits
     // beside genuinely absolute numbering.
     bool combinedMarkerSeen = false;
-    std::vector<std::string> subtitleParts;
 
     for (const SegmentedSpan& span : analysis.spans) {
         if (span.begin < 0 || span.end <= span.begin || static_cast<std::size_t>(span.end) > name.size())
@@ -502,9 +501,31 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
             if (info.franchisePrefix.empty()) info.franchisePrefix = prefix;
             builder.record(Field::FranchisePrefix, prefix, span, raw);
         } else if (type == SpanType::SubtitlePart) {
-            const std::string value = convert::titleText(raw);
-            subtitleParts.push_back(value);
-            builder.record(Field::Subtitle, value, span, raw);
+            // RETIRED IN THE LABELLING, STILL SPOKEN BY OLDER WEIGHTS. No model trained after
+            // 2026-09-15 emits this type: a title's subtitle is title text, and the trainer reads
+            // every older label that way. A checkpoint from before still says it, and it is read
+            // here exactly as the trainer reads the gold - as the title's own text, in place, and
+            // never as a field of its own. Appending every part to the END of the title, as this
+            // did, put `Sword Art Online Alicization` together correctly and `Alicization Sword
+            // Art Online` in the wrong order when the subtitle stood first.
+            const std::string part = convert::titleText(raw);
+            if (!info.title.empty() && adjacentAfter(name, titleEnd, span.begin)) {
+                // Joined to the title before it: the title grows.
+                info.title += ' ';
+                info.title += part;
+                titleEnd = span.end;
+                builder.record(Field::Title, info.title, span, raw);
+            } else if (info.title.empty()) {
+                // Written before its title: held for the next title span, the way a number the
+                // year reader gave back is held.
+                pendingTitleNumber = part;
+                pendingTitleSpan = span;
+            } else {
+                // Something stands between it and the title. The trainer calls that a title-like
+                // text outside the main span - an alternate title - and so does this.
+                info.alternativeTitles.push_back(part);
+                builder.record(Field::AlternateTitle, part, span, raw);
+            }
         } else if (type == SpanType::ReleaseGroup) {
             const std::string group = convert::groupText(raw);
             const bool usable = !group.empty() && !convert::isNeverAGroup(group);
@@ -852,12 +873,6 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
         info.absoluteEpisodeEnd = info.episodeEnd;
         info.episode.reset();
         info.episodeEnd.reset();
-    }
-
-    for (const std::string& part : subtitleParts) {
-        if (part.empty() || containsInsensitive(info.title, part)) continue;
-        if (!info.title.empty()) info.title.push_back(' ');
-        info.title += part;
     }
 
     if (!info.editions.empty()) {
