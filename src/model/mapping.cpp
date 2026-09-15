@@ -255,6 +255,7 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
     // what keeps the correction below from touching the many names where a season marker sits
     // beside genuinely absolute numbering.
     bool combinedMarkerSeen = false;
+    std::int32_t episodeTitleEnd = -1;
 
     for (const SegmentedSpan& span : analysis.spans) {
         if (span.begin < 0 || span.end <= span.begin || static_cast<std::size_t>(span.end) > name.size())
@@ -287,7 +288,10 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
             // Read like every other title field: separators become spaces, the raw spelling stays
             // beside it as the origin text. The first one is the field; a second is evidence only.
             const std::string title = convert::titleText(raw);
-            if (info.episodeTitle.empty()) info.episodeTitle = title;
+            if (info.episodeTitle.empty()) {
+                info.episodeTitle = title;
+                episodeTitleEnd = span.end;
+            }
             builder.record(Field::EpisodeTitle, title, span, raw);
         } else if (type == SpanType::Year) {
             const convert::DateReading date = convert::dateIn(raw);
@@ -520,6 +524,14 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
                 // year reader gave back is held.
                 pendingTitleNumber = part;
                 pendingTitleSpan = span;
+            } else if (!info.episodeTitle.empty() && adjacentAfter(name, episodeTitleEnd, span.begin)) {
+                // Beside an episode title and not glued to the main title: the episode title's
+                // own text. (A subtitle written BEFORE its episode title is not caught here -
+                // this reader is one pass, and only older weights say the type at all.)
+                info.episodeTitle += ' ';
+                info.episodeTitle += part;
+                episodeTitleEnd = span.end;
+                builder.record(Field::EpisodeTitle, info.episodeTitle, span, raw);
             } else {
                 // Something stands between it and the title. The trainer calls that a title-like
                 // text outside the main span - an alternate title - and so does this.
