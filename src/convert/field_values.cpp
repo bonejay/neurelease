@@ -604,9 +604,19 @@ EpisodeMarkerReading episodeMarkerIn(std::string_view subject) {
     // form occurs once and the wide form never - and on that one name the rule produced a season
     // the gold does not want. A rule whose only real-world appearance is a regression is a rule
     // that was fitted to a test corpus.
-    static const Regex cross(R"(^(\d{1,2})[ ._-]?x[ ._-]?(\d{1,4})$)", true);
+    // THE EPISODE WORD MAY LEAD, AND THE CROSS MAY BE THE MULTIPLICATION SIGN. `Ep 2x03` read as
+    // episode 2 and `2×7` as episode 2 with no season, both on GuessIt's corpus (2026-09-16), each
+    // a span the model typed correctly. The left operand stays two digits: `1920x1080` is a frame.
+    static const Regex cross(R"(^(?:ep(?:isode)?[ ._-]?)?(\d{1,2})[ ._-]?[x×][ ._-]?(\d{1,4})$)", true);
+    // `S8E6` AND `T01E08` AS ONE EPISODE SPAN. The model separates the season letter from the
+    // episode when it can; when it hands both over in one span - the Spanish `T` for temporada, or
+    // an `S` it did not cut - the numbers reader answered episode 8 for season 8 episode 6, and
+    // `T01XE08` (the cross written between them) episode 1. The letter says which number is which.
+    static const Regex seasonEpisode(R"(^[st](\d{1,2})[ ._-]?x?[ ._-]?e(\d{1,4})$)", true);
     static const Regex positionOf(R"(^(\d{1,4})[ ._-]?of[ ._-]?(\d{1,4})$)", true);
     if (const Match match = cross.match(subject))
+        return {integer(match.captured(1)), integer(match.captured(2)), 0, 1, true};
+    if (const Match match = seasonEpisode.match(subject))
         return {integer(match.captured(1)), integer(match.captured(2)), 0, 1, true};
     if (const Match match = positionOf.match(subject))
         return {0, integer(match.captured(1)), 0, 1, true};

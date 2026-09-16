@@ -80,6 +80,21 @@ TEST_CASE("coverage, containers, and language decorations are value conversions"
     CHECK(plain.first == 11);
     CHECK(plain.last == 0);
     CHECK(episodeMarkerIn("1920x1080").season == 0);
+    // The episode word may lead the cross, the cross may be the multiplication sign, and a
+    // season letter left inside an episode span still says which number is which. All three
+    // were GuessIt-corpus spans the model typed correctly and this read as one bare number.
+    const EpisodeMarkerReading worded = episodeMarkerIn("Ep 2x03");
+    CHECK(worded.season == 2);
+    CHECK(worded.first == 3);
+    const EpisodeMarkerReading times = episodeMarkerIn("2\xC3\x97" "7");  // 2×7, UTF-8
+    CHECK(times.season == 2);
+    CHECK(times.first == 7);
+    const EpisodeMarkerReading lettered = episodeMarkerIn("s8e6");
+    CHECK(lettered.season == 8);
+    CHECK(lettered.first == 6);
+    const EpisodeMarkerReading spanish = episodeMarkerIn("T01XE08");
+    CHECK(spanish.season == 1);
+    CHECK(spanish.first == 8);
     const EpisodeMarkerReading position = episodeMarkerIn("04of10");
     CHECK(position.first == 4);
     CHECK(position.last == 0);
