@@ -37,8 +37,11 @@
 extern "C" {
 #endif
 
-/* Bumped only on breaking change to an existing symbol. Additions do not bump it. */
-#define RP_ABI_VERSION 3u
+/* Bumped only on breaking change to an existing symbol. Additions do not bump it.
+ * 4: rp_result_view grew release_version and release_real. Appending to a struct the CALLER
+ * allocates is not a mere addition - a binding compiled against ABI 3 hands rp_view a buffer two
+ * int32_t short of what it now writes - so the count moves even though no existing field did. */
+#define RP_ABI_VERSION 4u
 RP_API uint32_t rp_abi_version(void);
 
 typedef enum rp_status {
@@ -207,7 +210,11 @@ typedef enum rp_edition_kind {
     RP_EDITION_UNCUT = 6, RP_EDITION_UNCENSORED = 7, RP_EDITION_SPECIAL = 8,
     RP_EDITION_DELUXE = 9, RP_EDITION_REDUX = 10, RP_EDITION_EXTENDED = 11,
     RP_EDITION_DIRECTORS_CUT = 12, RP_EDITION_FINAL_CUT = 13,
-    RP_EDITION_THEATRICAL = 14
+    RP_EDITION_THEATRICAL = 14,
+    /* Append-only, and the numbers are the C++ EditionKind's: the facade casts between them. */
+    RP_EDITION_DESPECIALIZED = 15, RP_EDITION_ASSEMBLY_CUT = 16, RP_EDITION_ANNIVERSARY = 17,
+    RP_EDITION_SIGNATURE = 18, RP_EDITION_IMPERIAL = 19, RP_EDITION_DIAMOND = 20,
+    RP_EDITION_TWO_IN_ONE = 21, RP_EDITION_PREAIR = 22
 } rp_edition_kind;
 
 typedef enum rp_verdict {
@@ -351,7 +358,9 @@ RP_API rp_status rp_origin_at(const rp_result* result, size_t index, rp_origin_v
  * work (ctypes pays microseconds per crossing; thirty crossings per result was most of the
  * conversion time). Strings are borrowed from the result, valid until rp_result_free; list
  * counts are included so a binding loops only for the lists themselves. Laid out afresh for
- * ABI 3; append-only from here. */
+ * ABI 3. GROWING IT COSTS AN ABI BUMP - the caller allocates it, so an older binding's buffer is
+ * simply too small - which is why release_version/release_real arrived with ABI 4 rather than
+ * quietly at the end. */
 typedef struct rp_result_view {
     const char* title;
     const char* episode_title;
@@ -364,6 +373,10 @@ typedef struct rp_result_view {
     const char* container;
     int32_t year, season, season_end, episode, episode_end;
     int32_t absolute_episode, absolute_episode_end, episode_count, tokens;
+    /* The revision Sonarr ranks on: the version this file is of its release, and how many times
+     * the name said REAL. version is 1 when nothing was stated - the first revision, not a
+     * missing one - and a bare PROPER is 2. */
+    int32_t release_version, release_real;
     uint8_t screen_size, source, video_codec, medium, content;
     uint8_t numbering, special, adult, pack_scope, subtitle_format;
     uint8_t valid, pack, specials, degraded;

@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Iterable
 
 
-ABI_VERSION = 3
+ABI_VERSION = 4
 
 
 class NeureleaseError(RuntimeError):
@@ -178,6 +178,14 @@ class EditionKind(Kind):
     DIRECTORS_CUT = (12, "Director's Cut")
     FINAL_CUT = (13, 'Final Cut')
     THEATRICAL = (14, 'Theatrical')
+    DESPECIALIZED = (15, 'Despecialized')
+    ASSEMBLY_CUT = (16, 'Assembly Cut')
+    ANNIVERSARY = (17, 'Anniversary')
+    SIGNATURE = (18, 'Signature')
+    IMPERIAL = (19, 'Imperial')
+    DIAMOND = (20, 'Diamond')
+    TWO_IN_ONE = (21, '2in1')
+    PREAIR = (22, 'Preair')
 
 
 class OriginField(IntEnum):
@@ -326,6 +334,13 @@ class ParsedRelease:
     absolute_episode_end: Number | None
     episode_count: Number | None
     tokens: int
+    # The revision, the way Sonarr counts it, and plain ints rather than Number | None because an
+    # unstated revision is not absent: it is the FIRST one. `release_version` is 1 unless the name
+    # raised it - a bare PROPER makes it 2, `v2` makes it 2, PROPER beside `v2` makes it 3 - and
+    # `release_real` counts the REAL tokens, which mark a re-do of a bad PROPER without advancing
+    # the version.
+    release_version: int
+    release_real: int
     screen_size: Value
     # The screen size as the name wrote it (`1080P`, `720`, `1920x1080`) and, when it stated exact
     # dimensions, those dimensions. Both come from the evidence spans, so they are None when the
@@ -400,10 +415,11 @@ class ParsedRelease:
     Shared: `title`, `alternative_title`, `episode_title`, `year`, `date`, `season`, `episode`,
         `absolute_episode`, `episode_count`, `screen_size`, `source`, `video_codec`, `audio_codec`,
         `audio_channels`, `audio_profile`, `color_depth`, `streaming_service`, `edition`, `other`,
-        `language`, `subtitle_language`, `release_group`, `container`, `crc32`, `website`, `type`.
+        `language`, `subtitle_language`, `release_group`, `container`, `crc32`, `website`, `type`,
+        `version`.
         Like GuessIt, a fact with one value is a scalar and with several a list, and a range is the
         list of its numbers. Ours: `franchise_prefix`, `content`, `medium`, `adult`, `numbering`,
-        `pack_scope`, `special`, `hdr`, `frame_size`. Unstated facts are absent, flags live in
+        `pack_scope`, `special`, `hdr`, `frame_size`, `real`. Unstated facts are absent, flags live in
         `other`, and `confidence` carries one number per emitted key.
         """
         out: dict = {}
@@ -473,6 +489,15 @@ class ParsedRelease:
         ) if flag]
         if other:
             out["other"] = other[0] if len(other) == 1 else other
+        # THE REVISION AS NUMBERS, under GuessIt's name where it has the same fact. `other`
+        # already says THAT a release is a proper or a repack; it cannot say which revision, and
+        # `Anime.01v2` and `Anime.01v3` are different files. Absent when the name states neither,
+        # the way every other unstated fact here is absent - a first release is version 1 and
+        # saying so on every parse would be noise.
+        if self.release_version > 1:
+            out["version"] = self.release_version
+        if self.release_real:
+            out["real"] = self.release_real
         if self.language:
             put("language", scalar_or_list(self.language), self.language.confidence)
         if self.subtitle_language:
@@ -569,6 +594,7 @@ class _ResultView(ctypes.Structure):
         ("episode", ctypes.c_int32), ("episode_end", ctypes.c_int32),
         ("absolute_episode", ctypes.c_int32), ("absolute_episode_end", ctypes.c_int32),
         ("episode_count", ctypes.c_int32), ("tokens", ctypes.c_int32),
+        ("release_version", ctypes.c_int32), ("release_real", ctypes.c_int32),
         ("screen_size", ctypes.c_uint8), ("source", ctypes.c_uint8), ("video_codec", ctypes.c_uint8),
         ("medium", ctypes.c_uint8), ("content", ctypes.c_uint8), ("numbering", ctypes.c_uint8),
         ("special", ctypes.c_uint8), ("adult", ctypes.c_uint8), ("pack_scope", ctypes.c_uint8),
@@ -859,6 +885,8 @@ class Parser:
                                         "absolute_episode"),
             episode_count=number(view.episode_count if stated & 128 else None, "episode"),
             tokens=view.tokens,
+            release_version=int(view.release_version),
+            release_real=int(view.release_real),
             screen_size=Value(ResolutionTier.from_id(view.screen_size), sure("screen_size")),
             screen_size_text=text(screen_size_text, "screen_size"),
             frame_size=frame_size,

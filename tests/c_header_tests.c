@@ -1,7 +1,8 @@
 #include <neurelease/release_parser.h>
 
-_Static_assert(RP_ABI_VERSION == 3u, "unexpected ABI version");
+_Static_assert(RP_ABI_VERSION == 4u, "unexpected ABI version");
 _Static_assert(RP_SPECIAL_MOVIE == 4, "enum values are part of the ABI");
+_Static_assert(RP_EDITION_PREAIR == 22, "enum values are part of the ABI");
 _Static_assert(RP_RESOLUTION_2160P == 5, "enum values are part of the ABI");
 _Static_assert(RP_CODEC_HEVC == 2, "enum values are part of the ABI");
 

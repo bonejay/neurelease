@@ -435,6 +435,24 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[ ._\-\[(])(Uncensored)(?:$|[^A-Za-z]))", "Uncensored"},
         {R"((?:^|[ ._\-\[(])(Special[ ._-]?Edition|SE(?=[ ._-]))(?:$|[^A-Za-z]))", "Special Edition"},
         {R"((?:^|[ ._\-\[(])(Deluxe(?:[ ._-]?Edition)?)(?:$|[^A-Za-z]))", "Deluxe"},
+        // APPENDED BELOW THE FOURTEEN ABOVE, because the table is read in order and the first
+        // entry that matches becomes the PRIMARY edition. These eight are rarer and weaker
+        // identifiers than the originals, so a `Criterion 40th Anniversary Edition` stays
+        // Criterion; they still all land in `editions`.
+        {R"((?:^|[ ._\-\[(])(Despecialized)(?:$|[^A-Za-z]))", "Despecialized"},
+        {R"((?:^|[ ._\-\[(])(Assembly[ ._-]?Cut)(?:$|[^A-Za-z]))", "Assembly Cut"},
+        // THE ORDINAL IS OPTIONAL BUT `Edition` IS NOT. `25th Anniversary Edition` and
+        // `Anniversary Edition` are both editions; a bare `Anniversary` is an ordinary word that
+        // belongs to plenty of titles (`Anniversary.2023.1080p`), so it is not taken alone.
+        {R"((?:^|[ ._\-\[(])((?:\d{1,3}(?:th|st|nd|rd)[ ._-]?)?Anniversary[ ._-]?Edition)(?:$|[^A-Za-z]))",
+         "Anniversary"},
+        {R"((?:^|[ ._\-\[(])(Signature[ ._-]?Edition)(?:$|[^A-Za-z]))", "Signature"},
+        {R"((?:^|[ ._\-\[(])(Imperial[ ._-]?Edition)(?:$|[^A-Za-z]))", "Imperial"},
+        {R"((?:^|[ ._\-\[(])(Diamond[ ._-]?Edition)(?:$|[^A-Za-z]))", "Diamond"},
+        // TWO EPISODES IN ONE FILE. It ENDS in a digit, so the usual letters-only trailing guard
+        // would let `2in1080p` through; this one refuses a following digit as well.
+        {R"((?:^|[ ._\-\[(])(2[ ._-]?in[ ._-]?1)(?:$|[^A-Za-z0-9]))", "2in1"},
+        {R"((?:^|[ ._\-\[(])(Pre[ ._-]?Air)(?:$|[^A-Za-z]))", "Preair"},
     };
     static const std::vector<CompiledSpelling> table = compile(spellings);
     return table;
@@ -455,6 +473,14 @@ EditionKind editionOfLabel(std::string_view value) {
     if (value == "Director's Cut") return EditionKind::DirectorsCut;
     if (value == "Final Cut") return EditionKind::FinalCut;
     if (value == "Theatrical") return EditionKind::Theatrical;
+    if (value == "Despecialized") return EditionKind::Despecialized;
+    if (value == "Assembly Cut") return EditionKind::AssemblyCut;
+    if (value == "Anniversary") return EditionKind::Anniversary;
+    if (value == "Signature") return EditionKind::Signature;
+    if (value == "Imperial") return EditionKind::Imperial;
+    if (value == "Diamond") return EditionKind::Diamond;
+    if (value == "2in1") return EditionKind::TwoInOne;
+    if (value == "Preair") return EditionKind::Preair;
     return EditionKind::Unknown;
 }
 

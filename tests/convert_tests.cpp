@@ -42,6 +42,23 @@ TEST_CASE("editions and audio retain all independent claims") {
     CHECK(editions[2] == EditionKind::Uncut);
     CHECK(editions[3] == EditionKind::DirectorsCut);
 
+    // The eight later editions, including the two the model rarely routes here as editions at all
+    // (`2in1` reads as a pack marker in most names, `Preair` as an edition) - the conversion still
+    // has to answer for them, and this is where that is pinned.
+    CHECK(editionIn("Movie.Despecialized.1080p") == EditionKind::Despecialized);
+    CHECK(editionIn("Movie.Assembly.Cut.1080p") == EditionKind::AssemblyCut);
+    CHECK(editionIn("Movie.25th.Anniversary.Edition") == EditionKind::Anniversary);
+    CHECK(editionIn("Movie.Anniversary.Edition") == EditionKind::Anniversary);
+    CHECK(editionIn("Movie.Signature.Edition") == EditionKind::Signature);
+    CHECK(editionIn("Movie.Imperial.Edition") == EditionKind::Imperial);
+    CHECK(editionIn("Movie.Diamond.Edition") == EditionKind::Diamond);
+    CHECK(editionIn("Show.S01E01E02.2in1.720p") == EditionKind::TwoInOne);
+    CHECK(editionIn("Show.S01E01.PRE-AIR.720p") == EditionKind::Preair);
+    CHECK(editionIn("Show.S01E01.PREAiR.720p") == EditionKind::Preair);
+    // A bare `Anniversary` is an ordinary title word, and `2in1080p` is a resolution.
+    CHECK(editionIn("Anniversary.2023.1080p.WEB-DL") == EditionKind::Unknown);
+    CHECK(editionIn("Movie.2in1080p.WEB-DL") == EditionKind::Unknown);
+
     CHECK(audioCodecValue("DDP5.1") == "DDP");
     CHECK(audioCodecValue("2xFLAC") == "FLAC");
     CHECK(bitDepthIn("Hevc10").value == "10bit");

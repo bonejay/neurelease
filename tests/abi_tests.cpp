@@ -150,6 +150,19 @@ TEST_CASE("rp_view carries every scalar at once, and says which zeros are stated
     CHECK((view.stated & 2U) != 0U);   // S00: a stated zero, not an absence
     CHECK((view.stated & 8U) != 0U);   // E01 stated
     CHECK(view.valid == 1);
+    // A NAME THAT STATES NO REVISION IS STILL VERSION 1, which is also what catches the view
+    // struct drifting out of step with the header: these two sit among the int32_t block, so a
+    // binding that laid the struct out for ABI 3 reads a pointer here rather than a 1.
+    CHECK(view.release_version == 1);
+    CHECK(view.release_real == 0);
+
+    ResultOwner revised;
+    REQUIRE(rp_parse(parser.value, "Series.Title.S04E05.REAL.REAL.PROPER.HDTV.x264-W4F",
+                     &revised.value) == RP_OK);
+    rp_result_view revision{};
+    REQUIRE(rp_view(revised.value, &revision) == RP_OK);
+    CHECK(revision.release_version == 2);   // the PROPER, not the REALs, moves the version
+    CHECK(revision.release_real == 2);
 
     // REAL S00 NAMES, NOT ONE SYNTHETIC ONE. This case used to assert the stated zero on a single
     // hand-written name, and passed while the parser dropped the season on 27 of 60 real `S00`

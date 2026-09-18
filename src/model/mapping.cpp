@@ -94,9 +94,45 @@ bool isProper(std::string_view value) {
     return matches(value, pattern);
 }
 
+// RERIP RIDES WITH REPACK because Sonarr's RepackRegex is `\b(repack|rerip)\d?\b` - one flag for
+// both words. A rerip is the same event under a different scene name, and reading it as neither a
+// repack nor a revision is what left `...RERIP.1080p...` ranked below the release it replaced.
 bool isRepack(std::string_view value) {
-    static const text::Regex pattern(R"((?:^|[ ._\-\[(])REPACK[ ._-]?\d?(?:$|[^A-Za-z]))", true);
+    static const text::Regex pattern(R"((?:^|[ ._\-\[(])(?:REPACK|RERIP)[ ._-]?\d?(?:$|[^A-Za-z]))",
+                                     true);
     return matches(value, pattern);
+}
+
+// THE WRITTEN REVISION NUMBER, or 0 when this token states none. Sonarr's VersionRegex
+// (`\d[-._ ]?v(\d)[-._ ]|\[v(\d)\]|repack(\d)|rerip(\d)|(\d{3,4})p[._ ]v(\d)`) spelled for ONE
+// token at a time: the tokenizer already breaks at every letter-digit transition, so `01v2` and
+// `1080p.v2` reach this branch as a bare `v2` and the leading `\d`/`\d{3,4}p` branches collapse
+// into the same one.
+int statedRevisionIn(std::string_view value) {
+    static const text::Regex tag(R"((?:^|[ ._\-\[(])v(\d{1,2})(?:$|[^A-Za-z0-9]))", true);
+    static const text::Regex numbered(
+        R"((?:^|[ ._\-\[(])(?:REPACK|RERIP|PROPER)[ ._-]?(\d)(?:$|[^A-Za-z0-9]))", true);
+    int stated = 0;
+    if (const text::Match match = tag.match(value)) stated = integer(match.captured(1));
+    if (const text::Match match = numbered.match(value))
+        stated = std::max(stated, integer(match.captured(1)));
+    return stated;
+}
+
+// HOW MANY TIMES THE WORD REAL STANDS ON ITS OWN in this token. Counted rather than flagged,
+// because the scene stacks it: `REAL.REAL.PROPER` is the second re-do of a botched PROPER. The
+// loop restarts at the END OF THE CAPTURED WORD, not at the end of the match, so the delimiter the
+// pattern consumed is still there to open the next one - `^` does not match at a start offset.
+int realCountIn(std::string_view value) {
+    static const text::Regex pattern(R"((?:^|[ ._\-\[(])(REAL)(?:$|[^A-Za-z]))", true);
+    int count = 0;
+    for (std::size_t from = 0; from <= value.size();) {
+        const text::Match match = pattern.match(value, from);
+        if (!match) break;
+        ++count;
+        from = match.capturedEnd(1);
+    }
+    return count;
 }
 
 bool isAiUpscale(std::string_view value) {
@@ -256,6 +292,12 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
     // beside genuinely absolute numbering.
     bool combinedMarkerSeen = false;
     std::int32_t episodeTitleEnd = -1;
+    // THE REVISION IS SPELLED ACROSS SEVERAL SPANS, so it cannot be decided inside one of them.
+    // `REAL.REAL.PROPER` and `PROPER` beside `v2` arrive here as separate edition tokens, and the
+    // version is the highest number ANY of them wrote plus one if ANY of them was a proper or a
+    // repack - so the two halves of that sum are carried across the walk and added once at the end.
+    int revisionStated = 0;
+    bool revisionBumped = false;
 
     for (const SegmentedSpan& span : analysis.spans) {
         if (span.begin < 0 || span.end <= span.begin || static_cast<std::size_t>(span.end) > name.size())
@@ -647,6 +689,11 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
             std::vector<std::string> routed;
             if (isProper(raw)) { info.proper = true; routed.push_back("proper"); }
             if (isRepack(raw)) { info.repack = true; routed.push_back("repack"); }
+            // THE REVISION, GATHERED HERE AND SUMMED AFTER THE WALK. A proper or a repack raises
+            // the version whether or not it wrote a number; REAL never does, so it is only counted.
+            revisionStated = std::max(revisionStated, statedRevisionIn(raw));
+            if (isProper(raw) || isRepack(raw)) revisionBumped = true;
+            info.revisionReal += realCountIn(raw);
             if (isAiUpscale(raw)) { info.aiUpscale = true; routed.push_back("ai upscale"); }
             if (isHybrid(raw)) { info.hybrid = true; routed.push_back("hybrid"); }
             if (isThreeD(raw)) { info.threeD = true; routed.push_back("3D"); }
@@ -818,6 +865,12 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
     }
 
     if (!info.year && info.date.valid()) info.year = info.date.year;
+    // THE REVISION, SUMMED ONCE THE WHOLE NAME HAS BEEN SEEN. A stated number alone IS the
+    // version; a proper or a repack makes it that number plus one, or 2 when nothing was written,
+    // because the PROPER is itself the second issue of the release. Nothing stated leaves the
+    // default 1: an unstated revision is the first one, not a missing one.
+    info.revisionVersion = revisionStated > 0 ? revisionStated : 1;
+    if (revisionBumped) info.revisionVersion = revisionStated > 0 ? revisionStated + 1 : 2;
     // The flags were set per stated span above; the summary alone still implies its own flag,
     // so a name that stated exactly one format keeps behaving as before.
     info.dolbyVision |= accumulated.hdr == HdrFormat::DolbyVision;

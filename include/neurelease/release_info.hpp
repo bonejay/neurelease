@@ -103,6 +103,10 @@ enum class EditionKind : std::uint8_t {
     Unknown = 0, Imax = 1, Criterion = 2, OpenMatte = 3, Remastered = 4,
     Unrated = 5, Uncut = 6, Uncensored = 7, SpecialEdition = 8, Deluxe = 9,
     Redux = 10, Extended = 11, DirectorsCut = 12, FinalCut = 13, Theatrical = 14,
+    // APPENDED, NEVER INSERTED: the C ABI (rp_edition_kind) pins these numbers, so a new edition
+    // goes at the end and nothing above it moves.
+    Despecialized = 15, AssemblyCut = 16, Anniversary = 17, Signature = 18,
+    Imperial = 19, Diamond = 20, TwoInOne = 21, Preair = 22,
 };
 
 [[nodiscard]] std::string_view label(ResolutionTier value) noexcept;
@@ -187,6 +191,20 @@ struct ReleaseInfo {
     std::string streamingService;
     bool proper = false;
     bool repack = false;
+    // THE REVISION, AS SONARR COUNTS IT (QualityParser.ParseQuality -> Revision), because a caller
+    // choosing between two files of the same episode ranks on exactly these two numbers.
+    //
+    // `revisionVersion` IS 1 WHEN THE NAME STATES NOTHING: an unstated revision is the FIRST one,
+    // not a missing one, which is why it defaults to 1 rather than 0. A written number (`v2`,
+    // `[v3]`, `repack2`) sets it, and a PROPER or a REPACK then adds one on top - so a bare
+    // `PROPER` is 2 and `PROPER` beside `v2` is 3. Reading a bare PROPER as version 1 is what lost
+    // every version case the Sonarr and Radarr suites disagreed with us on.
+    //
+    // `revisionReal` COUNTS REAL SEPARATELY instead of folding it into the version: the scene uses
+    // REAL for a re-do of a botched PROPER, not for a new revision, so `REAL.REAL.PROPER` is
+    // version 2 with real 2.
+    int revisionVersion = 1;
+    int revisionReal = 0;
     // THE PRIMARY EDITION, and `editions` for all of them — because a release is routinely
     // several at once. "Uncut Unrated DC" is uncut AND unrated AND a director's cut; it is not a
     // choice between them. `edition` is the highest-precedence member of `editions`; the

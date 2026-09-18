@@ -91,6 +91,14 @@ std::string_view label(EditionKind value) noexcept {
     case EditionKind::DirectorsCut: return "Director's Cut";
     case EditionKind::FinalCut: return "Final Cut";
     case EditionKind::Theatrical: return "Theatrical";
+    case EditionKind::Despecialized: return "Despecialized";
+    case EditionKind::AssemblyCut: return "Assembly Cut";
+    case EditionKind::Anniversary: return "Anniversary";
+    case EditionKind::Signature: return "Signature";
+    case EditionKind::Imperial: return "Imperial";
+    case EditionKind::Diamond: return "Diamond";
+    case EditionKind::TwoInOne: return "2in1";
+    case EditionKind::Preair: return "Preair";
     case EditionKind::Unknown: return {};
     }
     return {};

@@ -478,6 +478,10 @@ rp_status rp_view(const rp_result* result, rp_result_view* out) {
     out->absolute_episode = info->absoluteEpisode.value_or(0);
     out->absolute_episode_end = info->absoluteEpisodeEnd.value_or(0);
     out->episode_count = info->episodeCount.value_or(0);
+    // NO `stated` BIT FOR THESE TWO: they always have an answer. An unstated revision is version 1
+    // with no REALs, not an absent value, so there is nothing for a caller to distinguish.
+    out->release_version = info->revisionVersion;
+    out->release_real = info->revisionReal;
     out->episode_title = emptyAsNull(info->episodeTitle);
     out->franchise_prefix = emptyAsNull(info->franchisePrefix);
     out->alternative_title_count = static_cast<uint32_t>(info->alternativeTitles.size());
