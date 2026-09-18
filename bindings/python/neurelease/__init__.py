@@ -186,6 +186,15 @@ class EditionKind(Kind):
     DIAMOND = (20, 'Diamond')
     TWO_IN_ONE = (21, '2in1')
     PREAIR = (22, 'Preair')
+    INTERNAL = (23, 'Internal')
+    LIMITED = (24, 'Limited')
+    UNTOUCHED = (25, 'Untouched')
+    DIRFIX = (26, 'Dirfix')
+    CUSTOM = (27, 'Custom')
+    WIDESCREEN = (28, 'Widescreen')
+    DOWNLOAD = (29, 'Download')
+    RETAIL = (30, 'Retail')
+    COLLECTOR = (31, 'Collector')
 
 
 class OriginField(IntEnum):

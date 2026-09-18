@@ -90,6 +90,15 @@ std::string_view label(EditionKind value) noexcept {
     case EditionKind::Extended: return "Extended";
     case EditionKind::DirectorsCut: return "Director's Cut";
     case EditionKind::FinalCut: return "Final Cut";
+    case EditionKind::Internal: return "Internal";
+    case EditionKind::Limited: return "Limited";
+    case EditionKind::Untouched: return "Untouched";
+    case EditionKind::Dirfix: return "Dirfix";
+    case EditionKind::Custom: return "Custom";
+    case EditionKind::Widescreen: return "Widescreen";
+    case EditionKind::Download: return "Download";
+    case EditionKind::Retail: return "Retail";
+    case EditionKind::Collector: return "Collector";
     case EditionKind::Theatrical: return "Theatrical";
     case EditionKind::Despecialized: return "Despecialized";
     case EditionKind::AssemblyCut: return "Assembly Cut";

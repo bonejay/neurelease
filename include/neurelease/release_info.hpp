@@ -107,6 +107,16 @@ enum class EditionKind : std::uint8_t {
     // goes at the end and nothing above it moves.
     Despecialized = 15, AssemblyCut = 16, Anniversary = 17, Signature = 18,
     Imperial = 19, Diamond = 20, TwoInOne = 21, Preair = 22,
+    // SCENE TAGS THE MODEL ALREADY MARKS AS EDITIONS and the tables had no member for, so
+    // the span was located and converted to nothing. Found by mining 232,595 sampled release
+    // names for spans that need a value and got none: `iNTERNAL` alone is 2,737 non-adult
+    // video names. Appended, so every existing value keeps its number.
+    Internal = 23, Limited = 24, Untouched = 25, Dirfix = 26, Custom = 27, Widescreen = 28,
+    // A DOUJIN RELEASE STATES HOW IT WAS SOLD, and the corpus says so 2,916 times: `DL版`
+    // is the download edition, `パッケージ版` and `セル版` the boxed and retail ones. `RETAIL`
+    // is the same fact in the western scene. `Collector` completes the set the edition
+    // token table already had a word for.
+    Download = 29, Retail = 30, Collector = 31,
 };
 
 [[nodiscard]] std::string_view label(ResolutionTier value) noexcept;

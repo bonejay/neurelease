@@ -1,214 +1,310 @@
 [
-  {
-    "expression": "EN|ENG|ENGLISH|INGLES|ING",
-    "code": "eng"
-  },
-  {
-    "expression": "EN[ ._-]?US|EN[ ._-]?GB|ENGLISHMTL|VOSTEN",
-    "code": "eng"
-  },
-  {
-    "expression": "JPN|JAP|JAPANESE|JP",
-    "code": "jpn"
-  },
-  {
-    "expression": "GER|DEU|GERMAN|DEUTSCH",
-    "code": "deu"
-  },
-  {
-    "expression": "DE",
-    "code": "deu"
-  },
-  {
-    "expression": "ITA|ITALIAN|ITALIANO|IT",
-    "code": "ita"
-  },
-  {
-    "expression": "FRE|FRA|FRENCH|TRUEFRENCH|VOSTFR|VFF|VFI|VFQ",
-    "code": "fra"
-  },
-  {
-    "expression": "FR|VF|FRANCAIS|FRAN\\x{00C7}AIS",
-    "code": "fra"
-  },
-  {
-    "expression": "SPA|ESP|SPANISH|CASTELLANO|LATINO|ESPANOL|ESPA\\x{00D1}OL",
-    "code": "spa"
-  },
-  {
-    "expression": "ES|ES[ ._-]?LA|SPA[ ._-]?LA|LAT|VOSE|SUBSPA",
-    "code": "spa"
-  },
-  {
-    "expression": "POR|PORTUGUESE|PORTUGUES|DUBLADO|LEGENDADO|BRAZILIAN",
-    "code": "por"
-  },
-  {
-    "expression": "PT|PT[ ._-]?BR|POR[ ._-]?BR",
-    "code": "por"
-  },
-  {
-    "expression": "RUS|RUSSIAN|\\x{0440}\\x{0443}\\x{0441}\\x{0441}\\x{043A}\\x{0438}\\x{0439}",
-    "code": "rus"
-  },
-  {
-    "expression": "RU",
-    "code": "rus"
-  },
-  {
-    "expression": "UKR|UKRAINIAN",
-    "code": "ukr"
-  },
-  {
-    "expression": "CZE|CES|CZECH|CESKY",
-    "code": "ces"
-  },
-  {
-    "expression": "CZ|CS|CZTIT",
-    "code": "ces"
-  },
-  {
-    "expression": "SLO|SLOVAK|SLOVENSKY",
-    "code": "slk"
-  },
-  {
-    "expression": "POL|POLISH|POLSKI|NAPISY",
-    "code": "pol"
-  },
-  {
-    "expression": "PL",
-    "code": "pol"
-  },
-  {
-    "expression": "HUN|HUNGARIAN|MAGYAR",
-    "code": "hun"
-  },
-  {
-    "expression": "ROM|RUM|ROMANIAN",
-    "code": "ron"
-  },
-  {
-    "expression": "DUT|NLD|DUTCH|NEDERLANDS",
-    "code": "nld"
-  },
-  {
-    "expression": "NL",
-    "code": "nld"
-  },
-  {
-    "expression": "SWE|SWEDISH|SVENSKA|SWESUB",
-    "code": "swe"
-  },
-  {
-    "expression": "DAN|DANISH|DANSK|DKSUB",
-    "code": "dan"
-  },
-  {
-    "expression": "NOR|NORWEGIAN|NORSK|NOB|NORDIC",
-    "code": "nor"
-  },
-  {
-    "expression": "FIN|FINNISH|SUOMI",
-    "code": "fin"
-  },
-  {
-    "expression": "TUR|TURKISH|T\\x{00DC}RK\\x{00C7}E",
-    "code": "tur"
-  },
-  {
-    "expression": "ARA|ARABIC",
-    "code": "ara"
-  },
-  {
-    "expression": "HEB|HEBREW",
-    "code": "heb"
-  },
-  {
-    "expression": "GRE|ELL|GREEK",
-    "code": "ell"
-  },
-  {
-    "expression": "THA|THAI",
-    "code": "tha"
-  },
-  {
-    "expression": "VIE|VIETNAMESE|TIENG[ ._-]?VIET",
-    "code": "vie"
-  },
-  {
-    "expression": "IND|INDONESIAN",
-    "code": "ind"
-  },
-  {
-    "expression": "MAY|MSA|MALAY",
-    "code": "msa"
-  },
-  {
-    "expression": "KOR|KOREAN|KR",
-    "code": "kor"
-  },
-  {
-    "expression": "HIN|HINDI",
-    "code": "hin"
-  },
-  {
-    "expression": "TAM|TAMIL",
-    "code": "tam"
-  },
-  {
-    "expression": "TEL|TELUGU",
-    "code": "tel"
-  },
-  {
-    "expression": "MAL|MALAYALAM",
-    "code": "mal"
-  },
-  {
-    "expression": "KAN|KANNADA",
-    "code": "kan"
-  },
-  {
-    "expression": "BEN|BENGALI",
-    "code": "ben"
-  },
-  {
-    "expression": "MAR|MARATHI",
-    "code": "mar"
-  },
-  {
-    "expression": "PAN|PUNJABI",
-    "code": "pan"
-  },
-  {
-    "expression": "CAT|CATALAN|CATALA",
-    "code": "cat"
-  },
-  {
-    "expression": "KIR|KIRGHIZ",
-    "code": "kir"
-  },
-  {
-    "expression": "CHI|ZHO|CHINESE|MANDARIN|CANTONESE",
-    "code": "zho"
-  },
-  {
-    "expression": "CHS|CHT|BIG5|GB|CH|SC|TC|JPSC|JPTC|\\x{4E2D}\\x{6587}",
-    "code": "zho"
-  },
-  {
-    "expression": "TAGALOG|TGL|FILIPINO|FIL",
-    "code": "tgl"
-  },
-  {
-    "expression": "BOSNIAN|BOS",
-    "code": "bos"
-  },
-  {
-    "expression": "BULGARIAN|BUL|BG|BGAUDIO",
-    "code": "bul"
-  },
-  {
-    "expression": "\\x{56FD}\\x{8BED}|\\x{56FD}\\x{8BED}\\x{97F3}\\x{8F68}|\\x{666E}\\x{901A}\\x{8BDD}",
-    "code": "zho"
-  }
+ {
+  "expression": "EN|ENG|ENGLISH|INGLES|ING",
+  "code": "eng"
+ },
+ {
+  "expression": "EN[ ._-]?US|EN[ ._-]?GB|ENGLISHMTL|VOSTEN",
+  "code": "eng"
+ },
+ {
+  "expression": "JPN|JAP|JA|JAPANESE|JP",
+  "code": "jpn"
+ },
+ {
+  "expression": "GER|DEU|GERMAN|DEUTSCH",
+  "code": "deu"
+ },
+ {
+  "expression": "DE",
+  "code": "deu"
+ },
+ {
+  "expression": "ITA|ITALIAN|ITALIANO|IT",
+  "code": "ita"
+ },
+ {
+  "expression": "FRE|FRA|FRENCH|TRUEFRENCH|VOSTFR|VFF|VFI|VFQ",
+  "code": "fra"
+ },
+ {
+  "expression": "FR|VF|FRANCAIS|FRAN\\x{00C7}AIS",
+  "code": "fra"
+ },
+ {
+  "expression": "SPA|ESP|SPANISH|CASTELLANO|LATINO|ESPANOL|ESPA\\x{00D1}OL|LATIN|LATI|LATINOAMERICANO",
+  "code": "spa"
+ },
+ {
+  "expression": "ES|ES[ ._-]?LA|SPA[ ._-]?LA|LAT|VOSE|SUBSPA|SUBTITULADO|SUBTITULADA",
+  "code": "spa"
+ },
+ {
+  "expression": "POR|PORTUGUESE|PORTUGUES|DUBLADO|LEGENDADO|BRAZILIAN",
+  "code": "por"
+ },
+ {
+  "expression": "PT|PT[ ._-]?BR|POR[ ._-]?BR",
+  "code": "por"
+ },
+ {
+  "expression": "RUS|RUSSIAN|\\x{0440}\\x{0443}\\x{0441}\\x{0441}\\x{043A}\\x{0438}\\x{0439}",
+  "code": "rus"
+ },
+ {
+  "expression": "RU",
+  "code": "rus"
+ },
+ {
+  "expression": "UKR|UKRAINIAN",
+  "code": "ukr"
+ },
+ {
+  "expression": "CZE|CES|CZECH|CESKY",
+  "code": "ces"
+ },
+ {
+  "expression": "CZ|CS|CZTIT",
+  "code": "ces"
+ },
+ {
+  "expression": "SLO|SK|SVK|SLOVAK|SLOVENSKY",
+  "code": "slk"
+ },
+ {
+  "expression": "POL|POLISH|POLSKI|NAPISY",
+  "code": "pol"
+ },
+ {
+  "expression": "PL",
+  "code": "pol"
+ },
+ {
+  "expression": "HUN|HUNGARIAN|MAGYAR",
+  "code": "hun"
+ },
+ {
+  "expression": "ROM|RUM|ROMANIAN",
+  "code": "ron"
+ },
+ {
+  "expression": "DUT|NLD|DUTCH|NEDERLANDS|FLEMISH|VLAAMS",
+  "code": "nld"
+ },
+ {
+  "expression": "NL",
+  "code": "nld"
+ },
+ {
+  "expression": "SWE|SE|SWEDISH|SVENSKA|SWESUB",
+  "code": "swe"
+ },
+ {
+  "expression": "DAN|DANISH|DANSK|DKSUB",
+  "code": "dan"
+ },
+ {
+  "expression": "NOR|NORWEGIAN|NORSK|NOB|NORDIC",
+  "code": "nor"
+ },
+ {
+  "expression": "FIN|FINNISH|SUOMI",
+  "code": "fin"
+ },
+ {
+  "expression": "TUR|TURKISH|T\\x{00DC}RK\\x{00C7}E",
+  "code": "tur"
+ },
+ {
+  "expression": "ARA|ARABIC",
+  "code": "ara"
+ },
+ {
+  "expression": "HEB|HEBREW",
+  "code": "heb"
+ },
+ {
+  "expression": "GRE|ELL|GREEK",
+  "code": "ell"
+ },
+ {
+  "expression": "THA|THAI",
+  "code": "tha"
+ },
+ {
+  "expression": "VIE|VIETNAMESE|TIENG[ ._-]?VIET",
+  "code": "vie"
+ },
+ {
+  "expression": "IND|INDONESIAN",
+  "code": "ind"
+ },
+ {
+  "expression": "MAY|MSA|MALAY",
+  "code": "msa"
+ },
+ {
+  "expression": "KOR|KOREAN|KR",
+  "code": "kor"
+ },
+ {
+  "expression": "HIN|HINDI",
+  "code": "hin"
+ },
+ {
+  "expression": "TAM|TAMIL",
+  "code": "tam"
+ },
+ {
+  "expression": "TEL|TELUGU",
+  "code": "tel"
+ },
+ {
+  "expression": "MAL|MALAYALAM",
+  "code": "mal"
+ },
+ {
+  "expression": "KAN|KANNADA",
+  "code": "kan"
+ },
+ {
+  "expression": "BEN|BENGALI",
+  "code": "ben"
+ },
+ {
+  "expression": "MAR|MARATHI",
+  "code": "mar"
+ },
+ {
+  "expression": "PAN|PUNJABI",
+  "code": "pan"
+ },
+ {
+  "expression": "CAT|CA|CATALAN|CATALA|CATALÁN",
+  "code": "cat"
+ },
+ {
+  "expression": "KIR|KIRGHIZ",
+  "code": "kir"
+ },
+ {
+  "expression": "CHI|ZHO|CHINESE|MANDARIN|CANTONESE",
+  "code": "zho"
+ },
+ {
+  "expression": "CHS|CHT|BIG5|GB|CH|SC|TC|JPSC|JPTC|中文|繁中|简中|简繁外挂|繁體|简体|中文字幕|中英字幕|中英双字|简繁英字幕|国语配音|中字|简繁字幕|中国翻訳|简繁日双语外挂|简繁内封|国语中字|繁字幕|简字幕",
+  "code": "zho"
+ },
+ {
+  "expression": "TAGALOG|TGL|FILIPINO|FIL",
+  "code": "tgl"
+ },
+ {
+  "expression": "BOSNIAN|BOS",
+  "code": "bos"
+ },
+ {
+  "expression": "BULGARIAN|BUL|BG|BGAUDIO",
+  "code": "bul"
+ },
+ {
+  "expression": "\\x{56FD}\\x{8BED}|\\x{56FD}\\x{8BED}\\x{97F3}\\x{8F68}|\\x{666E}\\x{901A}\\x{8BDD}",
+  "code": "zho"
+ },
+ {
+  "expression": "ISL|ICE|ICELANDIC|ISLENSKA",
+  "code": "isl"
+ },
+ {
+  "expression": "LAV|LV|LATVIAN|LATVIESU",
+  "code": "lav"
+ },
+ {
+  "expression": "LIT|LT|LITHUANIAN|LIETUVIU",
+  "code": "lit"
+ },
+ {
+  "expression": "EST|ET|EE|ESTONIAN|EESTI",
+  "code": "est"
+ },
+ {
+  "expression": "ALB|SQI|ALBANIAN|SHQIP",
+  "code": "sqi"
+ },
+ {
+  "expression": "PER|FAS|PERSIAN|FARSI",
+  "code": "fas"
+ },
+ {
+  "expression": "GEO|KAT|GEORGIAN",
+  "code": "kat"
+ },
+ {
+  "expression": "SRP|SERBIAN|SRPSKI",
+  "code": "srp"
+ },
+ {
+  "expression": "HRV|CROATIAN|HRVATSKI",
+  "code": "hrv"
+ },
+ {
+  "expression": "SLV|SLOVENIAN|SLOVENSCINA",
+  "code": "slv"
+ },
+ {
+  "expression": "MKD|MACEDONIAN",
+  "code": "mkd"
+ },
+ {
+  "expression": "URD|URDU",
+  "code": "urd"
+ },
+ {
+  "expression": "NEP|NEPALI",
+  "code": "nep"
+ },
+ {
+  "expression": "SIN|SINHALA",
+  "code": "sin"
+ },
+ {
+  "expression": "BUR|MYA|BURMESE",
+  "code": "mya"
+ },
+ {
+  "expression": "KHM|KHMER",
+  "code": "khm"
+ },
+ {
+  "expression": "LAO|LAOTIAN",
+  "code": "lao"
+ },
+ {
+  "expression": "AZE|AZERBAIJANI",
+  "code": "aze"
+ },
+ {
+  "expression": "ARM|HYE|ARMENIAN",
+  "code": "hye"
+ },
+ {
+  "expression": "KAZ|KAZAKH",
+  "code": "kaz"
+ },
+ {
+  "expression": "UZB|UZBEK",
+  "code": "uzb"
+ },
+ {
+  "expression": "BEL|BELARUSIAN",
+  "code": "bel"
+ },
+ {
+  "expression": "FUNIDUB|FUNI[ ._-]?DUB|CR[ ._-]?DUB|ENGDUB|ENG[ ._-]?DUB",
+  "code": "eng"
+ },
+ {
+  "expression": "中英字幕|中英双字|简繁英字幕",
+  "code": "eng"
+ }
 ]

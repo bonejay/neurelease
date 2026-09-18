@@ -339,9 +339,21 @@ SourceKind sourceValue(std::string_view token) {
     // is the source and the `MUX` the packaging, so it belongs with WEB-DL rather than with the
     // disc muxes above.
     if (value == "DLMUX") return SourceKind::WebDl;
+    // `DSR` IS A DIGITAL SATELLITE RIP and `VHSRIP` a tape: both are broadcast recordings,
+    // which is what this family means, and the conversion-gap scan found 93 non-adult video
+    // names stating one of them with no source at all in the answer. A bare `TV` says the
+    // same thing in the shortest way the scene writes it.
     if (contains(value, "HDTV") || contains(value, "TVRIP") || contains(value, "PDTV")
-        || contains(value, "SATRIP") || contains(value, "DVBRIP")
-        || value == "SDTV" || value == "DVB") return SourceKind::Hdtv;
+        || contains(value, "SATRIP") || contains(value, "DVBRIP") || contains(value, "DSRIP")
+        || contains(value, "VHSRIP") || contains(value, "VHS")
+        || contains(value, "DSRRIP") || value == "DTV" || value == "SITERIP"
+        || value == "SDTV" || value == "DVB" || value == "DSR" || value == "TV")
+        return SourceKind::Hdtv;
+    // A LASERDISC AND A SUPER VIDEO CD ARE DISCS. Neither is a Blu-ray, but the family this
+    // vocabulary offers for a pressed optical disc is the disc family, and answering nothing
+    // at all - which is what 138 corpus names got - is further from the truth than that.
+    if (value == "LD" || value == "LASERDISC" || value == "SVCD" || value == "VCD")
+        return SourceKind::Dvd;
     if (contains(value, "DVD")) return SourceKind::Dvd;
     if (contains(value, "HDRIP")) return SourceKind::WebRip;
     if (contains(value, "REMUX") || contains(value, "BDMV") || value == "DISC"
@@ -433,6 +445,18 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[ ._\-\[(])(Criterion(?:[ ._-]?Collection)?)(?:$|[^A-Za-z]))", "Criterion"},
         {R"((?:^|[ ._\-\[(])(Open[ ._-]?Matte)(?:$|[^A-Za-z]))", "Open Matte"},
         {R"((?:^|[ ._\-\[(])(Uncensored)(?:$|[^A-Za-z]))", "Uncensored"},
+        {R"((?:^|[ ._\-\[(])(\x{7121}\x{4FEE}\x{6B63})(?:$|[^A-Za-z]))", "Uncensored"},
+        {R"((?:^|[ ._\-\[(])(iNTERNAL|INTERNAL)(?:$|[^A-Za-z]))", "Internal"},
+        {R"((?:^|[ ._\-\[(])(LIMITED)(?:$|[^A-Za-z]))", "Limited"},
+        {R"((?:^|[ ._\-\[(])(UNTOUCHED)(?:$|[^A-Za-z]))", "Untouched"},
+        {R"((?:^|[ ._\-\[(])(DIRFIX|NFOFIX)(?:$|[^A-Za-z]))", "Dirfix"},
+        {R"((?:^|[ ._\-\[(])(CUSTOM)(?:$|[^A-Za-z]))", "Custom"},
+        {R"((?:^|[ ._\-\[(])(WS|WIDESCREEN)(?:$|[^A-Za-z]))", "Widescreen"},
+        {R"((?:^|[ ._\-\[(])(RETAIL)(?:$|[^A-Za-z]))", "Retail"},
+        {R"((?:^|[ ._\-\[(])(UNCEN)(?:$|[^A-Za-z]))", "Uncensored"},
+        {R"((?:^|[ ._\-\[(])(Collector.?s[ ._-]?Edition|COLLECTORS?)(?:$|[^A-Za-z]))", "Collector"},
+        {R"((\x{FF24}\x{FF2C}\x{7248}|DL\x{7248}|\x{30C0}\x{30A6}\x{30F3}\x{30ED}\x{30FC}\x{30C9}\x{7248}))", "Download"},
+        {R"((\x{30D1}\x{30C3}\x{30B1}\x{30FC}\x{30B8}\x{7248}|\x{30BB}\x{30EB}\x{7248}))", "Retail"},
         {R"((?:^|[ ._\-\[(])(Special[ ._-]?Edition|SE(?=[ ._-]))(?:$|[^A-Za-z]))", "Special Edition"},
         {R"((?:^|[ ._\-\[(])(Deluxe(?:[ ._-]?Edition)?)(?:$|[^A-Za-z]))", "Deluxe"},
         // APPENDED BELOW THE FOURTEEN ABOVE, because the table is read in order and the first
@@ -466,6 +490,15 @@ EditionKind editionOfLabel(std::string_view value) {
     if (value == "Unrated") return EditionKind::Unrated;
     if (value == "Uncut") return EditionKind::Uncut;
     if (value == "Uncensored") return EditionKind::Uncensored;
+    if (value == "Internal") return EditionKind::Internal;
+    if (value == "Limited") return EditionKind::Limited;
+    if (value == "Untouched") return EditionKind::Untouched;
+    if (value == "Dirfix") return EditionKind::Dirfix;
+    if (value == "Custom") return EditionKind::Custom;
+    if (value == "Widescreen") return EditionKind::Widescreen;
+    if (value == "Download") return EditionKind::Download;
+    if (value == "Retail") return EditionKind::Retail;
+    if (value == "Collector") return EditionKind::Collector;
     if (value == "Special Edition") return EditionKind::SpecialEdition;
     if (value == "Deluxe") return EditionKind::Deluxe;
     if (value == "Redux") return EditionKind::Redux;
@@ -927,7 +960,9 @@ DateReading dateIn(std::string_view subject) {
 }
 
 Reading yearIn(std::string_view subject, std::int32_t excludeBegin, std::int32_t excludeEnd) {
-    static const Regex pattern(R"((?<![\dxX])((?:19|20)\d{2})(?![\d]|\s*[xX]\s*\d{3,4}))");
+    // `189\d` AND NOT `18\d\d`: film begins in the 1890s, and widening to the whole nineteenth
+    // century would make every `1812`, `1815` and `1876` in a title into a release year.
+    static const Regex pattern(R"((?<![\dxX])((?:189|19\d|20\d)\d)(?![\d]|\s*[xX]\s*\d{3,4}))");
     Reading result;
     std::size_t from = 0;
     while (from <= subject.size()) {

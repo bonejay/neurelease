@@ -112,7 +112,10 @@ std::string audioProfileValue(std::string_view token);
 // WHAT COUNTS AS A YEAR. Fixed rather than read from the clock, because a parser whose answers
 // change with the date is not reproducible, and a name stating a year a decade out is stating
 // something else - `Blade Runner 2049` and `Cyberpunk 2077` are titles, not release years.
-inline constexpr int PlausibleYearFirst = 1900;
+// CINEMA IS OLDER THAN THE REGEX ALLOWED. `Movie Name (1897) [DVD].mp4` lost its year twice
+// over: the reader matched only `19xx` and `20xx`, so an 1890s film could not be read at all,
+// and this bound would have refused it anyway. The Lumiere programmes date from 1895.
+inline constexpr int PlausibleYearFirst = 1890;
 inline constexpr int PlausibleYearLast = 2035;
 
 // --- coverage markers ---------------------------------------------------------------------
