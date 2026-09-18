@@ -99,6 +99,18 @@ std::string_view label(EditionKind value) noexcept {
     case EditionKind::Download: return "Download";
     case EditionKind::Retail: return "Retail";
     case EditionKind::Collector: return "Collector";
+    // "Final" and "Final Cut" are deliberately different strings: one marks the last episode of a
+    // season, the other a recut of a film.
+    case EditionKind::Final: return "Final";
+    case EditionKind::Original: return "Original";
+    case EditionKind::Fix: return "Fix";
+    case EditionKind::CompleteEdition: return "Complete Edition";
+    case EditionKind::Unabridged: return "Unabridged";
+    case EditionKind::Reencode: return "Re-encode";
+    case EditionKind::Numbered: return "Numbered Edition";
+    case EditionKind::Regional: return "Regional";
+    case EditionKind::HighQuality: return "High Quality";
+    case EditionKind::Ultimate: return "Ultimate";
     case EditionKind::Theatrical: return "Theatrical";
     case EditionKind::Despecialized: return "Despecialized";
     case EditionKind::AssemblyCut: return "Assembly Cut";

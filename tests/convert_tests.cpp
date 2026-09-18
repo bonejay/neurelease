@@ -24,6 +24,82 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(sourceTokenIsLightEncode("MicroHD"));
     CHECK(sourceTokenIsBareUhd("UHD"));
 
+    // A source-position token that states other fields too. Narrow on purpose: `UHDRDV` is one
+    // spelling with one meaning, and a bare `UHD` must keep the tentative reading above rather
+    // than being swallowed by a substring rule.
+    CHECK(sourceTokenExtras("UHDRDV").screenSize == ResolutionTier::P2160);
+    CHECK(sourceTokenExtras("UHDRDV").hdr10);
+    CHECK(sourceTokenExtras("UHDRDV").dolbyVision);
+    CHECK(sourceTokenExtras("UHDR").hdr10);
+    CHECK_FALSE(sourceTokenExtras("UHDR").dolbyVision);
+    CHECK_FALSE(sourceTokenExtras("UHD").any());
+    CHECK_FALSE(sourceTokenExtras("BluRay").any());
+
+    // QUEUE 01 of the unmapped-span triage. `FINAL` and `Final Cut` are the pair worth pinning:
+    // French releases write `S01E08.FiNAL` for a season's last episode 3,133 times, and sending
+    // that to the director's final cut would be wrong on every one.
+    CHECK(editionIn("1983.S01E08.FiNAL.FRENCH") == EditionKind::Final);
+    CHECK(editionIn("Blade.Runner.1982.Final.Cut") == EditionKind::FinalCut);
+    CHECK(editionIn("Childs.Play.PROOFFIX") == EditionKind::Fix);
+    CHECK(editionIn("Show.1080p-fixed") == EditionKind::Fix);
+    CHECK(editionIn("Wild.World.Complete.Edition") == EditionKind::CompleteEdition);
+    CHECK(editionIn("Days.of.High.Adventure.Unabridged") == EditionKind::Unabridged);
+    CHECK(editionIn("Roller_Coaster-CONVERT-DVDRip") == EditionKind::Reencode);
+    CHECK(editionIn("Darby.O.Gill.1959.iNT.DVDRip") == EditionKind::Internal);
+    CHECK(editionIn("Aneimo.UNC.1080p") == EditionKind::Uncensored);
+    // A restoration, a regrade and a remaster are one fact under three names.
+    CHECK(editionIn("Amityville.1992.RESTORED.BDRip") == EditionKind::Remastered);
+    CHECK(editionIn("Black.Venus.1983.Regraded.German") == EditionKind::Remastered);
+    // The long cut and the cinema cut, named in the language that released them.
+    CHECK(editionIn("Man-Eater.1980.Langfassung.German") == EditionKind::Extended);
+    CHECK(editionIn("F.I.S.T.1978.KiNOFASSUNG.German") == EditionKind::Theatrical);
+
+    // QUEUE 01, SECOND PASS. UHDRDV and UHDR now answer the source question too, and answer it
+    // tentatively - `sourceTokenIsBareUhd` is what lets a WEB-DL later in the name overrule them.
+    CHECK(sourceValue("UHDRDV") == SourceKind::BluRay);
+    CHECK(sourceValue("UHDR") == SourceKind::BluRay);
+    CHECK(sourceTokenIsBareUhd("UHDRDV"));
+    // A platform with `RIP` glued on has no `WEB` in it, so every branch used to miss.
+    CHECK(sourceValue("NetflixRip") == SourceKind::WebRip);
+    CHECK(sourceValue("AMZNRip") == SourceKind::WebRip);
+    CHECK(sourceValue("DVDRip") == SourceKind::Dvd);
+
+    // `Numbered` and `Regional` each drop a detail the vocabulary has no field for - which number,
+    // which region - and keep the only part a consumer can act on: that one was stated at all.
+    CHECK(editionIn("Modern C (MEAP v4) 3ed 2024") == EditionKind::Numbered);
+    // The abbreviation beats the Numbered rule, because Anniversary says strictly more.
+    CHECK(editionIn("Some.Game.10th.Annv.Ed") == EditionKind::Anniversary);
+    CHECK(editionIn("Some.Game.Anniv.Edition") == EditionKind::Anniversary);
+    CHECK(editionIn("Lean Six Sigma 2nd Edition 2023") == EditionKind::Numbered);
+    CHECK(editionIn("[DBD-Raws][屍鬼][美版][1080P]") == EditionKind::Regional);
+    CHECK(editionIn("[DBD-Raws][屍鬼][USA.Ver][1080P]") == EditionKind::Regional);
+    // The Chinese encode editions: high bitrate, sixty frames, and the audio equivalent.
+    CHECK(editionIn("1921[高码版][国语配音]") == EditionKind::HighQuality);
+    CHECK(editionIn("Endless.Journey[60帧率版本].2160p") == EditionKind::HighQuality);
+    CHECK(editionIn("[FLAC-tan] (Hi-RES) Clear Card OP") == EditionKind::HighQuality);
+    CHECK(editionIn("Cyberpunk.2077-CODEX [Ultimate Edition]") == EditionKind::Ultimate);
+    // Decensoring, in the three scripts that state it, and a first-press Japanese retail edition.
+    CHECK(editionIn("STARS-160 无码流出") == EditionKind::Uncensored);
+    CHECK(editionIn("Kasugano 無碼流出 part 3") == EditionKind::Uncensored);
+    CHECK(editionIn("JUX-174 モザイク破壊版") == EditionKind::Uncensored);
+    CHECK(editionIn("[BDMV] TAILENDERS【初回限定版】") == EditionKind::Limited);
+    // A marketing name for the long cut, and a corrective re-release that names no version.
+    CHECK(editionIn("Deadpool.2.2018.Super.Duper.Cut.UNRATED") == EditionKind::Extended);
+    CHECK(editionIn("WITCH.Season.1.DVDRip.v2.UPDATED") == EditionKind::Fix);
+    CHECK(editionIn("2024_Marie01(remake).mp4") == EditionKind::Reencode);
+    // `4К` with a Cyrillic К used to fall through to the 1080p default - a WRONG answer, not an
+    // absent one, which is the reason it is pinned here rather than left to the queue.
+    CHECK(resolutionValue("Дом Гиннесса _1 сезон_4К_RHS_") == ResolutionTier::P2160);
+    CHECK(resolutionValue("Movie_4K_RHS_") == ResolutionTier::P2160);
+    CHECK(languageCodesOfToken("官方中字") == std::vector<std::string>{"zho"});
+
+    // Languages added from the same triage. The CJK entries must match the WHOLE token, because
+    // the matcher demands an ASCII boundary on each side.
+    CHECK(languageCodesOfToken("粤语音轨") == std::vector<std::string>{"yue"});
+    CHECK(languageCodesOfToken("swissgerman") == std::vector<std::string>{"deu"});
+    CHECK(languageCodesOfToken("vietsub") == std::vector<std::string>{"vie"});
+    CHECK(audioCodecValue("H264.MP2") == "MP2");
+
     CHECK(codecValue("HEVC-10bit") == VideoCodec::Hevc);
     CHECK(codecValue("Hi10P") == VideoCodec::H264);
     CHECK(codecValue("VVC") == VideoCodec::Vvc);

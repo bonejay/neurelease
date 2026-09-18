@@ -165,7 +165,7 @@ inline constexpr std::array<Alias, 112> containers{{
     {"zst", "archive"},
 }};
 
-inline constexpr std::array<LanguageAlias, 77> languages{{
+inline constexpr std::array<LanguageAlias, 108> languages{{
     {"EN|ENG|ENGLISH|INGLES|ING", "eng"},
     {"EN[ ._-]?US|EN[ ._-]?GB|ENGLISHMTL|VOSTEN", "eng"},
     {"JPN|JAP|JA|JAPANESE|JP", "jpn"},
@@ -243,6 +243,37 @@ inline constexpr std::array<LanguageAlias, 77> languages{{
     {"BEL|BELARUSIAN", "bel"},
     {"FUNIDUB|FUNI[ ._-]?DUB|CR[ ._-]?DUB|ENGDUB|ENG[ ._-]?DUB", "eng"},
     {"中英字幕|中英双字|简繁英字幕", "eng"},
+    {"MULTI|MULTI[ ._-]?\\d|MULTILANG|MULTILANGUAGE|M[ ._-]?SUBS?|MUTI[ ._-]?SUB|MULTIPLE[ ._-]?SUBS?|MULTISUB|\\d[ ._-]?LANG|双语字幕|雙語字幕|双语|雙語|双字幕", "mul"},
+    {"多言語字幕|多字幕|多语字幕|複数字幕|简繁多语字幕|多語字幕|双语字幕|雙語字幕|双语|雙語|双字幕", "mul"},
+    {"粤|粤语|粵語|粤语音轨|粤语配音|粵語音軌|CANTONESE|YUE|(?:国|國)?(?:粤|粵)(?:日|英|韩)*多?(?:音轨|音軌|语配音|語配音|双语|語音軌)", "yue"},
+    {"国语|國語|官话|官話|台配|台粤|台粤配|国语音轨|国语配音|中文配音|CMN|MANDARIN|(?:国|國)(?:粤|粵|日|英|韩)*多?(?:音轨|音軌|语配音|語配音)", "cmn"},
+    {"(?:内封|內封|外挂|外掛|官方|特效|内嵌|DIY)?(?:简|簡|繁)(?:体|體|中|繁|日|英|法)?(?:内封|內封|外挂|外掛|内嵌)?(?:双语|雙語|双字|多语)?(?:字幕|中字|内封|外挂|内嵌|外掛)?|(?:中英|中日|英日|日英|简日|简英|繁英|繁日|简法|国粤|韩语|日语)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?|中字简体|简体字幕|简中内嵌|内封简繁中字|中文外挂字幕", "zho"},
+    {"日本語|日语|日文|日本語字幕|日语音轨|日文内封|JAPONES|JAPON\\x{00C9}S|JAPONAIS", "jpn"},
+    {"韓国語|韓国翻訳|韩语|한글자막|우리말[ ._-]?더빙|한국어|COREANO|CORE(?:EN|AN)", "kor"},
+    {"INGLES|INGL\\x{00C9}S|ENGLISCH|ANGLAIS|ENGL|英語|英语|英語吹替|英语配音|英語字幕", "eng"},
+    {"FRANCES|FRANC\\x{00C9}S|フランス語|フランス語字幕|仏語字幕|仏字幕|法语|法语字幕|法语音轨|VOF|VF2", "fra"},
+    {"SPANI|ESPAGNOL|スペイン語|スペイン語字幕|西班牙语字幕|CAST|CASTELLANO", "spa"},
+    {"ITALIANO|イタリア語|意语|意英双语", "ita"},
+    {"NACIONAL|DUBLADA|DUBLADO|LEG|LEGENDADO", "por"},
+    {"SI|SLOVENSKI", "slv"},
+    {"GR|GR[ ._-]?SUBS|GREEKSUBS", "ell"},
+    {"HR|HRVATSKI|CROSUBS", "hrv"},
+    {"DK|DKSUBS|DANSK", "dan"},
+    {"SVENSK|SVENSKA|SV[ ._-]?TEXT|SVENSK[ ._-]?TEXT", "swe"},
+    {"ROSUB|ROSUBS|ROMANA", "ron"},
+    {"SRBSUBS|SRPSKI", "srp"},
+    {"VIETSUB|TIENGVIET", "vie"},
+    {"BAHASA[ ._-]?INDONESIA|INDOSUB", "ind"},
+    {"босански|BOSANSKI", "bos"},
+    {"български|BALGARSKI", "bul"},
+    {"ру́сский|русский|рус|русская[ ._-]?озвучка", "rus"},
+    {"татар|TATAR", "tat"},
+    {"AZERBAIJAN|AZERI|AZERBAIJAN[ ._-]?DUBBED", "aze"},
+    {"TELEGU", "tel"},
+    {"UA", "ukr"},
+    {"KO", "kor"},
+    {"CHN|CHIN|CHINO|中国語字幕", "zho"},
+    {"SWISSGERMAN|SWISS[ ._-]?GERMAN|SCHWEIZERDEUTSCH", "deu"},
 }};
 
 inline constexpr std::array<std::string_view, 131> rejectedGroups{{

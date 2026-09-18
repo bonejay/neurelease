@@ -195,6 +195,16 @@ class EditionKind(Kind):
     DOWNLOAD = (29, 'Download')
     RETAIL = (30, 'Retail')
     COLLECTOR = (31, 'Collector')
+    FINAL = (32, 'Final')
+    ORIGINAL = (33, 'Original')
+    FIX = (34, 'Fix')
+    COMPLETE_EDITION = (35, 'Complete Edition')
+    UNABRIDGED = (36, 'Unabridged')
+    REENCODE = (37, 'Re-encode')
+    NUMBERED = (38, 'Numbered Edition')
+    REGIONAL = (39, 'Regional')
+    HIGH_QUALITY = (40, 'High Quality')
+    ULTIMATE = (41, 'Ultimate')
 
 
 class OriginField(IntEnum):

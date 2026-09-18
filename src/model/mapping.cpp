@@ -136,7 +136,11 @@ int realCountIn(std::string_view value) {
 }
 
 bool isAiUpscale(std::string_view value) {
-    static const text::Regex pattern(R"(\b(AI[ ._-]?upscal\w*|Topaz|upscaled?)\b)", true);
+    // The Chinese and hyphenated spellings say the same thing: 增强 is "enhanced",
+    // 生成 "generated". No word boundary before the CJK forms - PCRE2 puts no word boundary between
+    // two non-ASCII characters, so requiring one would never match.
+    static const text::Regex pattern(
+        R"(\b(AI[ ._-]?(?:upscal\w*|enhanced?|generated?)|Topaz|upscaled?)\b|AI增强|AI生成|AI強化)", true);
     return matches(value, pattern);
 }
 
@@ -408,6 +412,28 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
             const bool light = convert::sourceTokenIsLightEncode(raw);
             info.remux = info.remux || remux;
             info.lightEncode = info.lightEncode || light;
+            // A SOURCE TOKEN THAT STATES OTHER FIELDS TOO - `UHDRDV` is 2160p with HDR10 and
+            // Dolby Vision in one word. Applied here rather than by widening sourceValue, because
+            // these are facts about OTHER fields and folding them into a source value would lose
+            // them. A stated span always wins: the resolution is only filled when nothing else
+            // gave one, while the HDR flags are additive exactly as a stated `DV.HDR10` is.
+            const convert::SourceTokenExtras extras = convert::sourceTokenExtras(raw);
+            if (extras.any()) {
+                if (extras.screenSize != ResolutionTier::Unknown &&
+                    info.screenSize == ResolutionTier::Unknown)
+                    info.screenSize = extras.screenSize;
+                if (extras.hdr10) info.hdr10 = true;
+                if (extras.dolbyVision) info.dolbyVision = true;
+                if (extras.hdr10 || extras.dolbyVision) {
+                    const HdrFormat format = extras.dolbyVision ? HdrFormat::DolbyVision
+                                                                : HdrFormat::Hdr10;
+                    const int rank = hdrPrecedence(format);
+                    if (rank > accumulated.hdrRank) {
+                        accumulated.hdrRank = rank;
+                        accumulated.hdr = format;
+                    }
+                }
+            }
             builder.record(Field::ReleaseSource,
                            source != SourceKind::Unknown ? std::string(label(source))
                            : remux ? "remux" : light ? "light encode" : "",

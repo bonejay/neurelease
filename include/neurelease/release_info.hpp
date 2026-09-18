@@ -117,6 +117,20 @@ enum class EditionKind : std::uint8_t {
     // is the same fact in the western scene. `Collector` completes the set the edition
     // token table already had a word for.
     Download = 29, Retail = 30, Collector = 31,
+    // QUEUE 01 of the unmapped-span triage: the six commonest editions the tables had no member
+    // for. `Final` is NOT `FinalCut` and the difference is the whole reason it is here - French
+    // releases write `S01E08.FiNAL` to mark the LAST EPISODE of a season, 3,133 times in the
+    // corpus, and routing that to the director's final cut would be confidently wrong on every
+    // one of them. `Fix` is the corrective-rerelease family (FIX, FIXED, PROOFFIX, SYNCFIX,
+    // RARFIX, SAMPLEFIX) beside the DIRFIX the table already had.
+    Final = 32, Original = 33, Fix = 34, CompleteEdition = 35, Unabridged = 36, Reencode = 37,
+    // QUEUE 01, second pass. `Numbered` carries a book's `2ed`/`3rd Edition` - the NUMBER is not
+    // carried, only the fact that one was stated, which is all a consumer can act on without an
+    // edition-number field. `Regional` is the same compromise for `美版`, `Kinofassung`'s cousin:
+    // a region-specific cut is stated, without saying which region. `HighQuality` groups the
+    // Chinese encode editions - 高码版 high bitrate, 60帧率版本 sixty frames, 高清版 HD - which all
+    // mean "the better of the two encodes we published".
+    Numbered = 38, Regional = 39, HighQuality = 40, Ultimate = 41,
 };
 
 [[nodiscard]] std::string_view label(ResolutionTier value) noexcept;

@@ -174,14 +174,15 @@ std::vector<StatedSize> statedSizes(std::string_view subject, bool acceptBareNum
     }, sizes);
 
     static const Regex words(
-        R"((?:^|[ ._\-/\[(,+~&;])(4K|UHD|8K|FHD|FullHD|Full[ ._-]HD|SD)(?:$|[ ._\-/\]),+~&;]))",
+        R"((?:^|[ ._\-/\[(,+~&;])(4K|4\x{041A}|4\x{043A}|UHD|8K|FHD|FullHD|Full[ ._-]HD|SD)(?:$|[ ._\-/\]),+~&;]))",
         true);
     appendMatches(subject, words, [](const Match& match) {
         std::string word = text::asciiUpper(match.captured(1));
         eraseCharacters(word, " .-_");
         if (word == "8K") return StatedSize{7680, 4320, {}, -1, -1, false, false};
         if (word == "UHD") return StatedSize{3840, 2160, {}, -1, -1, false, true};
-        if (word == "4K") return StatedSize{3840, 2160, {}, -1, -1, false, false};
+        // Tested on the digit, because the K may be the Cyrillic one the regex above admits.
+        if (word.starts_with("4")) return StatedSize{3840, 2160, {}, -1, -1, false, false};
         if (word == "SD") return StatedSize{720, 480, {}, -1, -1, false, false};
         return StatedSize{1920, 1080, {}, -1, -1, false, false};
     }, sizes);
@@ -324,13 +325,34 @@ bool sourceTokenIsLightEncode(std::string_view token) {
     return value == "MICROHD" || value == "HDLIGHT" || value == "MHD";
 }
 
+SourceTokenExtras sourceTokenExtras(std::string_view token) {
+    // One row per spelling, matched whole. The comment on each says what the scene means by it,
+    // because a table of opaque strings is a table nobody dares to change.
+    static const struct { std::string_view token; SourceTokenExtras extras; } kCompound[] = {
+        // Czech and Slovak uploaders define it as 2160p video carrying both HDR10
+        // and Dolby Vision; the MediaInfo of those releases shows 3840-wide HEVC
+        // Main10 with DV profile 8.1 over an HDR10 base layer.
+        {"UHDRDV", {ResolutionTier::P2160, true, true}},
+        // The same convention without the Dolby Vision layer.
+        {"UHDR", {ResolutionTier::P2160, true, false}},
+    };
+    const std::string value = cleanedSourceToken(token);
+    for (const auto& entry : kCompound)
+        if (value == entry.token) return entry.extras;
+    return {};
+}
+
 bool sourceTokenIsBareUhd(std::string_view token) {
     const std::string value = cleanedSourceToken(token);
-    return value == "UHD" || value == "4K";
+    // UHDRDV and UHDR are `UHD` with HDR and Dolby Vision glued on - see sourceTokenExtras. They
+    // imply the 4K disc for the same reason bare UHD does, and just as tentatively: `2160p.UHDR.
+    // AMZN.WEB-DL` exists, and the WEB-DL must still win.
+    return value == "UHD" || value == "4K" || value == "UHDRDV" || value == "UHDR";
 }
 
 SourceKind sourceValue(std::string_view token) {
     const std::string value = cleanedSourceToken(token);
+    if (value == "UHDRDV" || value == "UHDR") return SourceKind::BluRay;
     if (value == "TS" || value == "TC" || contains(value, "TELESYNC") || contains(value, "TELECINE")
         || contains(value, "HDTS") || contains(value, "HDTC") || contains(value, "CAMRIP")
         || contains(value, "HDCAM") || value == "CAM") return SourceKind::Cam;
@@ -356,6 +378,12 @@ SourceKind sourceValue(std::string_view token) {
         return SourceKind::Dvd;
     if (contains(value, "DVD")) return SourceKind::Dvd;
     if (contains(value, "HDRIP")) return SourceKind::WebRip;
+    if (value.ends_with("RIP") && (startsWith(value, "NETFLIX") || startsWith(value, "NF")
+        || startsWith(value, "AMZN") || startsWith(value, "AMAZON") || startsWith(value, "HULU")
+        || startsWith(value, "DSNP") || startsWith(value, "DISNEY") || startsWith(value, "ITUNES")
+        || startsWith(value, "ATVP") || startsWith(value, "HMAX") || startsWith(value, "MAX")
+        || startsWith(value, "PCOK") || startsWith(value, "CRUNCHYROLL")))
+        return SourceKind::WebRip;
     if (contains(value, "REMUX") || contains(value, "BDMV") || value == "DISC"
         || isDiscSpelling(value)) return SourceKind::BluRay;
     if (contains(value, "BLURAY") || contains(value, "BDRIP") || contains(value, "BRRIP")
@@ -436,28 +464,45 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[ ._\-\[(])(Director.?s[ ._-]?Cut|DC(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Director's Cut"},
         {R"((?:^|[ ._\-\[(])(Final[ ._-]?Cut)(?:$|[^A-Za-z]))", "Final Cut"},
         {R"((?:^|[ ._\-\[(])(Extended(?:[ ._-]?(?:Cut|Edition|Version))?)(?:$|[^A-Za-z]))", "Extended"},
+        // The long cut, named in the language that released it. German `Langfassung` and French
+        // `version longue` are the same claim as Extended.
+        {R"((?:^|[ ._\-\[(])((?:Deutsche|Italienische)?[ ._-]?Langfassung|Version[ ._-]?Longue|Vers\x{00E3}o[ ._-]?Estendida)(?:$|[^A-Za-z]))", "Extended"},
+        // A NAMED EXTENDED CUT. `Super Duper Cut` is what Deadpool 2 called its longer version and
+        // `Ultimate Cut` what Batman v Superman called its own; both are the Extended claim under a
+        // marketing name, so they answer Extended rather than earning members of their own.
+        {R"((?:^|[ ._\-\[(])(Super[ ._-]?Duper[ ._-]?Cut|Extended[ ._-]?Fassung|Long[ ._-]?Version)(?:$|[^A-Za-z]))", "Extended"},
         {R"((?:^|[ ._\-\[(])(IMAX(?:[ ._-]?Enhanced)?)(?:$|[^A-Za-z]))", "IMAX"},
         {R"((?:^|[ ._\-\[(])(Redux)(?:$|[^A-Za-z]))", "Redux"},
         {R"((?:^|[ ._\-\[(])(Theatrical(?:[ ._-]?Cut)?)(?:$|[^A-Za-z]))", "Theatrical"},
+        // `Kinofassung` is the German for the cinema cut, and pairs with Langfassung above.
+        {R"((?:^|[ ._\-\[(])((?:Deutsche)?[ ._-]?Kinofassung|Theactrical)(?:$|[^A-Za-z]))", "Theatrical"},
         {R"((?:^|[ ._\-\[(])(Uncut)(?:$|[^A-Za-z]))", "Uncut"},
         {R"((?:^|[ ._\-\[(])(Unrated)(?:$|[^A-Za-z]))", "Unrated"},
         {R"((?:^|[ ._\-\[(])(Remaster(?:ed)?)(?:$|[^A-Za-z]))", "Remastered"},
+        // A restoration and a regrade are remasters by another name: a new pass over the original
+        // materials. Folding them in rather than adding members keeps one fact in one place.
+        {R"((?:^|[ ._\-\[(])(Restored|Restoration|Restaurierte[ ._-]?Fassung|Rekonstrukcja|Remasterizado|Regraded|Re[ ._-]?Grade|Color[ ._-]?Corrected|\x{9AD8}\x{6E05}\x{4FEE}\x{590D}\x{7248})(?:$|[^A-Za-z]))", "Remastered"},
         {R"((?:^|[ ._\-\[(])(Criterion(?:[ ._-]?Collection)?)(?:$|[^A-Za-z]))", "Criterion"},
         {R"((?:^|[ ._\-\[(])(Open[ ._-]?Matte)(?:$|[^A-Za-z]))", "Open Matte"},
         {R"((?:^|[ ._\-\[(])(Uncensored)(?:$|[^A-Za-z]))", "Uncensored"},
         {R"((?:^|[ ._\-\[(])(\x{7121}\x{4FEE}\x{6B63})(?:$|[^A-Za-z]))", "Uncensored"},
-        {R"((?:^|[ ._\-\[(])(iNTERNAL|INTERNAL)(?:$|[^A-Za-z]))", "Internal"},
+        {R"((?:^|[ ._\-\[(])(iNTERNAL|INTERNAL|iNT)(?:$|[^A-Za-z]))", "Internal"},
         {R"((?:^|[ ._\-\[(])(LIMITED)(?:$|[^A-Za-z]))", "Limited"},
         {R"((?:^|[ ._\-\[(])(UNTOUCHED)(?:$|[^A-Za-z]))", "Untouched"},
         {R"((?:^|[ ._\-\[(])(DIRFIX|NFOFIX)(?:$|[^A-Za-z]))", "Dirfix"},
+        // Japanese first-press and special-package editions, which `Limited` already covers.
+        {R"((?:^|[^A-Za-z0-9])(\x{521D}\x{56DE}\x{9650}\x{5B9A}\x{7248}|\x{521D}\x{56DE}\x{9650}\x{5B9A}\x{76E4}|\x{521D}\x{56DE}\x{7248}|\x{5B8C}\x{5168}\x{751F}\x{7523}\x{9650}\x{5B9A}\x{7248}|\x{7279}\x{88C5}\x{9650}\x{5B9A}\x{7248}|\x{8C6A}\x{83EF}\x{9650}\x{5B9A}\x{7248}|\x{671F}\x{9593}\x{751F}\x{7523}\x{9650}\x{5B9A}\x{76E4})(?:$|[^A-Za-z]))", "Limited"},
         {R"((?:^|[ ._\-\[(])(CUSTOM)(?:$|[^A-Za-z]))", "Custom"},
         {R"((?:^|[ ._\-\[(])(WS|WIDESCREEN)(?:$|[^A-Za-z]))", "Widescreen"},
         {R"((?:^|[ ._\-\[(])(RETAIL)(?:$|[^A-Za-z]))", "Retail"},
-        {R"((?:^|[ ._\-\[(])(UNCEN)(?:$|[^A-Za-z]))", "Uncensored"},
+        {R"((?:^|[ ._\-\[(])(UNCEN|UNC|UNCENSOR|UNSENCORED|UNCESORED|Non[ ._-]?Censur\x{00E9}|Sin[ ._-]?Censura|Sem[ ._-]?Censura|Decensored|Sem[ ._-]?Cortes|Mosaic[ ._-]?Removed)(?:$|[^A-Za-z]))", "Uncensored"},
+        // The decensoring family in its own scripts: `无码流出` and `無碼流出` are "uncensored leak",
+        // `モザイク破壊版` and `破坏版` are "the mosaic-destroyed version". One fact, five spellings.
+        {R"((?:^|[^A-Za-z0-9])(\x{65E0}\x{7801}\x{6D41}\x{51FA}\x{7248}?|\x{7121}\x{78BC}\x{6D41}\x{51FA}\x{7248}?|\x{30E2}\x{30B6}\x{30A4}\x{30AF}\x{7834}\x{58CA}\x{7248}|\x{7834}\x{574F}\x{7248}|\x{7834}\x{58CA}\x{7248}|\x{672A}\x{5220}\x{51CF}\x{7248}?|\x{65E0}\x{7801}|\x{7121}\x{78BC})(?:$|[^A-Za-z]))", "Uncensored"},
         {R"((?:^|[ ._\-\[(])(Collector.?s[ ._-]?Edition|COLLECTORS?)(?:$|[^A-Za-z]))", "Collector"},
         {R"((\x{FF24}\x{FF2C}\x{7248}|DL\x{7248}|\x{30C0}\x{30A6}\x{30F3}\x{30ED}\x{30FC}\x{30C9}\x{7248}))", "Download"},
         {R"((\x{30D1}\x{30C3}\x{30B1}\x{30FC}\x{30B8}\x{7248}|\x{30BB}\x{30EB}\x{7248}))", "Retail"},
-        {R"((?:^|[ ._\-\[(])(Special[ ._-]?Edition|SE(?=[ ._-]))(?:$|[^A-Za-z]))", "Special Edition"},
+        {R"((?:^|[ ._\-\[(])(Special[ ._-]?Edition|SE(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Special Edition"},
         {R"((?:^|[ ._\-\[(])(Deluxe(?:[ ._-]?Edition)?)(?:$|[^A-Za-z]))", "Deluxe"},
         // APPENDED BELOW THE FOURTEEN ABOVE, because the table is read in order and the first
         // entry that matches becomes the PRIMARY edition. These eight are rarer and weaker
@@ -468,7 +513,9 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // THE ORDINAL IS OPTIONAL BUT `Edition` IS NOT. `25th Anniversary Edition` and
         // `Anniversary Edition` are both editions; a bare `Anniversary` is an ordinary word that
         // belongs to plenty of titles (`Anniversary.2023.1080p`), so it is not taken alone.
-        {R"((?:^|[ ._\-\[(])((?:\d{1,3}(?:th|st|nd|rd)[ ._-]?)?Anniversary[ ._-]?Edition)(?:$|[^A-Za-z]))",
+        // The abbreviations are here because the gap scan found `10th.Annv.Ed`, which the Numbered
+        // rule below was answering instead - not wrong, but Anniversary says strictly more.
+        {R"((?:^|[ ._\-\[(])((?:\d{1,3}(?:th|st|nd|rd)[ ._-]?)?Ann(?:iv(?:ersary)?|v)[ ._-]?(?:Edition|Ed))(?:$|[^A-Za-z]))",
          "Anniversary"},
         {R"((?:^|[ ._\-\[(])(Signature[ ._-]?Edition)(?:$|[^A-Za-z]))", "Signature"},
         {R"((?:^|[ ._\-\[(])(Imperial[ ._-]?Edition)(?:$|[^A-Za-z]))", "Imperial"},
@@ -477,6 +524,28 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // would let `2in1080p` through; this one refuses a following digit as well.
         {R"((?:^|[ ._\-\[(])(2[ ._-]?in[ ._-]?1)(?:$|[^A-Za-z0-9]))", "2in1"},
         {R"((?:^|[ ._\-\[(])(Pre[ ._-]?Air)(?:$|[^A-Za-z]))", "Preair"},
+        // LAST INSTALMENT, NOT A RECUT. The negative lookahead is what keeps `Final.Cut` out: the
+        // Final Cut pattern sits earlier in this table and must keep winning there.
+        {R"((?:^|[ ._\-\[(])(FINAL)(?![ ._-]?Cut)(?:$|[^A-Za-z]))", "Final"},
+        {R"((?:^|[ ._\-\[(])(Original(?:[ ._-]?(?:Version|Cut))?|Originalfassung|Org[ ._-]?Vers|\x{539F}\x{7248})(?:$|[^A-Za-z]))", "Original"},
+        // The corrective-rerelease family. DIRFIX keeps its own member above; this covers the rest.
+        {R"((?:^|[ ._\-\[(])((?:Proof|Sync|Rar|Sample|Crack)?Fix(?:ed)?|Corrected|Corregido|Updated|Update[ ._-]?\d|\x{4FEE}\x{6B63}\x{7248})(?:$|[^A-Za-z]))", "Fix"},
+        {R"((?:^|[ ._\-\[(])(Complete[ ._-]?Edition|\x{5B8C}\x{5168}\x{7248}|\x{5B8C}\x{6574}\x{7248})(?:$|[^A-Za-z]))", "Complete Edition"},
+        {R"((?:^|[ ._\-\[(])(Unabridged)(?:$|[^A-Za-z]))", "Unabridged"},
+        {R"((?:^|[ ._\-\[(])(Convert|Re[ ._-]?Enc(?:ode[d]?)?|Remake|Rework)(?:$|[^A-Za-z]))", "Re-encode"},
+        // A NUMBER WAS STATED, and that is all this carries: there is no edition-number field, so
+        // `2ed` and `3rd Edition` both answer "Numbered Edition" and the number stays readable in
+        // the span text. Better than the nothing they answer today.
+        {R"((?:^|[ ._\-\[(])(\d{1,2}(?:ed|nd|rd|th|st)[ ._-]?(?:Edition)?|(?:First|Second|Third|Fourth|Fifth)[ ._-]?Edition|\d{1,2}[ ._-]?Edition)(?:$|[^A-Za-z]))", "Numbered Edition"},
+        // A REGION-SPECIFIC CUT, without saying which region - the same compromise as Numbered.
+        // `美版` is the US version, `北米版` the North American one, `japanische Fassung` the
+        // Japanese; a consumer wants to know a regional cut exists at all.
+        {R"((?:^|[ ._\-\[(])((?:USA?|UK|Japan(?:ese)?|Asian|Hong[ ._-]?Kong)[ ._-]?(?:Ver(?:sion)?|Edition|Cut)|(?:Amerikanische|Japanische|Internationale)[ ._-]?Fassung|International[ ._-]?(?:Cut|Version)|Export[ ._-]?(?:Cut|Version)|Exportfassung|\x{7F8E}\x{7248}|\x{5317}\x{7C73}\x{7248})(?:$|[^A-Za-z]))", "Regional"},
+        // THE BETTER OF TWO ENCODES, which is what these Chinese tags mark: 高码版 high bitrate,
+        // 60帧率版本 sixty frames, 高清版 and hd版 high definition, 超高画質4k版 very high quality 4K.
+        // Hi-Res is the audio equivalent - a master at a higher rate than the ordinary release.
+        {R"((?:^|[^A-Za-z0-9])(Hi[ ._-]?Res|\x{9AD8}\x{7801}\x{7248}|60\x{5E27}\x{7387}\x{7248}\x{672C}|120\x{5E27}\x{7387}\x{7248}\x{672C}|\x{8D85}\x{9AD8}\x{753B}\x{8CEA}4k\x{7248}|\x{9AD8}\x{6E05}\x{7248}|hd\x{7248}|HD[ ._-]?Ver(?:sion)?)(?:$|[^A-Za-z]))", "High Quality"},
+        {R"((?:^|[ ._\-\[(])(Ultimate(?:[ ._-]?(?:Edition|Cut))?)(?:$|[^A-Za-z]))", "Ultimate"},
     };
     static const std::vector<CompiledSpelling> table = compile(spellings);
     return table;
@@ -499,6 +568,16 @@ EditionKind editionOfLabel(std::string_view value) {
     if (value == "Download") return EditionKind::Download;
     if (value == "Retail") return EditionKind::Retail;
     if (value == "Collector") return EditionKind::Collector;
+    if (value == "Final") return EditionKind::Final;
+    if (value == "Original") return EditionKind::Original;
+    if (value == "Fix") return EditionKind::Fix;
+    if (value == "Complete Edition") return EditionKind::CompleteEdition;
+    if (value == "Unabridged") return EditionKind::Unabridged;
+    if (value == "Re-encode") return EditionKind::Reencode;
+    if (value == "Numbered Edition") return EditionKind::Numbered;
+    if (value == "Regional") return EditionKind::Regional;
+    if (value == "High Quality") return EditionKind::HighQuality;
+    if (value == "Ultimate") return EditionKind::Ultimate;
     if (value == "Special Edition") return EditionKind::SpecialEdition;
     if (value == "Deluxe") return EditionKind::Deluxe;
     if (value == "Redux") return EditionKind::Redux;
@@ -580,6 +659,9 @@ std::string audioCodecValue(std::string_view token) {
     if (contains(value, "ALAC")) return "ALAC";
     if (contains(value, "PCM")) return "PCM";
     if (contains(value, "MP3")) return "MP3";
+    // MPEG-1 Layer II, common in broadcast captures. Must precede the trailing-digit
+    // fallback below, which would strip the 2 and leave "MP".
+    if (contains(value, "MP2")) return "MP2";
     if (value.size() > 2 && value.back() >= '0' && value.back() <= '9')
         return audioCodecValue(std::string_view(value).substr(0, value.size() - 1));
     return atmos ? "Atmos" : std::string{};
