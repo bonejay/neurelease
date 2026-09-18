@@ -90,6 +90,9 @@ enum class SourceKind : std::uint8_t {
     // A REVIEWER'S COPY. Not a cam - a screener is a clean transfer - and not the disc it came
     // from either, because it carries watermarks and is often cut. Appended: the C ABI pins these.
     Screener = 7,
+    // THE CINEMA MASTER. A Digital Cinema Package is the file a projector is fed; a DCPRip is a
+    // rip of one. Neither is a disc nor a stream, and both outrank every other source here.
+    DigitalCinema = 8,
 };
 enum class VideoCodec : std::uint8_t {
     Unknown = 0, Av1 = 1, Hevc = 2, H264 = 3, Xvid = 4, Mpeg2 = 5, Vp9 = 6,
@@ -160,6 +163,11 @@ enum class EditionKind : std::uint8_t {
     // it: `Taylor's Version` is the spelling the corpus carries, and the distinction matters more
     // than most here - the two recordings are different masters of different takes.
     Standard = 54, Creditless = 55, ReRecorded = 56,
+    // QUEUE FILE 05. `Commentary` is the same film with a different audio track over it.
+    // `Explicit` is the unbleeped master of a music release - the opposite claim to the `clean`
+    // this triage refused, and unambiguous where that word is not. `Reissue` is a later pressing
+    // of the same work, which in music is often a different master and always a different SKU.
+    Commentary = 57, Explicit = 58, Reissue = 59,
 };
 
 [[nodiscard]] std::string_view label(ResolutionTier value) noexcept;

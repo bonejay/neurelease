@@ -192,6 +192,29 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(languageCodesOfToken("国粤语音轨") == std::vector<std::string>{"cmn", "yue"});
     CHECK(languageCodesOfToken("简／繁") == std::vector<std::string>{"zho"});
 
+    // QUEUE FILE 05. A Digital Cinema Package is neither a disc nor a stream, and answering one
+    // of those would have been the nearest wrong answer rather than the right one.
+    CHECK(sourceValue("DCP") == SourceKind::DigitalCinema);
+    CHECK(sourceValue("DCPRip") == SourceKind::DigitalCinema);
+    CHECK(sourceValue("R5") == SourceKind::Dvd);
+    CHECK(sourceValue("AVCHD") == SourceKind::BluRay);
+    CHECK(sourceValue("BDISO") == SourceKind::BluRay);
+    CHECK(sourceValue("BRDRip") == SourceKind::BluRay);
+    CHECK(sourceValue("ブルーレイディスク") == SourceKind::BluRay);
+
+    CHECK(editionIn("Jury.Duty.Cast.Commentary.Edition.S01E01") == EditionKind::Commentary);
+    CHECK(editionIn("The.Getaway.1994.Explicit.1080p.BluRay") == EditionKind::Explicit);
+    CHECK(editionIn("Chirco.Visitation.Reissue.1972") == EditionKind::Reissue);
+    CHECK(editionIn("From.Beyond.1986.UC.German.HDRip") == EditionKind::Uncut);
+    CHECK(editionIn("LOTR.II.2002.EXT.BDRemux") == EditionKind::Extended);
+    // `EXTRAS` is not `EXT`: the abbreviation has to end the token.
+    CHECK(editionIn("Show.S01.EXTRAS.1080p") == EditionKind::Unknown);
+    CHECK(editionIn("Karami.Zakari.カラー化.zip") == EditionKind::Colorized);
+    CHECK(editionIn("[DBD-Raws][约会大作战][导演剪辑版][1080P]") == EditionKind::DirectorsCut);
+    // A director's COMMENTARY is not a director's CUT, and the cut row is asked first.
+    CHECK(editionIn("Movie.2004.Directors.Commentary.1080p") == EditionKind::Commentary);
+    CHECK(languageCodesOfToken("简繁字幕外挂") == std::vector<std::string>{"zho"});
+
     // Languages added from the same triage. The CJK entries must match the WHOLE token, because
     // the matcher demands an ASCII boundary on each side.
     CHECK(languageCodesOfToken("粤语音轨") == std::vector<std::string>{"yue"});

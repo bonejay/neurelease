@@ -243,7 +243,8 @@ bool isDiscSpelling(std::string_view cleaned) {
     // BD25/BD50/BD66/BD100 name the disc capacity, BRMUX a Blu-ray remuxed into a container.
     // Sorted, because the lookup is a binary search.
     static constexpr std::array discs{
-        "BD100"sv, "BD25"sv, "BD5"sv, "BD50"sv, "BD66"sv, "BD9"sv, "BDBOX"sv, "BDMUX"sv,
+        "AVCHD"sv, "BD100"sv, "BD25"sv, "BD5"sv, "BD50"sv, "BD66"sv, "BD9"sv, "BDBOX"sv,
+        "BDISO"sv, "BDMUX"sv,
         "BLURAYRIP"sv, "BR"sv,
         "BRMUX"sv, "DEBD"sv, "DS4K"sv, "FRBD"sv, "ITBD"sv, "JPBD"sv, "UHD"sv, "UHD2BD"sv,
         "UHDBD"sv,
@@ -361,6 +362,7 @@ SourceKind sourceValue(std::string_view token) {
         || value == "TSRIP" || contains(value, "TELESYNC") || contains(value, "TELECINE")
         || contains(value, "HDTS") || contains(value, "HDTC") || contains(value, "CAMRIP")
         || contains(value, "HDCAM") || value == "CAM") return SourceKind::Cam;
+    if (value == "DCP" || value == "DCPRIP") return SourceKind::DigitalCinema;
     if (contains(value, "SCREENER") || value.ends_with("SCR")
         || contains(value, "WORKPRINT")) return SourceKind::Screener;
     if (contains(value, "WEB")) return contains(value, "DL") ? SourceKind::WebDl : SourceKind::WebRip;
@@ -381,6 +383,7 @@ SourceKind sourceValue(std::string_view token) {
     // A LASERDISC AND A SUPER VIDEO CD ARE DISCS. Neither is a Blu-ray, but the family this
     // vocabulary offers for a pressed optical disc is the disc family, and answering nothing
     // at all - which is what 138 corpus names got - is further from the truth than that.
+    if (value == "R5" || value == "R5LINE") return SourceKind::Dvd;
     if (value == "LD" || value == "LASERDISC" || value == "LDRIP" || value == "SVCD"
         || value == "VCD")
         return SourceKind::Dvd;
@@ -403,6 +406,8 @@ SourceKind sourceValue(std::string_view token) {
     if (contains(value, "REMUX") || contains(value, "BDMV") || value == "DISC"
         || isDiscSpelling(value)) return SourceKind::BluRay;
     if (contains(value, "\u84dd\u5149") || contains(value, "\u85cd\u5149"))
+        return SourceKind::BluRay;
+    if (contains(value, "BRDRIP") || contains(value, "\u30d6\u30eb\u30fc\u30ec\u30a4"))
         return SourceKind::BluRay;
     if (contains(value, "BLURAY") || contains(value, "BDRIP") || contains(value, "BRRIP")
         || value == "BD" || value == "BURAY" || contains(value, "BLUURY")
@@ -482,9 +487,9 @@ namespace {
 
 const std::vector<CompiledSpelling>& editionSpellings() {
     static const Spelling spellings[] = {
-        {R"((?:^|[ ._\-\[(])(Director.?s[ ._-]?(?:Cut|Edition|Version)|DC(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Director's Cut"},
+        {R"((?:^|[ ._\-\[(])(Director.?s[ ._-]?(?:Cut|Edition|Version)|DC(?=$|[ ._-])|\x{5BFC}\x{6F14}\x{526A}\x{8F91}\x{7248}|\x{5C0E}\x{6F14}\x{526A}\x{8F2F}\x{7248})(?:$|[^A-Za-z]))", "Director's Cut"},
         {R"((?:^|[ ._\-\[(])(Final[ ._-]?Cut)(?:$|[^A-Za-z]))", "Final Cut"},
-        {R"((?:^|[ ._\-\[(])(Extended(?:[ ._-]?(?:Cut|Edition|Version))?)(?:$|[^A-Za-z]))", "Extended"},
+        {R"((?:^|[ ._\-\[(])(Extended(?:[ ._-]?(?:Cut|Edition|Version))?|EXT(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Extended"},
         // The long cut, named in the language that released it. German `Langfassung` and French
         // `version longue` are the same claim as Extended.
         {R"((?:^|[ ._\-\[(])((?:Deutsche|Italienische)?[ ._-]?Langfassung|Version[ ._-]?Longue|Vers\x{00E3}o[ ._-]?Estendida)(?:$|[^A-Za-z]))", "Extended"},
@@ -497,7 +502,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[ ._\-\[(])(Theatrical(?:[ ._-]?Cut)?)(?:$|[^A-Za-z]))", "Theatrical"},
         // `Kinofassung` is the German for the cinema cut, and pairs with Langfassung above.
         {R"((?:^|[ ._\-\[(])((?:Deutsche)?[ ._-]?Kinofassung|Theactrical)(?:$|[^A-Za-z]))", "Theatrical"},
-        {R"((?:^|[ ._\-\[(])(Uncut)(?:$|[^A-Za-z]))", "Uncut"},
+        {R"((?:^|[ ._\-\[(])(Uncut|UC)(?:$|[^A-Za-z]))", "Uncut"},
         {R"((?:^|[^A-Za-z0-9])(\x{5E74}\x{9F61}\x{9650}\x{5236}\x{7248}|\x{5E74}\x{9F84}\x{9650}\x{5236}\x{7248}|R18\x{7248}|\x{6210}\x{4EBA}\x{7248})(?:$|[^A-Za-z]))", "Uncut"},
         {R"((?:^|[ ._\-\[(])(Unrated)(?:$|[^A-Za-z]))", "Unrated"},
         {R"((?:^|[ ._\-\[(])(Remaster(?:ed)?)(?:$|[^A-Za-z]))", "Remastered"},
@@ -600,7 +605,12 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // A NEW PERFORMANCE, not a new transfer. `Taylor's Version` is why this exists; artists
         // re-record for rights reasons often enough for the concept to outlive the spelling.
         {R"((?:^|[ ._\-\[(])(Taylor.?s[ ._-]?Version|Re[ ._-]?Record(?:ed|ing)?)(?:$|[^A-Za-z]))", "Re-recorded"},
-        {R"((?:^|[ ._\-\[(])(Colou?rized|Colou?rised|In[ ._-]?Colou?r)(?:$|[^A-Za-z]))", "Colorized"},
+        {R"((?:^|[ ._\-\[(])((?:Cast[ ._-]?|Director.?s[ ._-]?|Audio[ ._-]?)?Commentary(?:[ ._-]?(?:Edition|Track|Version))?)(?:$|[^A-Za-z]))", "Commentary"},
+        // The opposite claim to `clean`, which this triage refused for being two words in one.
+        // `Explicit` says only one thing, in either register: nothing was bleeped.
+        {R"((?:^|[ ._\-\[(])(Explicit(?:[ ._-]?(?:Version|Content))?|Parental[ ._-]?Advisory)(?:$|[^A-Za-z]))", "Explicit"},
+        {R"((?:^|[ ._\-\[(])(Reissue|Re[ ._-]Issue|Repress(?:ing)?)(?:$|[^A-Za-z]))", "Reissue"},
+        {R"((?:^|[ ._\-\[(])(Colou?rized|Colou?rised|In[ ._-]?Colou?r|\x{30AB}\x{30E9}\x{30FC}\x{5316}|\x{5F69}\x{8272}\x{7248})(?:$|[^A-Za-z]))", "Colorized"},
         // The 4:3 transfer. `FS` is two letters, and safe only because nothing but a span the
         // model already calls an edition is ever asked of this table - the same footing as `WS`.
         {R"((?:^|[ ._\-\[(])(FS|FULLSCREEN|Full[ ._-]?Screen|PanAndScan|Pan[ ._-]?(?:and|&)[ ._-]?Scan)(?:$|[^A-Za-z]))", "Fullscreen"},
@@ -653,6 +663,9 @@ EditionKind editionOfLabel(std::string_view value) {
     if (value == "Standard") return EditionKind::Standard;
     if (value == "Creditless") return EditionKind::Creditless;
     if (value == "Re-recorded") return EditionKind::ReRecorded;
+    if (value == "Commentary") return EditionKind::Commentary;
+    if (value == "Explicit") return EditionKind::Explicit;
+    if (value == "Reissue") return EditionKind::Reissue;
     if (value == "Special Edition") return EditionKind::SpecialEdition;
     if (value == "Deluxe") return EditionKind::Deluxe;
     if (value == "Redux") return EditionKind::Redux;

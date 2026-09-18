@@ -148,6 +148,13 @@ bool isAiUpscale(std::string_view value) {
     return matches(value, pattern);
 }
 
+bool isLightEncode(std::string_view value) {
+    static const text::Regex pattern(
+        R"((?:^|[ ._\-\[(])(?:Version[ ._-]?Light|Light[ ._-]?Version|LightEncode)(?:$|[^A-Za-z]))",
+        true);
+    return matches(value, pattern);
+}
+
 bool isHybrid(std::string_view value) {
     static const text::Regex pattern(R"((?:^|[ ._\-/\[(,+~&;])Hybrid(?:$|[ ._\-/\]),+~&;]))", true);
     return matches(value, pattern);
@@ -725,6 +732,10 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
             if (isProper(raw) || isRepack(raw)) revisionBumped = true;
             info.revisionReal += realCountIn(raw);
             if (isAiUpscale(raw)) { info.aiUpscale = true; routed.push_back("ai upscale"); }
+            // A SMALLER ENCODE OF THE SAME RELEASE, stated where the model saw an edition rather
+            // than a source. `VERSION_LIGHT` is what the French fansub scene writes; MicroHD and
+            // HDLight reach the same flag from the source branch, through sourceTokenIsLightEncode.
+            if (isLightEncode(raw)) { info.lightEncode = true; routed.push_back("light encode"); }
             if (isHybrid(raw)) { info.hybrid = true; routed.push_back("hybrid"); }
             if (isThreeD(raw)) { info.threeD = true; routed.push_back("3D"); }
             if (isRemux(raw)) { info.remux = true; routed.push_back("remux"); }

@@ -90,6 +90,7 @@ class SourceKind(Kind):
     DVD = (5, 'DVD')
     CAM = (6, 'CAM')
     SCREENER = (7, 'Screener')
+    DIGITAL_CINEMA = (8, 'DCP')
 
 
 class VideoCodec(Kind):
@@ -222,6 +223,9 @@ class EditionKind(Kind):
     STANDARD = (54, 'Standard')
     CREDITLESS = (55, 'Creditless')
     RE_RECORDED = (56, 'Re-recorded')
+    COMMENTARY = (57, 'Commentary')
+    EXPLICIT = (58, 'Explicit')
+    REISSUE = (59, 'Reissue')
 
 
 class OriginField(IntEnum):

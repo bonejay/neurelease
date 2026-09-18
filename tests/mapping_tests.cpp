@@ -271,6 +271,27 @@ TEST_CASE("an AI upscale is routed whatever alphabet it is written in") {
     CHECK(originOf(info, Field::Edition)->value == "ai upscale");
 }
 
+TEST_CASE("a light encode is flagged from either the source or the edition span") {
+    // MicroHD reaches the flag through sourceTokenIsLightEncode; `VERSION_LIGHT` - what the French
+    // fansub scene writes - arrives as an EDITION span and needs its own route to the same place.
+    const std::string french = "[Kaerizaki] One Piece 1072 [VERSION_LIGHT][VOSTFR][1920x1080]";
+    Analysis analysis;
+    analysis.valid = true;
+    analysis.spans = {span(french, SpanType::Main, "One Piece"),
+                      span(french, SpanType::Edition, "VERSION_LIGHT")};
+    const ReleaseInfo info = releaseInfoFromAnalysis(french, analysis);
+    CHECK(info.lightEncode);
+    REQUIRE(originOf(info, Field::Edition) != nullptr);
+    CHECK(originOf(info, Field::Edition)->value == "light encode");
+
+    const std::string spanish = "Movie.2019.MicroHD.1080p.x264-GRP";
+    Analysis source;
+    source.valid = true;
+    source.spans = {span(spanish, SpanType::Main, "Movie"),
+                    span(spanish, SpanType::SourceType, "MicroHD")};
+    CHECK(releaseInfoFromAnalysis(spanish, source).lightEncode);
+}
+
 TEST_CASE("a refused checksum that reads as a 3D layout is a 3D rip") {
     const std::string name = "Example.Movie.2024.3D.Half-SBS.1080p.BluRay.HEVC-GRP";
     Analysis analysis;
