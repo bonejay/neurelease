@@ -301,13 +301,21 @@ constexpr std::array<std::pair<std::string_view, std::string_view>, 13> AudioCod
     {"alac", "ALAC"},
 }};
 
-constexpr std::array<std::pair<std::string_view, EditionKind>, 12> Editions{{
+// GUESSIT'S EDITION VOCABULARY, TRANSLATED INTO OURS. Anything absent here is reported UNMAPPED
+// and never scored, which is the honest reading while we have no member for it - and a silent one
+// once we do. Ten of the corpus's twenty-three edition checks sat unscored for exactly that reason
+// after the kinds below were added, so this list has to be extended whenever EditionKind is.
+constexpr std::array<std::pair<std::string_view, EditionKind>, 20> Editions{{
     {"director's cut", EditionKind::DirectorsCut}, {"extended", EditionKind::Extended},
     {"special", EditionKind::SpecialEdition}, {"remastered", EditionKind::Remastered},
     {"criterion", EditionKind::Criterion}, {"imax", EditionKind::Imax},
     {"theatrical", EditionKind::Theatrical}, {"uncut", EditionKind::Uncut},
     {"unrated", EditionKind::Unrated}, {"uncensored", EditionKind::Uncensored},
     {"open matte", EditionKind::OpenMatte}, {"final cut", EditionKind::FinalCut},
+    {"alternative cut", EditionKind::AlternateCut}, {"festival", EditionKind::Festival},
+    {"limited", EditionKind::Limited}, {"collector", EditionKind::Collector},
+    {"ultimate", EditionKind::Ultimate}, {"fan", EditionKind::FanEdit},
+    {"deluxe", EditionKind::Deluxe}, {"anniversary", EditionKind::Anniversary},
 }};
 
 // Extensions with no entry in our closed container table (`mediumOfContainer` in FieldValues):
@@ -672,12 +680,15 @@ constexpr int RecordedFullyCorrect = 670;   // 2026-09-18, the unmapped-span que
 
 constexpr std::array Floors{
     Floor{"title", 718},            Floor{"release_group", 477},
-    Floor{"episode", 397},          Floor{"source", 452},           Floor{"video_codec", 413},
+    Floor{"episode", 397},          Floor{"source", 456},           Floor{"video_codec", 413},
     Floor{"season", 356},           Floor{"screen_size", 421},      Floor{"year", 222},
     Floor{"audio_codec", 173},      Floor{"episode_title", 103},    Floor{"container", 128},
     Floor{"language", 80},          Floor{"audio_channels", 99},    Floor{"subtitle_language", 43},
     Floor{"streaming_service", 16}, Floor{"crc32", 26},             Floor{"color_depth", 22},
-    Floor{"edition", 18},           Floor{"proper_count", 18},      Floor{"website", 9},
+    // `edition` 18 -> 26 because the TRANSLATION widened, not the parser: ten of the corpus's
+    // edition checks were reported UNMAPPED for want of a member, and adding those members made
+    // them scoreable. A floor recorded while a third of a field went unscored is not a floor.
+    Floor{"edition", 26},           Floor{"proper_count", 18},      Floor{"website", 9},
     // Dual-numbering names ("Bleach - s16e03-04 - 313-314") state season-relative AND absolute
     // episodes. GuessIt returns both; our contract elects one primary numbering, so all three of
     // these assertions are a known, deliberate difference rather than a defect to chase.
@@ -716,6 +727,13 @@ TEST_CASE("GuessIt's published corpus stays at or above the recorded reading") {
     const std::vector<ParseResult> results = parser.parse(names);
     REQUIRE(results.size() == cases.size());
 
+    // WHICH NAMES, NOT JUST HOW MANY. A per-property count says a field is weak and nothing about
+    // why, so every run that names a property in RP_GUESSIT_EXPLAIN prints its failures and the
+    // values on both sides. Reading them is how the edition work below was chosen; a percentage
+    // would only have said `edition` was worst, which was already known and not actionable.
+    const char* explainProperty = std::getenv("RP_GUESSIT_EXPLAIN");
+    const std::string explain = explainProperty ? explainProperty : "";
+
     std::map<std::string, Tally> tallies;
     int fullyCorrect = 0;
     int scoredCases = 0;
@@ -731,6 +749,12 @@ TEST_CASE("GuessIt's published corpus stays at or above the recorded reading") {
             else ++tally.unmapped;
             if (outcome != Outcome::Unmapped) anyScored = true;
             if (outcome == Outcome::Fail) allPassed = false;
+            if (!explain.empty() && expectation.property == explain && outcome != Outcome::Pass) {
+                std::cout << (outcome == Outcome::Fail ? "  FAIL " : "  UNMAPPED ")
+                          << expectation.property << " want=[";
+                for (const std::string& value : expectation.values) std::cout << value << " ";
+                std::cout << "]\n        " << cases[index].name << "\n";
+            }
         }
         scoredCases += anyScored;
         fullyCorrect += anyScored && allPassed;

@@ -228,6 +228,7 @@ class EditionKind(Kind):
     EXPLICIT = (58, 'Explicit')
     REISSUE = (59, 'Reissue')
     ORIGINAL_ASPECT_RATIO = (60, 'Original Aspect Ratio')
+    RESTORED = (61, 'Restored')
 
 
 class OriginField(IntEnum):

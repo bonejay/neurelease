@@ -47,12 +47,20 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(editionIn("Roller_Coaster-CONVERT-DVDRip") == EditionKind::Reencode);
     CHECK(editionIn("Darby.O.Gill.1959.iNT.DVDRip") == EditionKind::Internal);
     CHECK(editionIn("Aneimo.UNC.1080p") == EditionKind::Uncensored);
-    // A RESTORATION IS NOT A REMASTER HERE, though it nearly is everywhere else: the gold keeps
-    // `RESTORED` and `Regraded` as their own text, so typing them as Remastered reads as a
-    // different claim rather than a more precise one, and cost two validation names.
-    CHECK(editionIn("Amityville.1992.RESTORED.BDRip") == EditionKind::Unknown);
-    CHECK(editionIn("Black.Venus.1983.Regraded.German") == EditionKind::Unknown);
+    // A RESTORATION IS NOT A REMASTER, and it took three measurements to land on that. Folded
+    // into Remastered it cost two validation names; dropped entirely it left GuessIt's
+    // `Restored` check unscoreable. Its own kind satisfies both, and says the truer thing:
+    // a restoration repairs damaged materials, a remaster re-derives from undamaged ones.
+    CHECK(editionIn("Amityville.1992.RESTORED.BDRip") == EditionKind::Restored);
+    CHECK(editionIn("Black.Venus.1983.Regraded.German") == EditionKind::Restored);
     CHECK(editionIn("Pelicula.1992.Remasterizado.BDRip") == EditionKind::Remastered);
+    // The apostrophe and the `s` are both optional in the wild.
+    CHECK(editionIn("Riddick.Unrated.Director.Cut.French") == EditionKind::DirectorsCut);
+    // One phrase, two editions - which is why the corpus test reads `editionsIn`, not the
+    // first row that matches. `Extended` sits earlier in the table and would hide the other.
+    CHECK(editionsIn("Queen.A.Kind.of.Magic.Alternative.Extended.Version")
+          == std::vector<EditionKind>{EditionKind::Extended, EditionKind::AlternateCut});
+    CHECK(editionIn("Stargate.SG1.Ultimate.Fan.Collection") == EditionKind::Ultimate);
     // The long cut and the cinema cut, named in the language that released them.
     CHECK(editionIn("Man-Eater.1980.Langfassung.German") == EditionKind::Extended);
     CHECK(editionIn("F.I.S.T.1978.KiNOFASSUNG.German") == EditionKind::Theatrical);

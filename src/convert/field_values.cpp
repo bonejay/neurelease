@@ -487,7 +487,7 @@ namespace {
 
 const std::vector<CompiledSpelling>& editionSpellings() {
     static const Spelling spellings[] = {
-        {R"((?:^|[ ._\-\[(])(Director.?s[ ._-]?(?:Cut|Edition|Version)|DC(?=$|[ ._-])|\x{5BFC}\x{6F14}\x{526A}\x{8F91}\x{7248}|\x{5C0E}\x{6F14}\x{526A}\x{8F2F}\x{7248})(?:$|[^A-Za-z]))", "Director's Cut"},
+        {R"((?:^|[ ._\-\[(])(Director(?:.?s)?[ ._-]?(?:Cut|Edition|Version)|DC(?=$|[ ._-])|\x{5BFC}\x{6F14}\x{526A}\x{8F91}\x{7248}|\x{5C0E}\x{6F14}\x{526A}\x{8F2F}\x{7248})(?:$|[^A-Za-z]))", "Director's Cut"},
         {R"((?:^|[ ._\-\[(])(Final[ ._-]?Cut)(?:$|[^A-Za-z]))", "Final Cut"},
         {R"((?:^|[ ._\-\[(])(Extended(?:[ ._-]?(?:Cut|Edition|Version))?|EXT(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Extended"},
         // The long cut, named in the language that released it. German `Langfassung` and French
@@ -596,7 +596,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // Hi-Res is the audio equivalent - a master at a higher rate than the ordinary release.
         {R"((?:^|[^A-Za-z0-9])(Hi[ ._-]?Res|\x{9AD8}\x{7801}\x{7248}|60\x{5E27}\x{7387}\x{7248}\x{672C}|\x{9AD8}\x{6E05}\x{7248})(?:$|[^A-Za-z]))", "High Quality"},
         {R"((?:^|[ ._\-\[(])(Ultimate(?:[ ._-]?(?:Edition|Cut))?)(?:$|[^A-Za-z]))", "Ultimate"},
-        {R"((?:^|[ ._\-\[(])(Fan[ ._-]?Edit(?:ion)?)(?:$|[^A-Za-z]))", "Fan Edit"},
+        {R"((?:^|[ ._\-\[(])(Fan[ ._-]?Edit(?:ion)?|Fan[ ._-]?Collection)(?:$|[^A-Za-z]))", "Fan Edit"},
         {R"((?:^|[ ._\-\[(])(Bootleg|Soundboard)(?:$|[^A-Za-z]))", "Bootleg"},
         {R"((?:^|[ ._\-\[(])(Unofficial(?:[ ._-]?Batch)?)(?:$|[^A-Za-z]))", "Unofficial"},
         // BONUS MATERIAL, not a bonus episode: this is the extras disc, which the German DVD
@@ -607,7 +607,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // existing release, which is what the scene means by Arrested Development's `Remix`. A
         // music remix lands here too - `A Milli (Official Remix)` - and the label reads oddly
         // there, but the claim it makes is the true one: this is another version of that work.
-        {R"((?:^|[ ._\-\[(])(Alternat(?:e|ive)[ ._-]?(?:Cut|Version|Edit)|Alt[ ._-]?Cut|Remix|Edited|Re[ ._-]?Cut|Recut|Re[ ._-]?Edit(?:ed)?)(?:$|[^A-Za-z]))", "Alternate Cut"},
+        {R"((?:^|[ ._\-\[(])(Alternat(?:e|ive)[ ._-]?(?:\w+[ ._-])?(?:Cut|Version|Edit)|Alt[ ._-]?Cut|Remix|Edited|Re[ ._-]?Cut|Recut|Re[ ._-]?Edit(?:ed)?)(?:$|[^A-Za-z]))", "Alternate Cut"},
         {R"((?:^|[^A-Za-z0-9])(\x{5225}\x{7248}))", "Alternate Cut"},
         {R"((?:^|[ ._\-\[(])(Shortened|Kurzfassung)(?:$|[^A-Za-z]))", "Shortened"},
         {R"((?:^|[ ._\-\[(])(Leaked|Leak)(?:$|[^A-Za-z]))", "Leaked"},
@@ -625,6 +625,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[ ._\-\[(])(Explicit(?:[ ._-]?Version)?)(?:$|[^A-Za-z]))", "Explicit"},
         {R"((?:^|[ ._\-\[(])(Reissue|Re[ ._-]Issue)(?:$|[^A-Za-z]))", "Reissue"},
         {R"((?:^|[ ._\-\[(])(OAR|Original[ ._-]?Aspect[ ._-]?Ratio)(?:$|[^A-Za-z]))", "Original Aspect Ratio"},
+        {R"((?:^|[ ._\-\[(])(Restored|Restoration|Restaurierte[ ._-]?Fassung|Regraded|Re[ ._-]?Grade)(?:$|[^A-Za-z]))", "Restored"},
         {R"((?:^|[ ._\-\[(])(Colou?rized|Colou?rised|In[ ._-]?Colou?r)(?:$|[^A-Za-z]))", "Colorized"},
         {R"((?:^|[^A-Za-z0-9])(\x{30AB}\x{30E9}\x{30FC}\x{5316}|\x{30D5}\x{30EB}\x{30AB}\x{30E9}\x{30FC}\x{7248}))", "Colorized"},
         // The 4:3 transfer. `FS` is two letters, and safe only because nothing but a span the
@@ -683,6 +684,7 @@ EditionKind editionOfLabel(std::string_view value) {
     if (value == "Explicit") return EditionKind::Explicit;
     if (value == "Reissue") return EditionKind::Reissue;
     if (value == "Original Aspect Ratio") return EditionKind::OriginalAspectRatio;
+    if (value == "Restored") return EditionKind::Restored;
     if (value == "Special Edition") return EditionKind::SpecialEdition;
     if (value == "Deluxe") return EditionKind::Deluxe;
     if (value == "Redux") return EditionKind::Redux;

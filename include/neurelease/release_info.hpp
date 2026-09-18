@@ -176,6 +176,11 @@ enum class EditionKind : std::uint8_t {
     // shot in, which for a 1950s television production is 4:3 and for a scope feature is 2.39:1.
     // It says the transfer was not reframed, and that is a different claim from either shape.
     OriginalAspectRatio = 60,
+    // A RESTORATION IS NOT A REMASTER. It repairs damage - torn frames, faded dye, missing
+    // footage - where a remaster re-derives from materials that were never damaged. Both rulers
+    // this parser is measured against hold the distinction, and folding the two cost names on
+    // each of them.
+    Restored = 61,
 };
 
 [[nodiscard]] std::string_view label(ResolutionTier value) noexcept;

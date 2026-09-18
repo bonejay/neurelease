@@ -134,6 +134,7 @@ std::string_view label(EditionKind value) noexcept {
     case EditionKind::Explicit: return "Explicit";
     case EditionKind::Reissue: return "Reissue";
     case EditionKind::OriginalAspectRatio: return "Original Aspect Ratio";
+    case EditionKind::Restored: return "Restored";
     case EditionKind::Theatrical: return "Theatrical";
     case EditionKind::Despecialized: return "Despecialized";
     case EditionKind::AssemblyCut: return "Assembly Cut";
