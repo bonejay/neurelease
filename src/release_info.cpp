@@ -25,6 +25,7 @@ std::string_view label(SourceKind value) noexcept {
     case SourceKind::Cam: return "CAM";
     case SourceKind::Screener: return "Screener";
     case SourceKind::DigitalCinema: return "DCP";
+    case SourceKind::Film: return "Film";
     case SourceKind::Unknown: return {};
     }
     return {};
@@ -132,6 +133,7 @@ std::string_view label(EditionKind value) noexcept {
     case EditionKind::Commentary: return "Commentary";
     case EditionKind::Explicit: return "Explicit";
     case EditionKind::Reissue: return "Reissue";
+    case EditionKind::OriginalAspectRatio: return "Original Aspect Ratio";
     case EditionKind::Theatrical: return "Theatrical";
     case EditionKind::Despecialized: return "Despecialized";
     case EditionKind::AssemblyCut: return "Assembly Cut";

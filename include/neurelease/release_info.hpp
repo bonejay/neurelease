@@ -93,6 +93,10 @@ enum class SourceKind : std::uint8_t {
     // THE CINEMA MASTER. A Digital Cinema Package is the file a projector is fed; a DCPRip is a
     // rip of one. Neither is a disc nor a stream, and both outrank every other source here.
     DigitalCinema = 8,
+    // A PHYSICAL PRINT, SCANNED. Fan restorations of 35mm and 16mm prints are their own category:
+    // not a disc, not a broadcast, and not the telecine the cam family means by that word - a
+    // scene TELECINE is a leak, while `35MM.FilmScan` is someone's own scan of their own reel.
+    Film = 9,
 };
 enum class VideoCodec : std::uint8_t {
     Unknown = 0, Av1 = 1, Hevc = 2, H264 = 3, Xvid = 4, Mpeg2 = 5, Vp9 = 6,
@@ -168,6 +172,10 @@ enum class EditionKind : std::uint8_t {
     // this triage refused, and unambiguous where that word is not. `Reissue` is a later pressing
     // of the same work, which in music is often a different master and always a different SKU.
     Commentary = 57, Explicit = 58, Reissue = 59,
+    // QUEUE FILE 06. `OriginalAspectRatio` is NOT `Widescreen`: OAR means the frame the film was
+    // shot in, which for a 1950s television production is 4:3 and for a scope feature is 2.39:1.
+    // It says the transfer was not reframed, and that is a different claim from either shape.
+    OriginalAspectRatio = 60,
 };
 
 [[nodiscard]] std::string_view label(ResolutionTier value) noexcept;

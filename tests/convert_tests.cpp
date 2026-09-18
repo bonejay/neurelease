@@ -215,6 +215,30 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(editionIn("Movie.2004.Directors.Commentary.1080p") == EditionKind::Commentary);
     CHECK(languageCodesOfToken("简繁字幕外挂") == std::vector<std::string>{"zho"});
 
+    // QUEUE FILE 06. A scanned print is not a telecine: a scene TELECINE is a leak, `35MM.FilmScan`
+    // is someone's own scan of their own reel, and the cam branch is asked first.
+    CHECK(sourceValue("35MM") == SourceKind::Film);
+    CHECK(sourceValue("35MM.FilmScan") == SourceKind::Film);
+    CHECK(sourceValue("TELECINE") == SourceKind::Cam);
+    CHECK(sourceValue("IPTV") == SourceKind::Hdtv);
+    CHECK(sourceValue("FEED") == SourceKind::Hdtv);
+    CHECK(sourceValue("LDTV") == SourceKind::Hdtv);
+    CHECK(sourceValue("StreamRip") == SourceKind::WebRip);
+    // `Hybrid` names no source ON PURPOSE - it says two were combined and refuses to say which.
+    CHECK(sourceValue("Hybrid") == SourceKind::Unknown);
+
+    // OAR is not Widescreen: it says the frame was not reframed, whatever shape that frame is.
+    CHECK(editionIn("Knight.Rider.2000.1991.OAR.BDRIP") == EditionKind::OriginalAspectRatio);
+    CHECK(editionIn("Movie.1989.Arrow.1080p.BluRay") == EditionKind::Remastered);
+    CHECK(editionIn("The.Drummer.2015.RE-EDIT.BDRip") == EditionKind::AlternateCut);
+    CHECK(editionIn("Garden.(別版).zip") == EditionKind::AlternateCut);
+    CHECK(editionIn("Udo.Lindenberg.2012.EXTRA.GERMAN.MBluRay") == EditionKind::Bonus);
+    CHECK(editionIn("【フルカラー版】Doujin.zip") == EditionKind::Colorized);
+    CHECK(editionIn("Doujin.【デジタル特装版】.zip") == EditionKind::SpecialEdition);
+    CHECK(editionIn("El jugador (ilustrado) [51149].epub") == EditionKind::SpecialEdition);
+    CHECK(languageCodesOfToken("简繁英双语字幕") == std::vector<std::string>{"zho", "eng"});
+    CHECK(languageCodesOfToken("简繁日字幕") == std::vector<std::string>{"zho", "jpn"});
+
     // Languages added from the same triage. The CJK entries must match the WHOLE token, because
     // the matcher demands an ASCII boundary on each side.
     CHECK(languageCodesOfToken("粤语音轨") == std::vector<std::string>{"yue"});

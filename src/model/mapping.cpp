@@ -423,6 +423,11 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
             const bool light = convert::sourceTokenIsLightEncode(raw);
             info.remux = info.remux || remux;
             info.lightEncode = info.lightEncode || light;
+            // A HYBRID NAMES NO SOURCE, and that is the point: `2160p.Hybrid.HDR10` says two
+            // sources were combined and refuses to say which, so `sourceValue` rightly answers
+            // nothing. The flag is the part that can be carried, and it is carried here as well as
+            // from the edition branch, because the model routes the word to either one.
+            if (isHybrid(raw)) info.hybrid = true;
             // A SOURCE TOKEN THAT STATES OTHER FIELDS TOO - `UHDRDV` is 2160p with HDR10 and
             // Dolby Vision in one word. Applied here rather than by widening sourceValue, because
             // these are facts about OTHER fields and folding them into a source value would lose

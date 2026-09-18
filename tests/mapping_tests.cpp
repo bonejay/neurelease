@@ -271,6 +271,21 @@ TEST_CASE("an AI upscale is routed whatever alphabet it is written in") {
     CHECK(originOf(info, Field::Edition)->value == "ai upscale");
 }
 
+TEST_CASE("a hybrid is flagged from the source span it names no source in") {
+    // `2160p.Hybrid.HDR10` says two sources were combined and refuses to say which, so the source
+    // field stays empty on purpose. The flag is the part that can be carried, and the model routes
+    // the word to a source span as often as to an edition one.
+    const std::string name = "Rush.Hour.TRILOGY.2160p.Hybrid.HDR10.DTS-HD.H265-KC";
+    Analysis analysis;
+    analysis.valid = true;
+    analysis.spans = {span(name, SpanType::Main, "Rush.Hour"),
+                      span(name, SpanType::Resolution, "2160p"),
+                      span(name, SpanType::SourceType, "Hybrid")};
+    const ReleaseInfo info = releaseInfoFromAnalysis(name, analysis);
+    CHECK(info.hybrid);
+    CHECK(info.source == SourceKind::Unknown);
+}
+
 TEST_CASE("a light encode is flagged from either the source or the edition span") {
     // MicroHD reaches the flag through sourceTokenIsLightEncode; `VERSION_LIGHT` - what the French
     // fansub scene writes - arrives as an EDITION span and needs its own route to the same place.

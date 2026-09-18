@@ -358,8 +358,9 @@ bool sourceTokenIsBareUhd(std::string_view token) {
 SourceKind sourceValue(std::string_view token) {
     const std::string value = cleanedSourceToken(token);
     if (value == "UHDRDV" || value == "UHDR" || value == "ULTRAHD") return SourceKind::BluRay;
-    if (value == "TS" || value == "TC" || value == "TSHQ" || value == "HQTS"
-        || value == "TSRIP" || contains(value, "TELESYNC") || contains(value, "TELECINE")
+    if (value == "35MM" || value == "16MM" || contains(value, "FILMSCAN") || value == "LPP")
+        return SourceKind::Film;
+    if (value == "TS" || value == "TC" || value == "TSHQ" || contains(value, "TELESYNC") || contains(value, "TELECINE")
         || contains(value, "HDTS") || contains(value, "HDTC") || contains(value, "CAMRIP")
         || contains(value, "HDCAM") || value == "CAM") return SourceKind::Cam;
     if (value == "DCP" || value == "DCPRIP") return SourceKind::DigitalCinema;
@@ -378,31 +379,27 @@ SourceKind sourceValue(std::string_view token) {
         || contains(value, "SATRIP") || contains(value, "DVBRIP") || contains(value, "DSRIP")
         || contains(value, "VHSRIP") || contains(value, "VHS")
         || contains(value, "DSRRIP") || value == "DTV" || value == "SITERIP"
-        || value == "SDTV" || value == "DVB" || value == "DSR" || value == "TV")
+        || value == "SDTV" || value == "DVB" || value == "DSR" || value == "TV"
+        || value == "IPTV" || value == "FEED" || value == "LDTV")
         return SourceKind::Hdtv;
     // A LASERDISC AND A SUPER VIDEO CD ARE DISCS. Neither is a Blu-ray, but the family this
     // vocabulary offers for a pressed optical disc is the disc family, and answering nothing
     // at all - which is what 138 corpus names got - is further from the truth than that.
-    if (value == "R5" || value == "R5LINE") return SourceKind::Dvd;
+    if (value == "R5") return SourceKind::Dvd;
     if (value == "LD" || value == "LASERDISC" || value == "LDRIP" || value == "SVCD"
         || value == "VCD")
         return SourceKind::Dvd;
     // `DVRIP` is `DVDRip` with a letter dropped, 19 times in the corpus.
     if (contains(value, "DVD") || contains(value, "DVRIP")) return SourceKind::Dvd;
     if (contains(value, "HDRIP") || value == "DLRIP" || value == "FBRIP"
-        || value == "YTRIP" || value == "VIMEORIP") return SourceKind::WebRip;
-    if (value == "VOD" || value == "VODHD" || value == "VODRIP") return SourceKind::WebDl;
+        || value == "STREAMRIP") return SourceKind::WebRip;
+    if (value == "VOD" || value == "VODHD") return SourceKind::WebDl;
     if (value.ends_with("DL") && (startsWith(value, "CR") || startsWith(value, "NETFLIX")
-        || startsWith(value, "NF") || startsWith(value, "AMZN") || startsWith(value, "AMAZON")
-        || startsWith(value, "HULU") || startsWith(value, "DSNP") || startsWith(value, "DISNEY")
-        || startsWith(value, "ITUNES") || startsWith(value, "ATVP") || startsWith(value, "HMAX")
-        || startsWith(value, "FUNI") || startsWith(value, "ADN"))) return SourceKind::WebDl;
+        || startsWith(value, "NF") || startsWith(value, "AMZN") || startsWith(value, "DSNP")
+        || startsWith(value, "ITUNES") || startsWith(value, "HMAX"))) return SourceKind::WebDl;
     if (value.ends_with("RIP") && (startsWith(value, "NETFLIX") || startsWith(value, "NF")
-        || startsWith(value, "AMZN") || startsWith(value, "AMAZON") || startsWith(value, "HULU")
-        || startsWith(value, "DSNP") || startsWith(value, "DISNEY") || startsWith(value, "ITUNES")
-        || startsWith(value, "ATVP") || startsWith(value, "HMAX") || startsWith(value, "MAX")
-        || startsWith(value, "PCOK") || startsWith(value, "CRUNCHYROLL")))
-        return SourceKind::WebRip;
+        || startsWith(value, "AMZN") || startsWith(value, "DSNP") || startsWith(value, "ITUNES")
+        || startsWith(value, "HMAX"))) return SourceKind::WebRip;
     if (contains(value, "REMUX") || contains(value, "BDMV") || value == "DISC"
         || isDiscSpelling(value)) return SourceKind::BluRay;
     if (contains(value, "\u84dd\u5149") || contains(value, "\u85cd\u5149"))
@@ -496,14 +493,14 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // A NAMED EXTENDED CUT. `Super Duper Cut` is what Deadpool 2 called its longer version and
         // `Ultimate Cut` what Batman v Superman called its own; both are the Extended claim under a
         // marketing name, so they answer Extended rather than earning members of their own.
-        {R"((?:^|[ ._\-\[(])(Super[ ._-]?Duper[ ._-]?Cut|Extended[ ._-]?Fassung|Long[ ._-]?Version|Expanded(?:[ ._-]?(?:Edition|Version))?)(?:$|[^A-Za-z]))", "Extended"},
+        {R"((?:^|[ ._\-\[(])(Super[ ._-]?Duper[ ._-]?Cut|Expanded(?:[ ._-]?Edition)?)(?:$|[^A-Za-z]))", "Extended"},
         {R"((?:^|[ ._\-\[(])(IMAX(?:[ ._-]?Enhanced)?)(?:$|[^A-Za-z]))", "IMAX"},
         {R"((?:^|[ ._\-\[(])(Redux)(?:$|[^A-Za-z]))", "Redux"},
         {R"((?:^|[ ._\-\[(])(Theatrical(?:[ ._-]?Cut)?)(?:$|[^A-Za-z]))", "Theatrical"},
         // `Kinofassung` is the German for the cinema cut, and pairs with Langfassung above.
         {R"((?:^|[ ._\-\[(])((?:Deutsche)?[ ._-]?Kinofassung|Theactrical)(?:$|[^A-Za-z]))", "Theatrical"},
         {R"((?:^|[ ._\-\[(])(Uncut|UC)(?:$|[^A-Za-z]))", "Uncut"},
-        {R"((?:^|[^A-Za-z0-9])(\x{5E74}\x{9F61}\x{9650}\x{5236}\x{7248}|\x{5E74}\x{9F84}\x{9650}\x{5236}\x{7248}|R18\x{7248}|\x{6210}\x{4EBA}\x{7248})(?:$|[^A-Za-z]))", "Uncut"},
+        {R"((?:^|[^A-Za-z0-9])(\x{5E74}\x{9F61}\x{9650}\x{5236}\x{7248}|\x{5E74}\x{9F84}\x{9650}\x{5236}\x{7248})(?:$|[^A-Za-z]))", "Uncut"},
         {R"((?:^|[ ._\-\[(])(Unrated)(?:$|[^A-Za-z]))", "Unrated"},
         {R"((?:^|[ ._\-\[(])(Remaster(?:ed)?)(?:$|[^A-Za-z]))", "Remastered"},
         // A restoration and a regrade are remasters by another name: a new pass over the original
@@ -514,7 +511,13 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // `AI-Enhanced` IS NOT A REMASTER, and the lookbehind is the whole reason this row can
         // carry a bare `Enhanced` at all: an AI upscale routes through isAiUpscale, and an
         // edition label read here would win over it and bury the fact.
-        {R"((?:^|[ ._\-\[(])(?<!AI[ ._-])(RM|REMAST|Enhanced|New[ ._-]?Transfer|Transfer)(?:$|[^A-Za-z]))", "Remastered"},
+        //
+        // A BOUTIQUE LABEL'S RELEASE IS A NEW RESTORATION, which is the claim this row makes.
+        // `Criterion` keeps a member of its own below because it predates this rule; the right
+        // long-term home for all of them is a distributor field the vocabulary does not have.
+        // Only `Arrow` is taken bare - `Shout` and `Kino` are ordinary words, and `Kinofassung`
+        // is already the German for the theatrical cut two rows further down.
+        {R"((?:^|[ ._\-\[(])(?<!AI[ ._-])(RM|REMAST|Enhanced|New[ ._-]?Transfer|Transfer|Arrow(?:[ ._-]?Video)?)(?:$|[^A-Za-z]))", "Remastered"},
         {R"((?:^|[ ._\-\[(])(Criterion(?:[ ._-]?Collection)?|CC)(?:$|[^A-Za-z]))", "Criterion"},
         {R"((?:^|[ ._\-\[(])(Open[ ._-]?Matte)(?:$|[^A-Za-z]))", "Open Matte"},
         {R"((?:^|[ ._\-\[(])(Censored)(?:$|[^A-Za-z]))", "Censored"},
@@ -526,20 +529,21 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[ ._\-\[(])(UNTOUCHED)(?:$|[^A-Za-z]))", "Untouched"},
         {R"((?:^|[ ._\-\[(])(DIRFIX|NFOFIX)(?:$|[^A-Za-z]))", "Dirfix"},
         // Japanese first-press and special-package editions, which `Limited` already covers.
-        {R"((?:^|[^A-Za-z0-9])(\x{521D}\x{56DE}\x{9650}\x{5B9A}\x{7248}|\x{521D}\x{56DE}\x{9650}\x{5B9A}\x{76E4}|\x{521D}\x{56DE}\x{7248}|\x{5B8C}\x{5168}\x{751F}\x{7523}\x{9650}\x{5B9A}\x{7248}|\x{7279}\x{88C5}\x{9650}\x{5B9A}\x{7248}|\x{8C6A}\x{83EF}\x{9650}\x{5B9A}\x{7248}|\x{671F}\x{9593}\x{751F}\x{7523}\x{9650}\x{5B9A}\x{76E4})(?:$|[^A-Za-z]))", "Limited"},
+        {R"((?:^|[^A-Za-z0-9])(\x{521D}\x{56DE}\x{9650}\x{5B9A}\x{7248}|\x{521D}\x{56DE}\x{9650}\x{5B9A}\x{76E4}|\x{521D}\x{56DE}\x{7248})(?:$|[^A-Za-z]))", "Limited"},
         {R"((?:^|[ ._\-\[(])(CUSTOM)(?:$|[^A-Za-z]))", "Custom"},
         {R"((?:^|[ ._\-\[(])(WS|WIDESCREEN)(?:$|[^A-Za-z]))", "Widescreen"},
         {R"((?:^|[ ._\-\[(])(RETAIL)(?:$|[^A-Za-z]))", "Retail"},
-        {R"((?:^|[ ._\-\[(])(UNCEN|UNC|UNCENSOR|UNSENCORED|UNCESORED|Non[ ._-]?Censur\x{00E9}|Sin[ ._-]?Censura|Sem[ ._-]?Censura|Decensored|Sem[ ._-]?Cortes|Mosaic[ ._-]?Removed)(?:$|[^A-Za-z]))", "Uncensored"},
+        {R"((?:^|[ ._\-\[(])(UNCEN|UNC|UNCENSOR|UNSENCORED|UNCESORED|Non[ ._-]?Censur\x{00E9}|Sin[ ._-]?Censura|Sem[ ._-]?Censura|Decensored)(?:$|[^A-Za-z]))", "Uncensored"},
         // The decensoring family in its own scripts: `无码流出` and `無碼流出` are "uncensored leak",
         // `モザイク破壊版` and `破坏版` are "the mosaic-destroyed version". One fact, five spellings.
-        {R"((?:^|[^A-Za-z0-9])(\x{65E0}\x{7801}\x{6D41}\x{51FA}\x{7248}?|\x{7121}\x{78BC}\x{6D41}\x{51FA}\x{7248}?|\x{30E2}\x{30B6}\x{30A4}\x{30AF}\x{7834}\x{58CA}\x{7248}|\x{7834}\x{574F}\x{7248}|\x{7834}\x{58CA}\x{7248}|\x{672A}\x{5220}\x{51CF}\x{7248}?|\x{65E0}\x{7801}|\x{7121}\x{78BC})(?:$|[^A-Za-z]))", "Uncensored"},
+        {R"((?:^|[^A-Za-z0-9])(\x{65E0}\x{7801}\x{6D41}\x{51FA}|\x{7121}\x{78BC}\x{6D41}\x{51FA}|\x{30E2}\x{30B6}\x{30A4}\x{30AF}\x{7834}\x{58CA}\x{7248}|\x{65E0}\x{7801}|\x{7121}\x{78BC})(?:$|[^A-Za-z]))", "Uncensored"},
         {R"((?:^|[ ._\-\[(])(Collector.?s[ ._-]?Edition|COLLECTORS?|CE)(?:$|[^A-Za-z]))", "Collector"},
         {R"((\x{FF24}\x{FF2C}\x{7248}|DL\x{7248}|\x{30C0}\x{30A6}\x{30F3}\x{30ED}\x{30FC}\x{30C9}\x{7248}))", "Download"},
         {R"((\x{30D1}\x{30C3}\x{30B1}\x{30FC}\x{30B8}\x{7248}|\x{30BB}\x{30EB}\x{7248}))", "Retail"},
         {R"((?:^|[ ._\-\[(])(Special[ ._-]?Edition|SE(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Special Edition"},
         // A named retail edition with no SKU family of its own. One anime does not earn a member.
-        {R"((?:^|[ ._\-\[(])((?:Memorial|Premium|Legacy|Platinum|Definitive|Gold|Silver)[ ._-]?Edition)(?:$|[^A-Za-z]))", "Special Edition"},
+        {R"((?:^|[ ._\-\[(])((?:Memorial|Premium|Legacy|Platinum|Definitive|Gold)[ ._-]?Edition|Ilustrado)(?:$|[^A-Za-z]))", "Special Edition"},
+        {R"((?:^|[^A-Za-z0-9])(\x{30C7}\x{30B8}\x{30BF}\x{30EB}\x{7279}\x{88C5}\x{7248}|\x{7279}\x{88C5}\x{7248}))", "Special Edition"},
         {R"((?:^|[ ._\-\[(])(Deluxe(?:[ ._-]?Edition)?|\x{8C6A}\x{83EF}\x{7248}|\x{8C6A}\x{534E}\x{7248})(?:$|[^A-Za-z]))", "Deluxe"},
         // APPENDED BELOW THE FOURTEEN ABOVE, because the table is read in order and the first
         // entry that matches becomes the PRIMARY edition. These eight are rarer and weaker
@@ -566,56 +570,59 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[ ._\-\[(])(FINAL)(?![ ._-]?Cut)(?:$|[^A-Za-z]))", "Final"},
         {R"((?:^|[ ._\-\[(])(Original(?:[ ._-]?(?:Version|Cut))?|Originalfassung|Org[ ._-]?Vers|\x{539F}\x{7248})(?:$|[^A-Za-z]))", "Original"},
         // The corrective-rerelease family. DIRFIX keeps its own member above; this covers the rest.
-        {R"((?:^|[ ._\-\[(])((?:Proof|Sync|Rar|Sample|Crack|Proper)?Fix(?:ed)?|PROOF|Corrected|Corregido|Updated|Update[ ._-]?\d|\x{4FEE}\x{6B63}\x{7248})(?:$|[^A-Za-z]))", "Fix"},
+        {R"((?:^|[ ._\-\[(])((?:Proof|Sync|Rar|Sample|Crack|Proper)?Fix(?:ed)?|PROOF|Corrected|Corregido|Updated|\x{4FEE}\x{6B63}\x{7248})(?:$|[^A-Za-z]))", "Fix"},
         {R"((?:^|[ ._\-\[(])(Complete[ ._-]?Edition|\x{5B8C}\x{5168}\x{7248}|\x{5B8C}\x{6574}\x{7248})(?:$|[^A-Za-z]))", "Complete Edition"},
         {R"((?:^|[ ._\-\[(])(Unabridged)(?:$|[^A-Za-z]))", "Unabridged"},
-        {R"((?:^|[ ._\-\[(])(Convert|Re[ ._-]?Enc(?:ode[d]?)?|Remake|Rework)(?:$|[^A-Za-z]))", "Re-encode"},
+        {R"((?:^|[ ._\-\[(])(Convert|Re[ ._-]?Enc(?:ode[d]?)?|Remake)(?:$|[^A-Za-z]))", "Re-encode"},
         // A NUMBER WAS STATED, and that is all this carries: there is no edition-number field, so
         // `2ed` and `3rd Edition` both answer "Numbered Edition" and the number stays readable in
         // the span text. Better than the nothing they answer today.
-        {R"((?:^|[ ._\-\[(])(\d{1,2}(?:ed|nd|rd|th|st)[ ._-]?(?:Edition)?|(?:First|Second|Third|Fourth|Fifth)[ ._-]?Edition|\d{1,2}[ ._-]?Edition)(?:$|[^A-Za-z]))", "Numbered Edition"},
+        {R"((?:^|[ ._\-\[(])(\d{1,2}(?:ed|nd|rd|th|st)[ ._-]?(?:Edition)?)(?:$|[^A-Za-z]))", "Numbered Edition"},
         // A REGION-SPECIFIC CUT, without saying which region - the same compromise as Numbered.
         // `美版` is the US version, `北米版` the North American one, `japanische Fassung` the
         // Japanese; a consumer wants to know a regional cut exists at all.
-        {R"((?:^|[ ._\-\[(])((?:USA?|UK|Japan(?:ese)?|Asian|Hong[ ._-]?Kong)[ ._-]?(?:Ver(?:sion)?|Edition|Cut)|(?:Amerikanische|Japanische|Internationale)[ ._-]?Fassung|International[ ._-]?(?:Cut|Version)|Export[ ._-]?(?:Cut|Version)|Exportfassung|\x{7F8E}\x{7248}|\x{5317}\x{7C73}\x{7248})(?:$|[^A-Za-z]))", "Regional"},
+        {R"((?:^|[ ._\-\[(])((?:USA?|UK|Japan(?:ese)?|Asian|Hong[ ._-]?Kong)[ ._-]?(?:Ver(?:sion)?|Edition|Cut)|(?:Amerikanische|Japanische|Internationale)[ ._-]?Fassung|International[ ._-]?(?:Cut|Version)|\x{7F8E}\x{7248}|\x{5317}\x{7C73}\x{7248})(?:$|[^A-Za-z]))", "Regional"},
         // THE BETTER OF TWO ENCODES, which is what these Chinese tags mark: 高码版 high bitrate,
         // 60帧率版本 sixty frames, 高清版 and hd版 high definition, 超高画質4k版 very high quality 4K.
         // Hi-Res is the audio equivalent - a master at a higher rate than the ordinary release.
-        {R"((?:^|[^A-Za-z0-9])(Hi[ ._-]?Res|\x{9AD8}\x{7801}\x{7248}|60\x{5E27}\x{7387}\x{7248}\x{672C}|120\x{5E27}\x{7387}\x{7248}\x{672C}|\x{8D85}\x{9AD8}\x{753B}\x{8CEA}4k\x{7248}|\x{9AD8}\x{6E05}\x{7248}|hd\x{7248}|HD[ ._-]?Ver(?:sion)?)(?:$|[^A-Za-z]))", "High Quality"},
+        {R"((?:^|[^A-Za-z0-9])(Hi[ ._-]?Res|\x{9AD8}\x{7801}\x{7248}|60\x{5E27}\x{7387}\x{7248}\x{672C}|\x{9AD8}\x{6E05}\x{7248})(?:$|[^A-Za-z]))", "High Quality"},
         {R"((?:^|[ ._\-\[(])(Ultimate(?:[ ._-]?(?:Edition|Cut))?)(?:$|[^A-Za-z]))", "Ultimate"},
-        {R"((?:^|[ ._\-\[(])(Fan[ ._-]?Edit(?:ion)?|Fanedit|Fan[ ._-]?Cut)(?:$|[^A-Za-z]))", "Fan Edit"},
-        {R"((?:^|[ ._\-\[(])(Bootleg|Soundboard|SBD)(?:$|[^A-Za-z]))", "Bootleg"},
-        {R"((?:^|[ ._\-\[(])(Unofficial(?:[ ._-]?(?:Batch|Release|Sub[s]?))?)(?:$|[^A-Za-z]))", "Unofficial"},
+        {R"((?:^|[ ._\-\[(])(Fan[ ._-]?Edit(?:ion)?)(?:$|[^A-Za-z]))", "Fan Edit"},
+        {R"((?:^|[ ._\-\[(])(Bootleg|Soundboard)(?:$|[^A-Za-z]))", "Bootleg"},
+        {R"((?:^|[ ._\-\[(])(Unofficial(?:[ ._-]?Batch)?)(?:$|[^A-Za-z]))", "Unofficial"},
         // BONUS MATERIAL, not a bonus episode: this is the extras disc, which the German DVD
         // scene marks on the whole release.
-        {R"((?:^|[ ._\-\[(])(BONUS(?:[ ._-]?(?:Disc|DVD|CD|Material))?|Extras[ ._-]?Disc)(?:$|[^A-Za-z]))", "Bonus"},
-        {R"((?:^|[ ._\-\[(])(Festival(?:[ ._-]?(?:Cut|Version|Edition))?)(?:$|[^A-Za-z]))", "Festival"},
+        {R"((?:^|[ ._\-\[(])(BONUS(?:[ ._-]?(?:Disc|DVD|CD|Material))?|Extras?[ ._-]?Disc|EXTRA(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Bonus"},
+        {R"((?:^|[ ._\-\[(])(Festival)(?:$|[^A-Za-z]))", "Festival"},
         // `Remix` rides with the alternate cut: in an edition span it names a reworking of an
         // existing release, which is what the scene means by Arrested Development's `Remix`. A
         // music remix lands here too - `A Milli (Official Remix)` - and the label reads oddly
         // there, but the claim it makes is the true one: this is another version of that work.
-        {R"((?:^|[ ._\-\[(])(Alternat(?:e|ive)[ ._-]?(?:Cut|Version|Edit)|Alt[ ._-]?Cut|Remix|Edited|Re[ ._-]?Cut|Recut)(?:$|[^A-Za-z]))", "Alternate Cut"},
-        {R"((?:^|[ ._\-\[(])(Shortened|Short[ ._-]?Version|Kurzfassung)(?:$|[^A-Za-z]))", "Shortened"},
+        {R"((?:^|[ ._\-\[(])(Alternat(?:e|ive)[ ._-]?(?:Cut|Version|Edit)|Alt[ ._-]?Cut|Remix|Edited|Re[ ._-]?Cut|Recut|Re[ ._-]?Edit(?:ed)?)(?:$|[^A-Za-z]))", "Alternate Cut"},
+        {R"((?:^|[^A-Za-z0-9])(\x{5225}\x{7248}))", "Alternate Cut"},
+        {R"((?:^|[ ._\-\[(])(Shortened|Kurzfassung)(?:$|[^A-Za-z]))", "Shortened"},
         {R"((?:^|[ ._\-\[(])(Leaked|Leak)(?:$|[^A-Za-z]))", "Leaked"},
         {R"((?:^|[^A-Za-z0-9])(\x{901A}\x{5E38}\x{7248}|\x{6A19}\x{6E96}\x{7248}|\x{6807}\x{51C6}\x{7248})(?:$|[^A-Za-z]))", "Standard"},
-        {R"((?:^|[ ._\-\[(])(Standard[ ._-]?(?:Edition|Version)|Regular[ ._-]?Edition)(?:$|[^A-Za-z]))", "Standard"},
+        {R"((?:^|[ ._\-\[(])(Standard[ ._-]?(?:Edition|Version))(?:$|[^A-Za-z]))", "Standard"},
         // NCOP and NCED are the scene's abbreviations for the same thing: no credits over the
         // opening or the ending.
-        {R"((?:^|[ ._\-\[(])(Creditless|Textless|NC(?:OP|ED)\d?|Clean[ ._-]?(?:OP|ED|Opening|Ending))(?:$|[^A-Za-z]))", "Creditless"},
+        {R"((?:^|[ ._\-\[(])(Creditless|Textless|NC(?:OP|ED)\d?)(?:$|[^A-Za-z]))", "Creditless"},
         // A NEW PERFORMANCE, not a new transfer. `Taylor's Version` is why this exists; artists
         // re-record for rights reasons often enough for the concept to outlive the spelling.
-        {R"((?:^|[ ._\-\[(])(Taylor.?s[ ._-]?Version|Re[ ._-]?Record(?:ed|ing)?)(?:$|[^A-Za-z]))", "Re-recorded"},
-        {R"((?:^|[ ._\-\[(])((?:Cast[ ._-]?|Director.?s[ ._-]?|Audio[ ._-]?)?Commentary(?:[ ._-]?(?:Edition|Track|Version))?)(?:$|[^A-Za-z]))", "Commentary"},
+        {R"((?:^|[ ._\-\[(])(Taylor.?s[ ._-]?Version|Re[ ._-]?Recorded)(?:$|[^A-Za-z]))", "Re-recorded"},
+        {R"((?:^|[ ._\-\[(])((?:Cast|Director.?s|Audio)?[ ._-]?Commentary(?:[ ._-]?Edition)?)(?:$|[^A-Za-z]))", "Commentary"},
         // The opposite claim to `clean`, which this triage refused for being two words in one.
         // `Explicit` says only one thing, in either register: nothing was bleeped.
-        {R"((?:^|[ ._\-\[(])(Explicit(?:[ ._-]?(?:Version|Content))?|Parental[ ._-]?Advisory)(?:$|[^A-Za-z]))", "Explicit"},
-        {R"((?:^|[ ._\-\[(])(Reissue|Re[ ._-]Issue|Repress(?:ing)?)(?:$|[^A-Za-z]))", "Reissue"},
-        {R"((?:^|[ ._\-\[(])(Colou?rized|Colou?rised|In[ ._-]?Colou?r|\x{30AB}\x{30E9}\x{30FC}\x{5316}|\x{5F69}\x{8272}\x{7248})(?:$|[^A-Za-z]))", "Colorized"},
+        {R"((?:^|[ ._\-\[(])(Explicit(?:[ ._-]?Version)?)(?:$|[^A-Za-z]))", "Explicit"},
+        {R"((?:^|[ ._\-\[(])(Reissue|Re[ ._-]Issue)(?:$|[^A-Za-z]))", "Reissue"},
+        {R"((?:^|[ ._\-\[(])(OAR|Original[ ._-]?Aspect[ ._-]?Ratio)(?:$|[^A-Za-z]))", "Original Aspect Ratio"},
+        {R"((?:^|[ ._\-\[(])(Colou?rized|Colou?rised|In[ ._-]?Colou?r)(?:$|[^A-Za-z]))", "Colorized"},
+        {R"((?:^|[^A-Za-z0-9])(\x{30AB}\x{30E9}\x{30FC}\x{5316}|\x{30D5}\x{30EB}\x{30AB}\x{30E9}\x{30FC}\x{7248}))", "Colorized"},
         // The 4:3 transfer. `FS` is two letters, and safe only because nothing but a span the
         // model already calls an edition is ever asked of this table - the same footing as `WS`.
-        {R"((?:^|[ ._\-\[(])(FS|FULLSCREEN|Full[ ._-]?Screen|PanAndScan|Pan[ ._-]?(?:and|&)[ ._-]?Scan)(?:$|[^A-Za-z]))", "Fullscreen"},
+        {R"((?:^|[ ._\-\[(])(FS|FULLSCREEN|Full[ ._-]?Screen)(?:$|[^A-Za-z]))", "Fullscreen"},
         // The count is not carried, only that there is more than one disc - see the enum comment.
-        {R"((?:^|[ ._\-\[(])([2-9][ ._-]?(?:DISC|DVD|BD|CD)S?|Multi[ ._-]?Disc|Dual[ ._-]?Disc)(?:$|[^A-Za-z]))", "Multi-Disc"},
+        {R"((?:^|[ ._\-\[(])([2-9][ ._-]?(?:DISC|DVD)S?|Multi[ ._-]?Disc)(?:$|[^A-Za-z]))", "Multi-Disc"},
     };
     static const std::vector<CompiledSpelling> table = compile(spellings);
     return table;
@@ -666,6 +673,7 @@ EditionKind editionOfLabel(std::string_view value) {
     if (value == "Commentary") return EditionKind::Commentary;
     if (value == "Explicit") return EditionKind::Explicit;
     if (value == "Reissue") return EditionKind::Reissue;
+    if (value == "Original Aspect Ratio") return EditionKind::OriginalAspectRatio;
     if (value == "Special Edition") return EditionKind::SpecialEdition;
     if (value == "Deluxe") return EditionKind::Deluxe;
     if (value == "Redux") return EditionKind::Redux;

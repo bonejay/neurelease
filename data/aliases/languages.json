@@ -432,39 +432,55 @@
     "code": "deu"
   },
   {
-    "expression": "官方中字|中字|中文字幕|官方中文字幕|独家中字|独家中文字幕|熟肉|中文内嵌|中文内封",
+    "expression": "官方中字|中字|中文字幕",
     "code": "zho"
   },
   {
-    "expression": "国英双语|国英双音轨|国英双语中英双字|国英",
+    "expression": "国英双语|国英",
     "code": "cmn"
   },
   {
-    "expression": "国英双语|国英双音轨|国英双语中英双字|英语音轨|英文音轨",
+    "expression": "国英双语|英语音轨",
     "code": "eng"
   },
   {
-    "expression": "简繁日双语|简繁日|简日双语|简繁日内封|简繁日双语字幕",
+    "expression": "简繁日双语|简繁日",
     "code": "zho"
   },
   {
-    "expression": "简繁日双语|简繁日|简日双语|简繁日内封|简繁日双语字幕|日语音轨|日文字幕",
+    "expression": "简繁日双语|日语音轨",
     "code": "jpn"
   },
   {
-    "expression": "简／繁|繁／简|简／繁体|简体／繁体|简繁／日|中／英|简／繁中字",
+    "expression": "简／繁|繁／简",
     "code": "zho"
   },
   {
-    "expression": "国粤语音轨|国粤双语|国粤双音轨|国粤",
+    "expression": "国粤语音轨|国粤",
     "code": "cmn"
   },
   {
-    "expression": "国粤语音轨|国粤双语|国粤双音轨|国粤|粤语配音|粤配",
+    "expression": "国粤语音轨|粤语配音",
     "code": "yue"
   },
   {
-    "expression": "简繁字幕外挂|简繁外挂字幕|简繁内封字幕|简繁字幕内封|简繁双语字幕|简繁中字外挂",
+    "expression": "简繁字幕外挂|简繁外挂字幕",
     "code": "zho"
+  },
+  {
+    "expression": "简繁英双语字幕|简繁英双语特效字幕|中英双字幕",
+    "code": "zho"
+  },
+  {
+    "expression": "简繁日字幕|简繁日外挂",
+    "code": "zho"
+  },
+  {
+    "expression": "简繁英双语字幕|简繁英双语特效字幕|中英双字幕|英文字幕",
+    "code": "eng"
+  },
+  {
+    "expression": "简繁日字幕|简繁日外挂|日文内嵌",
+    "code": "jpn"
   }
 ]

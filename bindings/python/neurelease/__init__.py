@@ -91,6 +91,7 @@ class SourceKind(Kind):
     CAM = (6, 'CAM')
     SCREENER = (7, 'Screener')
     DIGITAL_CINEMA = (8, 'DCP')
+    FILM = (9, 'Film')
 
 
 class VideoCodec(Kind):
@@ -226,6 +227,7 @@ class EditionKind(Kind):
     COMMENTARY = (57, 'Commentary')
     EXPLICIT = (58, 'Explicit')
     REISSUE = (59, 'Reissue')
+    ORIGINAL_ASPECT_RATIO = (60, 'Original Aspect Ratio')
 
 
 class OriginField(IntEnum):
