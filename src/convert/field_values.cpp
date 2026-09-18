@@ -1157,6 +1157,24 @@ DateReading dateIn(std::string_view subject) {
 }
 
 Reading yearIn(std::string_view subject, std::int32_t excludeBegin, std::int32_t excludeEnd) {
+    // A RANGE ANSWERS ITS START. `Eyes.On.The.Prize.Awakenings.1954-1956` covers 1954 to 1956
+    // and the work is a 1954 one; the scan below keeps the LAST year it finds, which is right
+    // for a name stating several separate years and wrong for one span stating a span of time.
+    // Measured on the 500-name double-year set this was 52 of the 714 year spans the model and
+    // the gold both located - the largest single reason that field read 39% exact while the
+    // spans under it were 94% right. The connectives are the ones the corpus writes between
+    // two years and nothing wider: both sides of the match must already BE years, which is
+    // what makes a one-letter Portuguese `e` or Spanish `y` safe to admit here.
+    static const Regex range(
+        R"((?<![\dxX])((?:189|19\d|20\d)\d)[ ._]*(?:-|\x{2013}|\x{2014}|/|~|to|thru|through|bis|und|and|e|y|a)[ ._]*(?:189|19\d|20\d)\d(?!\d))",
+        true);
+    if (const Match found = range.match(subject)) {
+        const auto rangeBegin = static_cast<std::int32_t>(found.capturedStart(1));
+        const auto rangeEnd = static_cast<std::int32_t>(found.capturedEnd(1));
+        if (!(excludeBegin >= 0 && rangeBegin >= excludeBegin && rangeEnd <= excludeEnd))
+            return {stringOf(found.captured(1)), stringOf(found.captured(1)), rangeBegin,
+                    rangeEnd};
+    }
     // `189\d` AND NOT `18\d\d`: film begins in the 1890s, and widening to the whole nineteenth
     // century would make every `1812`, `1815` and `1876` in a title into a release year.
     static const Regex pattern(R"((?<![\dxX])((?:189|19\d|20\d)\d)(?![\d]|\s*[xX]\s*\d{3,4}))");

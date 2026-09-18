@@ -50,7 +50,7 @@ inline constexpr std::array<Alias, 40> platformAliases{{
     {"YTB", "YT"},
 }};
 
-inline constexpr std::array<Alias, 112> containers{{
+inline constexpr std::array<Alias, 113> containers{{
     {"3gp", "video"},
     {"7z", "archive"},
     {"aa", "audiobook"},
@@ -88,6 +88,7 @@ inline constexpr std::array<Alias, 112> containers{{
     {"dsf", "music"},
     {"epub", "book"},
     {"exe", "software"},
+    {"f4v", "video"},
     {"fb2", "book"},
     {"firm", "software"},
     {"flac", "music"},
@@ -165,7 +166,7 @@ inline constexpr std::array<Alias, 112> containers{{
     {"zst", "archive"},
 }};
 
-inline constexpr std::array<LanguageAlias, 108> languages{{
+inline constexpr std::array<LanguageAlias, 130> languages{{
     {"EN|ENG|ENGLISH|INGLES|ING", "eng"},
     {"EN[ ._-]?US|EN[ ._-]?GB|ENGLISHMTL|VOSTEN", "eng"},
     {"JPN|JAP|JA|JAPANESE|JP", "jpn"},
@@ -243,18 +244,16 @@ inline constexpr std::array<LanguageAlias, 108> languages{{
     {"BEL|BELARUSIAN", "bel"},
     {"FUNIDUB|FUNI[ ._-]?DUB|CR[ ._-]?DUB|ENGDUB|ENG[ ._-]?DUB", "eng"},
     {"中英字幕|中英双字|简繁英字幕", "eng"},
-    {"MULTI|MULTI[ ._-]?\\d|MULTILANG|MULTILANGUAGE|M[ ._-]?SUBS?|MUTI[ ._-]?SUB|MULTIPLE[ ._-]?SUBS?|MULTISUB|\\d[ ._-]?LANG|双语字幕|雙語字幕|双语|雙語|双字幕", "mul"},
-    {"多言語字幕|多字幕|多语字幕|複数字幕|简繁多语字幕|多語字幕|双语字幕|雙語字幕|双语|雙語|双字幕", "mul"},
     {"粤|粤语|粵語|粤语音轨|粤语配音|粵語音軌|CANTONESE|YUE|(?:国|國)?(?:粤|粵)(?:日|英|韩)*多?(?:音轨|音軌|语配音|語配音|双语|語音軌)", "yue"},
-    {"国语|國語|官话|官話|台配|台粤|台粤配|国语音轨|国语配音|中文配音|CMN|MANDARIN|(?:国|國)(?:粤|粵|日|英|韩)*多?(?:音轨|音軌|语配音|語配音)", "cmn"},
-    {"(?:内封|內封|外挂|外掛|官方|特效|内嵌|DIY)?(?:简|簡|繁)(?:体|體|中|繁|日|英|法)?(?:内封|內封|外挂|外掛|内嵌)?(?:双语|雙語|双字|多语)?(?:字幕|中字|内封|外挂|内嵌|外掛)?|(?:中英|中日|英日|日英|简日|简英|繁英|繁日|简法|国粤|韩语|日语)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?|中字简体|简体字幕|简中内嵌|内封简繁中字|中文外挂字幕", "zho"},
+    {"国语|國語|官话|官話|台配|国语音轨|国语配音|CMN|MANDARIN|(?:国|國)(?:粤|粵|日|英|韩)*多?(?:音轨|音軌|语配音|語配音)", "cmn"},
+    {"(?:内封|內封|外挂|外掛|官方|特效|内嵌|DIY)?(?:简|簡|繁)(?:体|體|中|繁|日|英|法)?(?:内封|內封|外挂|外掛|内嵌)?(?:双语|雙語|双字|多语)?(?:字幕|中字|内封|外挂|内嵌|外掛)?|(?:中英|中日|英日|简日|简英|繁英|繁日|简法)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?|中字简体|简体字幕|简中内嵌|内封简繁中字|中文外挂字幕", "zho"},
     {"日本語|日语|日文|日本語字幕|日语音轨|日文内封|JAPONES|JAPON\\x{00C9}S|JAPONAIS", "jpn"},
     {"韓国語|韓国翻訳|韩语|한글자막|우리말[ ._-]?더빙|한국어|COREANO|CORE(?:EN|AN)", "kor"},
     {"INGLES|INGL\\x{00C9}S|ENGLISCH|ANGLAIS|ENGL|英語|英语|英語吹替|英语配音|英語字幕", "eng"},
     {"FRANCES|FRANC\\x{00C9}S|フランス語|フランス語字幕|仏語字幕|仏字幕|法语|法语字幕|法语音轨|VOF|VF2", "fra"},
     {"SPANI|ESPAGNOL|スペイン語|スペイン語字幕|西班牙语字幕|CAST|CASTELLANO", "spa"},
     {"ITALIANO|イタリア語|意语|意英双语", "ita"},
-    {"NACIONAL|DUBLADA|DUBLADO|LEG|LEGENDADO", "por"},
+    {"LEGENDADO", "por"},
     {"SI|SLOVENSKI", "slv"},
     {"GR|GR[ ._-]?SUBS|GREEKSUBS", "ell"},
     {"HR|HRVATSKI|CROSUBS", "hrv"},
@@ -274,6 +273,30 @@ inline constexpr std::array<LanguageAlias, 108> languages{{
     {"KO", "kor"},
     {"CHN|CHIN|CHINO|中国語字幕", "zho"},
     {"SWISSGERMAN|SWISS[ ._-]?GERMAN|SCHWEIZERDEUTSCH", "deu"},
+    {"官方中字|中字|中文字幕", "zho"},
+    {"国英双语|国英", "cmn"},
+    {"国英双语|英语音轨", "eng"},
+    {"简繁日双语|简繁日", "zho"},
+    {"简繁日双语|日语音轨", "jpn"},
+    {"简／繁|繁／简", "zho"},
+    {"国粤语音轨|国粤", "cmn"},
+    {"国粤语音轨|粤语配音", "yue"},
+    {"简繁字幕外挂|简繁外挂字幕", "zho"},
+    {"简繁英双语字幕|简繁英双语特效字幕|中英双字幕", "zho"},
+    {"简繁日字幕|简繁日外挂", "zho"},
+    {"简繁英双语字幕|简繁英双语特效字幕|中英双字幕|英文字幕", "eng"},
+    {"简繁日字幕|简繁日外挂|日文内嵌", "jpn"},
+    {"(?:中日|日英|英日|简日|繁日)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?", "jpn"},
+    {"(?:中英|简英|繁英|英日|日英|意英)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?", "eng"},
+    {"(?:简法|中法)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?", "fra"},
+    {"(?:国粤)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?", "cmn"},
+    {"(?:国粤)(?:双语|雙語|双字)?(?:音轨|配音)?", "yue"},
+    {"台粤|台粤配|粤配", "yue"},
+    {"中文配音|华语配音|華語配音", "zho"},
+    {"(?:国|國)(?:粤|粵|日|韩)*英(?:粤|粵|日|韩)*多?(?:音轨|音軌|语配音|語配音)", "eng"},
+    {"(?:国|國)(?:粤|粵|英|韩)*日(?:粤|粵|英|韩)*多?(?:音轨|音軌|语配音|語配音)", "jpn"},
+    {"(?:国|國)(?:粤|粵|日|英)*韩(?:粤|粵|日|英)*多?(?:音轨|音軌|语配音|語配音)", "kor"},
+    {"(?:国|國)(?:粤|粵)(?:日|英|韩)*多?(?:音轨|音軌|语配音|語配音)", "yue"},
 }};
 
 inline constexpr std::array<std::string_view, 131> rejectedGroups{{
