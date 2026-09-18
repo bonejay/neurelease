@@ -219,6 +219,9 @@ class EditionKind(Kind):
     LEAKED = (51, 'Leaked')
     COLORIZED = (52, 'Colorized')
     FULLSCREEN = (53, 'Fullscreen')
+    STANDARD = (54, 'Standard')
+    CREDITLESS = (55, 'Creditless')
+    RE_RECORDED = (56, 'Re-recorded')
 
 
 class OriginField(IntEnum):

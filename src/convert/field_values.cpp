@@ -243,8 +243,10 @@ bool isDiscSpelling(std::string_view cleaned) {
     // BD25/BD50/BD66/BD100 name the disc capacity, BRMUX a Blu-ray remuxed into a container.
     // Sorted, because the lookup is a binary search.
     static constexpr std::array discs{
-        "BD100"sv, "BD25"sv, "BD50"sv, "BD66"sv, "BDBOX"sv, "BDMUX"sv, "BLURAYRIP"sv, "BR"sv,
-        "BRMUX"sv, "DEBD"sv, "DS4K"sv, "FRBD"sv, "ITBD"sv, "JPBD"sv, "UHD"sv, "UHDBD"sv,
+        "BD100"sv, "BD25"sv, "BD5"sv, "BD50"sv, "BD66"sv, "BD9"sv, "BDBOX"sv, "BDMUX"sv,
+        "BLURAYRIP"sv, "BR"sv,
+        "BRMUX"sv, "DEBD"sv, "DS4K"sv, "FRBD"sv, "ITBD"sv, "JPBD"sv, "UHD"sv, "UHD2BD"sv,
+        "UHDBD"sv,
         "UKBD"sv, "USBD"sv,
     };
     return std::ranges::binary_search(discs, cleaned);
@@ -384,7 +386,9 @@ SourceKind sourceValue(std::string_view token) {
         return SourceKind::Dvd;
     // `DVRIP` is `DVDRip` with a letter dropped, 19 times in the corpus.
     if (contains(value, "DVD") || contains(value, "DVRIP")) return SourceKind::Dvd;
-    if (contains(value, "HDRIP")) return SourceKind::WebRip;
+    if (contains(value, "HDRIP") || value == "DLRIP" || value == "FBRIP"
+        || value == "YTRIP" || value == "VIMEORIP") return SourceKind::WebRip;
+    if (value == "VOD" || value == "VODHD" || value == "VODRIP") return SourceKind::WebDl;
     if (value.ends_with("DL") && (startsWith(value, "CR") || startsWith(value, "NETFLIX")
         || startsWith(value, "NF") || startsWith(value, "AMZN") || startsWith(value, "AMAZON")
         || startsWith(value, "HULU") || startsWith(value, "DSNP") || startsWith(value, "DISNEY")
@@ -478,7 +482,7 @@ namespace {
 
 const std::vector<CompiledSpelling>& editionSpellings() {
     static const Spelling spellings[] = {
-        {R"((?:^|[ ._\-\[(])(Director.?s[ ._-]?Cut|DC(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Director's Cut"},
+        {R"((?:^|[ ._\-\[(])(Director.?s[ ._-]?(?:Cut|Edition|Version)|DC(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Director's Cut"},
         {R"((?:^|[ ._\-\[(])(Final[ ._-]?Cut)(?:$|[^A-Za-z]))", "Final Cut"},
         {R"((?:^|[ ._\-\[(])(Extended(?:[ ._-]?(?:Cut|Edition|Version))?)(?:$|[^A-Za-z]))", "Extended"},
         // The long cut, named in the language that released it. German `Langfassung` and French
@@ -494,6 +498,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // `Kinofassung` is the German for the cinema cut, and pairs with Langfassung above.
         {R"((?:^|[ ._\-\[(])((?:Deutsche)?[ ._-]?Kinofassung|Theactrical)(?:$|[^A-Za-z]))", "Theatrical"},
         {R"((?:^|[ ._\-\[(])(Uncut)(?:$|[^A-Za-z]))", "Uncut"},
+        {R"((?:^|[^A-Za-z0-9])(\x{5E74}\x{9F61}\x{9650}\x{5236}\x{7248}|\x{5E74}\x{9F84}\x{9650}\x{5236}\x{7248}|R18\x{7248}|\x{6210}\x{4EBA}\x{7248})(?:$|[^A-Za-z]))", "Uncut"},
         {R"((?:^|[ ._\-\[(])(Unrated)(?:$|[^A-Za-z]))", "Unrated"},
         {R"((?:^|[ ._\-\[(])(Remaster(?:ed)?)(?:$|[^A-Za-z]))", "Remastered"},
         // A restoration and a regrade are remasters by another name: a new pass over the original
@@ -501,7 +506,10 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[ ._\-\[(])(Restored|Restoration|Restaurierte[ ._-]?Fassung|Rekonstrukcja|Remasterizado|Regraded|Re[ ._-]?Grade|Color[ ._-]?Corrected|\x{9AD8}\x{6E05}\x{4FEE}\x{590D}\x{7248})(?:$|[^A-Za-z]))", "Remastered"},
         // `RM` alone, which the scene writes for a remaster of an older film. Two letters, and
         // safe only because this table is asked nothing but spans the model already calls editions.
-        {R"((?:^|[ ._\-\[(])(RM|REMAST)(?:$|[^A-Za-z]))", "Remastered"},
+        // `AI-Enhanced` IS NOT A REMASTER, and the lookbehind is the whole reason this row can
+        // carry a bare `Enhanced` at all: an AI upscale routes through isAiUpscale, and an
+        // edition label read here would win over it and bury the fact.
+        {R"((?:^|[ ._\-\[(])(?<!AI[ ._-])(RM|REMAST|Enhanced|New[ ._-]?Transfer|Transfer)(?:$|[^A-Za-z]))", "Remastered"},
         {R"((?:^|[ ._\-\[(])(Criterion(?:[ ._-]?Collection)?|CC)(?:$|[^A-Za-z]))", "Criterion"},
         {R"((?:^|[ ._\-\[(])(Open[ ._-]?Matte)(?:$|[^A-Za-z]))", "Open Matte"},
         {R"((?:^|[ ._\-\[(])(Censored)(?:$|[^A-Za-z]))", "Censored"},
@@ -526,7 +534,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((\x{30D1}\x{30C3}\x{30B1}\x{30FC}\x{30B8}\x{7248}|\x{30BB}\x{30EB}\x{7248}))", "Retail"},
         {R"((?:^|[ ._\-\[(])(Special[ ._-]?Edition|SE(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Special Edition"},
         // A named retail edition with no SKU family of its own. One anime does not earn a member.
-        {R"((?:^|[ ._\-\[(])((?:Memorial|Premium|Legacy|Platinum|Definitive)[ ._-]?Edition)(?:$|[^A-Za-z]))", "Special Edition"},
+        {R"((?:^|[ ._\-\[(])((?:Memorial|Premium|Legacy|Platinum|Definitive|Gold|Silver)[ ._-]?Edition)(?:$|[^A-Za-z]))", "Special Edition"},
         {R"((?:^|[ ._\-\[(])(Deluxe(?:[ ._-]?Edition)?|\x{8C6A}\x{83EF}\x{7248}|\x{8C6A}\x{534E}\x{7248})(?:$|[^A-Za-z]))", "Deluxe"},
         // APPENDED BELOW THE FOURTEEN ABOVE, because the table is read in order and the first
         // entry that matches becomes the PRIMARY edition. These eight are rarer and weaker
@@ -553,7 +561,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[ ._\-\[(])(FINAL)(?![ ._-]?Cut)(?:$|[^A-Za-z]))", "Final"},
         {R"((?:^|[ ._\-\[(])(Original(?:[ ._-]?(?:Version|Cut))?|Originalfassung|Org[ ._-]?Vers|\x{539F}\x{7248})(?:$|[^A-Za-z]))", "Original"},
         // The corrective-rerelease family. DIRFIX keeps its own member above; this covers the rest.
-        {R"((?:^|[ ._\-\[(])((?:Proof|Sync|Rar|Sample|Crack|Proper)?Fix(?:ed)?|Corrected|Corregido|Updated|Update[ ._-]?\d|\x{4FEE}\x{6B63}\x{7248})(?:$|[^A-Za-z]))", "Fix"},
+        {R"((?:^|[ ._\-\[(])((?:Proof|Sync|Rar|Sample|Crack|Proper)?Fix(?:ed)?|PROOF|Corrected|Corregido|Updated|Update[ ._-]?\d|\x{4FEE}\x{6B63}\x{7248})(?:$|[^A-Za-z]))", "Fix"},
         {R"((?:^|[ ._\-\[(])(Complete[ ._-]?Edition|\x{5B8C}\x{5168}\x{7248}|\x{5B8C}\x{6574}\x{7248})(?:$|[^A-Za-z]))", "Complete Edition"},
         {R"((?:^|[ ._\-\[(])(Unabridged)(?:$|[^A-Za-z]))", "Unabridged"},
         {R"((?:^|[ ._\-\[(])(Convert|Re[ ._-]?Enc(?:ode[d]?)?|Remake|Rework)(?:$|[^A-Za-z]))", "Re-encode"},
@@ -581,9 +589,17 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // existing release, which is what the scene means by Arrested Development's `Remix`. A
         // music remix lands here too - `A Milli (Official Remix)` - and the label reads oddly
         // there, but the claim it makes is the true one: this is another version of that work.
-        {R"((?:^|[ ._\-\[(])(Alternat(?:e|ive)[ ._-]?(?:Cut|Version|Edit)|Alt[ ._-]?Cut|Remix)(?:$|[^A-Za-z]))", "Alternate Cut"},
+        {R"((?:^|[ ._\-\[(])(Alternat(?:e|ive)[ ._-]?(?:Cut|Version|Edit)|Alt[ ._-]?Cut|Remix|Edited|Re[ ._-]?Cut|Recut)(?:$|[^A-Za-z]))", "Alternate Cut"},
         {R"((?:^|[ ._\-\[(])(Shortened|Short[ ._-]?Version|Kurzfassung)(?:$|[^A-Za-z]))", "Shortened"},
         {R"((?:^|[ ._\-\[(])(Leaked|Leak)(?:$|[^A-Za-z]))", "Leaked"},
+        {R"((?:^|[^A-Za-z0-9])(\x{901A}\x{5E38}\x{7248}|\x{6A19}\x{6E96}\x{7248}|\x{6807}\x{51C6}\x{7248})(?:$|[^A-Za-z]))", "Standard"},
+        {R"((?:^|[ ._\-\[(])(Standard[ ._-]?(?:Edition|Version)|Regular[ ._-]?Edition)(?:$|[^A-Za-z]))", "Standard"},
+        // NCOP and NCED are the scene's abbreviations for the same thing: no credits over the
+        // opening or the ending.
+        {R"((?:^|[ ._\-\[(])(Creditless|Textless|NC(?:OP|ED)\d?|Clean[ ._-]?(?:OP|ED|Opening|Ending))(?:$|[^A-Za-z]))", "Creditless"},
+        // A NEW PERFORMANCE, not a new transfer. `Taylor's Version` is why this exists; artists
+        // re-record for rights reasons often enough for the concept to outlive the spelling.
+        {R"((?:^|[ ._\-\[(])(Taylor.?s[ ._-]?Version|Re[ ._-]?Record(?:ed|ing)?)(?:$|[^A-Za-z]))", "Re-recorded"},
         {R"((?:^|[ ._\-\[(])(Colou?rized|Colou?rised|In[ ._-]?Colou?r)(?:$|[^A-Za-z]))", "Colorized"},
         // The 4:3 transfer. `FS` is two letters, and safe only because nothing but a span the
         // model already calls an edition is ever asked of this table - the same footing as `WS`.
@@ -634,6 +650,9 @@ EditionKind editionOfLabel(std::string_view value) {
     if (value == "Leaked") return EditionKind::Leaked;
     if (value == "Colorized") return EditionKind::Colorized;
     if (value == "Fullscreen") return EditionKind::Fullscreen;
+    if (value == "Standard") return EditionKind::Standard;
+    if (value == "Creditless") return EditionKind::Creditless;
+    if (value == "Re-recorded") return EditionKind::ReRecorded;
     if (value == "Special Edition") return EditionKind::SpecialEdition;
     if (value == "Deluxe") return EditionKind::Deluxe;
     if (value == "Redux") return EditionKind::Redux;
@@ -720,6 +739,9 @@ std::string audioCodecValue(std::string_view token) {
     // A WAV file carries PCM, which is the fact the audio field is asking about.
     if (contains(value, "PCM") || value == "WAV") return "PCM";
     if (contains(value, "MP3")) return "MP3";
+    if (contains(value, "WMA")) return "WMA";
+    // Monkey's Audio, a lossless codec Chinese and Russian music releases still use.
+    if (value == "APE") return "APE";
     // MPEG-1 Layer II, common in broadcast captures. Must precede the trailing-digit
     // fallback below, which would strip the 2 and leave "MP".
     if (contains(value, "MP2")) return "MP2";

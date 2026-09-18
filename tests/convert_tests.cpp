@@ -163,6 +163,35 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(languageCodesOfToken("国英双语") == std::vector<std::string>{"cmn", "eng"});
     CHECK(languageCodesOfToken("简繁日双语") == std::vector<std::string>{"zho", "jpn"});
 
+    // QUEUE FILE 04. `UHD2BD` states both ends of a re-encode; the target is what arrives.
+    CHECK(sourceValue("UHD2BD") == SourceKind::BluRay);
+    CHECK(sourceValue("BD9") == SourceKind::BluRay);
+    CHECK(sourceValue("DLrip") == SourceKind::WebRip);
+    CHECK(sourceValue("FBRip") == SourceKind::WebRip);
+    CHECK(sourceValue("VoDHD") == SourceKind::WebDl);
+    CHECK(audioCodecValue("WMA") == "WMA");
+    CHECK(audioCodecValue("APE") == "APE");
+    CHECK(containerValue("F4V") == "f4v");
+
+    CHECK(editionIn("Blu-ray.BOX.通常版.240228") == EditionKind::Standard);
+    CHECK(editionIn("Grenadier.OP.01-02.Creditless.DVD") == EditionKind::Creditless);
+    CHECK(editionIn("Show.S01E01.NCOP1.1080p") == EditionKind::Creditless);
+    CHECK(editionIn("Taylor.Swift.The.Eras.Tour.2023.Taylors.Version") == EditionKind::ReRecorded);
+    CHECK(editionIn("Dragon.Ball.Path.To.Power.Edited.DVD") == EditionKind::AlternateCut);
+    CHECK(editionIn("Star.Trek.1979.The.Directors.Edition.German") == EditionKind::DirectorsCut);
+    CHECK(editionIn("The.Magicians.S04E01.PROOF.BDRip") == EditionKind::Fix);
+    CHECK(editionIn("DOOM.I.and.II.Enhanced.Repack") == EditionKind::Remastered);
+    CHECK(editionIn("King.Solomons.Mines.1985.DEU.Transfer.BDRip") == EditionKind::Remastered);
+    CHECK(editionIn("Watch.Dogs.2.Gold.Edition.Repack") == EditionKind::SpecialEdition);
+    // AN AI UPSCALE IS NOT A REMASTER. Without the lookbehind on the Enhanced row, the edition
+    // label wins over the AI-upscale routing and the fact is buried - which it was, once.
+    CHECK(editionIn("Predator.2.1990.2160p.Ai-Enhanced.HEVC") == EditionKind::Unknown);
+    CHECK(editionIn("Movie.2024.AI.Enhanced.1080p") == EditionKind::Unknown);
+    // `年齡限制版` is the version that KEEPS the material and carries the rating, not one cut for it.
+    CHECK(editionIn("[ANi] NUKITASHI [年齡限制版] - 04") == EditionKind::Uncut);
+    CHECK(languageCodesOfToken("国粤语音轨") == std::vector<std::string>{"cmn", "yue"});
+    CHECK(languageCodesOfToken("简／繁") == std::vector<std::string>{"zho"});
+
     // Languages added from the same triage. The CJK entries must match the WHOLE token, because
     // the matcher demands an ASCII boundary on each side.
     CHECK(languageCodesOfToken("粤语音轨") == std::vector<std::string>{"yue"});

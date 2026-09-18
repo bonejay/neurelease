@@ -125,6 +125,9 @@ std::string_view label(EditionKind value) noexcept {
     case EditionKind::Leaked: return "Leaked";
     case EditionKind::Colorized: return "Colorized";
     case EditionKind::Fullscreen: return "Fullscreen";
+    case EditionKind::Standard: return "Standard";
+    case EditionKind::Creditless: return "Creditless";
+    case EditionKind::ReRecorded: return "Re-recorded";
     case EditionKind::Theatrical: return "Theatrical";
     case EditionKind::Despecialized: return "Despecialized";
     case EditionKind::AssemblyCut: return "Assembly Cut";

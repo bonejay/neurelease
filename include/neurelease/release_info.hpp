@@ -153,6 +153,13 @@ enum class EditionKind : std::uint8_t {
     // film, a real edition of a real film. `Fullscreen` is the 4:3 transfer, the counterpart of
     // the `Widescreen` the table already had.
     AlternateCut = 49, Shortened = 50, Leaked = 51, Colorized = 52, Fullscreen = 53,
+    // QUEUE FILE 04. `Standard` is the counterpart of `Limited` - `通常版` exists precisely to say
+    // this is NOT the first-press edition, and answering nothing loses that. `Creditless` is the
+    // opening or ending with no credits over it, a standard anime extra the scene also writes
+    // NCOP and NCED. `ReRecorded` is a new performance of an existing work, not a new transfer of
+    // it: `Taylor's Version` is the spelling the corpus carries, and the distinction matters more
+    // than most here - the two recordings are different masters of different takes.
+    Standard = 54, Creditless = 55, ReRecorded = 56,
 };
 
 [[nodiscard]] std::string_view label(ResolutionTier value) noexcept;
