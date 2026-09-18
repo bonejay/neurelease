@@ -1,15 +1,15 @@
 {
  "manifest_version": 1,
- "model_version": "3",
- "trained": "2026-09-11",
- "training_run": "anime2/20260911-032100",
+ "model_version": "4",
+ "trained": "2026-09-17",
+ "training_run": "unified_2m/20260917-210404",
  "files": [
   {
    "name": "segmenter.bin",
    "format": "RPSEG2",
    "format_version": 3,
-   "bytes": 4022176,
-   "sha256": "4a08a096be6a40b14434f2aa1de9bdb45bca7d0e8f4e61db37c7127bfd44d531"
+   "bytes": 4021664,
+   "sha256": "c18b79baa480096b396950affbdb575e8839ce7d6e36f997d78c4f467f2dae50"
   },
   {
    "name": "character_map.bin",
