@@ -23,6 +23,7 @@ std::string_view label(SourceKind value) noexcept {
     case SourceKind::Hdtv: return "HDTV";
     case SourceKind::Dvd: return "DVD";
     case SourceKind::Cam: return "CAM";
+    case SourceKind::Screener: return "Screener";
     case SourceKind::Unknown: return {};
     }
     return {};
@@ -111,6 +112,13 @@ std::string_view label(EditionKind value) noexcept {
     case EditionKind::Regional: return "Regional";
     case EditionKind::HighQuality: return "High Quality";
     case EditionKind::Ultimate: return "Ultimate";
+    case EditionKind::Censored: return "Censored";
+    case EditionKind::FanEdit: return "Fan Edit";
+    case EditionKind::Bootleg: return "Bootleg";
+    case EditionKind::Unofficial: return "Unofficial";
+    case EditionKind::Bonus: return "Bonus";
+    case EditionKind::Festival: return "Festival";
+    case EditionKind::MultiDisc: return "Multi-Disc";
     case EditionKind::Theatrical: return "Theatrical";
     case EditionKind::Despecialized: return "Despecialized";
     case EditionKind::AssemblyCut: return "Assembly Cut";

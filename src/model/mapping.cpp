@@ -97,9 +97,13 @@ bool isProper(std::string_view value) {
 // RERIP RIDES WITH REPACK because Sonarr's RepackRegex is `\b(repack|rerip)\d?\b` - one flag for
 // both words. A rerip is the same event under a different scene name, and reading it as neither a
 // repack nor a revision is what left `...RERIP.1080p...` ranked below the release it replaced.
+//
+// THE PAST TENSE IS THE SAME EVENT. Sonarr's regex stops at the bare word, so `REPACKED` - which
+// the corpus writes 23 times - reads as nothing there. Here it raises the same flag.
 bool isRepack(std::string_view value) {
-    static const text::Regex pattern(R"((?:^|[ ._\-\[(])(?:REPACK|RERIP)[ ._-]?\d?(?:$|[^A-Za-z]))",
-                                     true);
+    static const text::Regex pattern(
+        R"((?:^|[ ._\-\[(])(?:REPACK(?:ED)?|RERIP(?:PED)?)[ ._-]?\d?(?:$|[^A-Za-z]))",
+        true);
     return matches(value, pattern);
 }
 

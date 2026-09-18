@@ -89,6 +89,7 @@ class SourceKind(Kind):
     HDTV = (4, 'HDTV')
     DVD = (5, 'DVD')
     CAM = (6, 'CAM')
+    SCREENER = (7, 'Screener')
 
 
 class VideoCodec(Kind):
@@ -205,6 +206,13 @@ class EditionKind(Kind):
     REGIONAL = (39, 'Regional')
     HIGH_QUALITY = (40, 'High Quality')
     ULTIMATE = (41, 'Ultimate')
+    CENSORED = (42, 'Censored')
+    FAN_EDIT = (43, 'Fan Edit')
+    BOOTLEG = (44, 'Bootleg')
+    UNOFFICIAL = (45, 'Unofficial')
+    BONUS = (46, 'Bonus')
+    FESTIVAL = (47, 'Festival')
+    MULTI_DISC = (48, 'Multi-Disc')
 
 
 class OriginField(IntEnum):

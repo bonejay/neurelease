@@ -93,6 +93,47 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(resolutionValue("Movie_4K_RHS_") == ResolutionTier::P2160);
     CHECK(languageCodesOfToken("官方中字") == std::vector<std::string>{"zho"});
 
+    // QUEUE FILE 02. A screener is the first source the vocabulary was missing outright rather
+    // than spelling badly, so `DVDScr` deliberately STOPS answering `DVD`: the disc it was pressed
+    // from is the less useful of the two facts, and Radarr keeps them apart for the same reason.
+    CHECK(sourceValue("SCREENER") == SourceKind::Screener);
+    CHECK(sourceValue("DVDScr") == SourceKind::Screener);
+    CHECK(sourceValue("WEBSCR") == SourceKind::Screener);
+    CHECK(sourceValue("Workprint") == SourceKind::Screener);
+    CHECK(sourceValue("BDRip") == SourceKind::BluRay);
+    CHECK(sourceValue("ts-hq") == SourceKind::Cam);
+    // Misspellings worth tolerating, because the intent is unambiguous in every one.
+    CHECK(sourceValue("Bluury") == SourceKind::BluRay);
+    CHECK(sourceValue("DVRiP") == SourceKind::Dvd);
+    CHECK(sourceValue("UltraHD") == SourceKind::BluRay);
+    CHECK(sourceTokenIsBareUhd("Ultra.HD"));
+    CHECK(resolutionValue("Movie.2160p.Ultra.HD.BluRay") == ResolutionTier::P2160);
+    // `THD+` is what the DD+ rule hands over for `[THD+AC3]`: there the plus is the separator.
+    CHECK(audioCodecValue("THD") == "TrueHD");
+    CHECK(audioCodecValue("THD+") == "TrueHD");
+    CHECK(audioCodecValue("ACC") == "AAC");
+    CHECK(audioCodecValue("OGG") == "VORBIS");
+
+    // `Censored` sits before the Uncensored rows, and cannot be reached from inside `UNCENSORED`
+    // because the row demands a separator where that word has a letter.
+    CHECK(editionIn("Kakyuusei.2.ep2.eng.subs.censored") == EditionKind::Censored);
+    CHECK(editionIn("Aneimo.UNCENSORED.1080p") == EditionKind::Uncensored);
+    CHECK(editionIn("Movie.Decensored.1080p") == EditionKind::Uncensored);
+    CHECK(editionIn("Star.Trek.TOS.s01e11e12.FANEDIT.900p") == EditionKind::FanEdit);
+    CHECK(editionIn("System_Of_A_Down-Leeds-Bootleg-2001-STA") == EditionKind::Bootleg);
+    CHECK(editionIn("Cross_Game_1-50_unofficial-batch") == EditionKind::Unofficial);
+    // The real span is the word alone; spelled out here because `UNCUT` sits earlier in the
+    // table and `editionIn` answers with the first row that matches, not the best one.
+    CHECK(editionIn("Moontrap.1989.BONUS.GERMAN.DVD9") == EditionKind::Bonus);
+    CHECK(editionsIn("Moontrap.1989.BONUS.UNCUT.GERMAN")
+          == std::vector<EditionKind>{EditionKind::Uncut, EditionKind::Bonus});
+    CHECK(editionIn("Farmhouse.2008.FESTiVAL.DVDRip") == EditionKind::Festival);
+    CHECK(editionIn("Mathilde.2004.2DISC.GERMAN.DVD9") == EditionKind::MultiDisc);
+    // A single disc is not a multi-disc release, which is why the count starts at two.
+    CHECK(editionIn("Mathilde.2004.1DISC.GERMAN.DVD9") == EditionKind::Unknown);
+    CHECK(editionIn("Castle.in.the.Sky.1986.RM.1080p") == EditionKind::Remastered);
+    CHECK(editionIn("Berserk.MEMORIAL.EDITION.02") == EditionKind::SpecialEdition);
+
     // Languages added from the same triage. The CJK entries must match the WHOLE token, because
     // the matcher demands an ASCII boundary on each side.
     CHECK(languageCodesOfToken("粤语音轨") == std::vector<std::string>{"yue"});

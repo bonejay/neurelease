@@ -174,13 +174,14 @@ std::vector<StatedSize> statedSizes(std::string_view subject, bool acceptBareNum
     }, sizes);
 
     static const Regex words(
-        R"((?:^|[ ._\-/\[(,+~&;])(4K|4\x{041A}|4\x{043A}|UHD|8K|FHD|FullHD|Full[ ._-]HD|SD)(?:$|[ ._\-/\]),+~&;]))",
+        R"((?:^|[ ._\-/\[(,+~&;])(4K|4\x{041A}|4\x{043A}|UHD|Ultra[ ._-]?HD|8K|FHD|FullHD|Full[ ._-]HD|SD)(?:$|[ ._\-/\]),+~&;]))",
         true);
     appendMatches(subject, words, [](const Match& match) {
         std::string word = text::asciiUpper(match.captured(1));
         eraseCharacters(word, " .-_");
         if (word == "8K") return StatedSize{7680, 4320, {}, -1, -1, false, false};
-        if (word == "UHD") return StatedSize{3840, 2160, {}, -1, -1, false, true};
+        if (word == "UHD" || word == "ULTRAHD")
+            return StatedSize{3840, 2160, {}, -1, -1, false, true};
         // Tested on the digit, because the K may be the Cyrillic one the regex above admits.
         if (word.starts_with("4")) return StatedSize{3840, 2160, {}, -1, -1, false, false};
         if (word == "SD") return StatedSize{720, 480, {}, -1, -1, false, false};
@@ -347,15 +348,19 @@ bool sourceTokenIsBareUhd(std::string_view token) {
     // UHDRDV and UHDR are `UHD` with HDR and Dolby Vision glued on - see sourceTokenExtras. They
     // imply the 4K disc for the same reason bare UHD does, and just as tentatively: `2160p.UHDR.
     // AMZN.WEB-DL` exists, and the WEB-DL must still win.
-    return value == "UHD" || value == "4K" || value == "UHDRDV" || value == "UHDR";
+    return value == "UHD" || value == "4K" || value == "UHDRDV" || value == "UHDR"
+        || value == "ULTRAHD";
 }
 
 SourceKind sourceValue(std::string_view token) {
     const std::string value = cleanedSourceToken(token);
-    if (value == "UHDRDV" || value == "UHDR") return SourceKind::BluRay;
-    if (value == "TS" || value == "TC" || contains(value, "TELESYNC") || contains(value, "TELECINE")
+    if (value == "UHDRDV" || value == "UHDR" || value == "ULTRAHD") return SourceKind::BluRay;
+    if (value == "TS" || value == "TC" || value == "TSHQ" || value == "HQTS"
+        || value == "TSRIP" || contains(value, "TELESYNC") || contains(value, "TELECINE")
         || contains(value, "HDTS") || contains(value, "HDTC") || contains(value, "CAMRIP")
         || contains(value, "HDCAM") || value == "CAM") return SourceKind::Cam;
+    if (contains(value, "SCREENER") || value.ends_with("SCR")
+        || contains(value, "WORKPRINT")) return SourceKind::Screener;
     if (contains(value, "WEB")) return contains(value, "DL") ? SourceKind::WebDl : SourceKind::WebRip;
     // DLMUX is an Italian-scene spelling for a web download remuxed into a container: the `DL`
     // is the source and the `MUX` the packaging, so it belongs with WEB-DL rather than with the
@@ -376,7 +381,8 @@ SourceKind sourceValue(std::string_view token) {
     // at all - which is what 138 corpus names got - is further from the truth than that.
     if (value == "LD" || value == "LASERDISC" || value == "SVCD" || value == "VCD")
         return SourceKind::Dvd;
-    if (contains(value, "DVD")) return SourceKind::Dvd;
+    // `DVRIP` is `DVDRip` with a letter dropped, 19 times in the corpus.
+    if (contains(value, "DVD") || contains(value, "DVRIP")) return SourceKind::Dvd;
     if (contains(value, "HDRIP")) return SourceKind::WebRip;
     if (value.ends_with("RIP") && (startsWith(value, "NETFLIX") || startsWith(value, "NF")
         || startsWith(value, "AMZN") || startsWith(value, "AMAZON") || startsWith(value, "HULU")
@@ -387,7 +393,8 @@ SourceKind sourceValue(std::string_view token) {
     if (contains(value, "REMUX") || contains(value, "BDMV") || value == "DISC"
         || isDiscSpelling(value)) return SourceKind::BluRay;
     if (contains(value, "BLURAY") || contains(value, "BDRIP") || contains(value, "BRRIP")
-        || value == "BD" || value == "BURAY" || value.ends_with("SD-BD")) return SourceKind::BluRay;
+        || value == "BD" || value == "BURAY" || contains(value, "BLUURY")
+        || contains(value, "BLUERAY") || value.ends_with("SD-BD")) return SourceKind::BluRay;
     return SourceKind::Unknown;
 }
 
@@ -482,8 +489,13 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // A restoration and a regrade are remasters by another name: a new pass over the original
         // materials. Folding them in rather than adding members keeps one fact in one place.
         {R"((?:^|[ ._\-\[(])(Restored|Restoration|Restaurierte[ ._-]?Fassung|Rekonstrukcja|Remasterizado|Regraded|Re[ ._-]?Grade|Color[ ._-]?Corrected|\x{9AD8}\x{6E05}\x{4FEE}\x{590D}\x{7248})(?:$|[^A-Za-z]))", "Remastered"},
+        // `RM` alone, which the scene writes for a remaster of an older film. Two letters, and
+        // safe only because this table is asked nothing but spans the model already calls editions.
+        {R"((?:^|[ ._\-\[(])(RM|REMAST)(?:$|[^A-Za-z]))", "Remastered"},
         {R"((?:^|[ ._\-\[(])(Criterion(?:[ ._-]?Collection)?)(?:$|[^A-Za-z]))", "Criterion"},
         {R"((?:^|[ ._\-\[(])(Open[ ._-]?Matte)(?:$|[^A-Za-z]))", "Open Matte"},
+        {R"((?:^|[ ._\-\[(])(Censored)(?:$|[^A-Za-z]))", "Censored"},
+        {R"((?:^|[^A-Za-z0-9])(\x{6709}\x{7801}|\x{6709}\x{78BC}|\x{30E2}\x{30B6}\x{30A4}\x{30AF}\x{6709})(?:$|[^A-Za-z]))", "Censored"},
         {R"((?:^|[ ._\-\[(])(Uncensored)(?:$|[^A-Za-z]))", "Uncensored"},
         {R"((?:^|[ ._\-\[(])(\x{7121}\x{4FEE}\x{6B63})(?:$|[^A-Za-z]))", "Uncensored"},
         {R"((?:^|[ ._\-\[(])(iNTERNAL|INTERNAL|iNT)(?:$|[^A-Za-z]))", "Internal"},
@@ -503,6 +515,8 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((\x{FF24}\x{FF2C}\x{7248}|DL\x{7248}|\x{30C0}\x{30A6}\x{30F3}\x{30ED}\x{30FC}\x{30C9}\x{7248}))", "Download"},
         {R"((\x{30D1}\x{30C3}\x{30B1}\x{30FC}\x{30B8}\x{7248}|\x{30BB}\x{30EB}\x{7248}))", "Retail"},
         {R"((?:^|[ ._\-\[(])(Special[ ._-]?Edition|SE(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Special Edition"},
+        // A named retail edition with no SKU family of its own. One anime does not earn a member.
+        {R"((?:^|[ ._\-\[(])((?:Memorial|Premium|Legacy|Platinum|Definitive)[ ._-]?Edition)(?:$|[^A-Za-z]))", "Special Edition"},
         {R"((?:^|[ ._\-\[(])(Deluxe(?:[ ._-]?Edition)?)(?:$|[^A-Za-z]))", "Deluxe"},
         // APPENDED BELOW THE FOURTEEN ABOVE, because the table is read in order and the first
         // entry that matches becomes the PRIMARY edition. These eight are rarer and weaker
@@ -546,6 +560,15 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // Hi-Res is the audio equivalent - a master at a higher rate than the ordinary release.
         {R"((?:^|[^A-Za-z0-9])(Hi[ ._-]?Res|\x{9AD8}\x{7801}\x{7248}|60\x{5E27}\x{7387}\x{7248}\x{672C}|120\x{5E27}\x{7387}\x{7248}\x{672C}|\x{8D85}\x{9AD8}\x{753B}\x{8CEA}4k\x{7248}|\x{9AD8}\x{6E05}\x{7248}|hd\x{7248}|HD[ ._-]?Ver(?:sion)?)(?:$|[^A-Za-z]))", "High Quality"},
         {R"((?:^|[ ._\-\[(])(Ultimate(?:[ ._-]?(?:Edition|Cut))?)(?:$|[^A-Za-z]))", "Ultimate"},
+        {R"((?:^|[ ._\-\[(])(Fan[ ._-]?Edit(?:ion)?|Fanedit|Fan[ ._-]?Cut)(?:$|[^A-Za-z]))", "Fan Edit"},
+        {R"((?:^|[ ._\-\[(])(Bootleg|Soundboard|SBD)(?:$|[^A-Za-z]))", "Bootleg"},
+        {R"((?:^|[ ._\-\[(])(Unofficial(?:[ ._-]?(?:Batch|Release|Sub[s]?))?)(?:$|[^A-Za-z]))", "Unofficial"},
+        // BONUS MATERIAL, not a bonus episode: this is the extras disc, which the German DVD
+        // scene marks on the whole release.
+        {R"((?:^|[ ._\-\[(])(BONUS(?:[ ._-]?(?:Disc|DVD|CD|Material))?|Extras[ ._-]?Disc)(?:$|[^A-Za-z]))", "Bonus"},
+        {R"((?:^|[ ._\-\[(])(Festival(?:[ ._-]?(?:Cut|Version|Edition))?)(?:$|[^A-Za-z]))", "Festival"},
+        // The count is not carried, only that there is more than one disc - see the enum comment.
+        {R"((?:^|[ ._\-\[(])([2-9][ ._-]?(?:DISC|DVD|BD|CD)S?|Multi[ ._-]?Disc|Dual[ ._-]?Disc)(?:$|[^A-Za-z]))", "Multi-Disc"},
     };
     static const std::vector<CompiledSpelling> table = compile(spellings);
     return table;
@@ -578,6 +601,13 @@ EditionKind editionOfLabel(std::string_view value) {
     if (value == "Regional") return EditionKind::Regional;
     if (value == "High Quality") return EditionKind::HighQuality;
     if (value == "Ultimate") return EditionKind::Ultimate;
+    if (value == "Censored") return EditionKind::Censored;
+    if (value == "Fan Edit") return EditionKind::FanEdit;
+    if (value == "Bootleg") return EditionKind::Bootleg;
+    if (value == "Unofficial") return EditionKind::Unofficial;
+    if (value == "Bonus") return EditionKind::Bonus;
+    if (value == "Festival") return EditionKind::Festival;
+    if (value == "Multi-Disc") return EditionKind::MultiDisc;
     if (value == "Special Edition") return EditionKind::SpecialEdition;
     if (value == "Deluxe") return EditionKind::Deluxe;
     if (value == "Redux") return EditionKind::Redux;
@@ -643,7 +673,9 @@ std::string audioCodecValue(std::string_view token) {
     value = eraseMatches(value, trailingMultiplier);
     eraseCharacters(value, " _-.");
     if (value.empty()) return atmos ? "Atmos" : std::string{};
-    if (contains(value, "TRUEHD")) return "TrueHD";
+    // `THD` IS TRUEHD, and it arrives as `THD+` when the name writes `[THD+AC3]`: the DD+ rule
+    // above appends the plus, which belongs to the separator here rather than to the codec.
+    if (contains(value, "TRUEHD") || startsWith(value, "THD")) return "TrueHD";
     if (contains(value, "DTSHDMA") || contains(value, "DTSHD") || contains(value, "DTSMA")
         || contains(value, "DTSHR") || contains(value, "DTSMASTER")) return "DTS-HD MA";
     if (contains(value, "DTSX")) return "DTS:X";
@@ -652,10 +684,12 @@ std::string audioCodecValue(std::string_view token) {
         || contains(value, "DDPA") || contains(value, "DOLBYDIGITALPLUS")
         || contains(value, "DOLBYDPLUS")) return "DDP";
     if (contains(value, "AC3") || contains(value, "DOLBYD") || value == "DD") return "DD";
-    if (contains(value, "AAC")) return "AAC";
+    // `ACC` is `AAC` with the letters transposed - 19 times, and only ever in audio position.
+    if (contains(value, "AAC") || value == "ACC") return "AAC";
     if (contains(value, "FLAC")) return "FLAC";
     if (contains(value, "OPUS")) return "OPUS";
-    if (contains(value, "VORBIS")) return "VORBIS";
+    // An OGG file carries Vorbis unless it says otherwise, which is how the scene uses the word.
+    if (contains(value, "VORBIS") || contains(value, "OGG")) return "VORBIS";
     if (contains(value, "ALAC")) return "ALAC";
     if (contains(value, "PCM")) return "PCM";
     if (contains(value, "MP3")) return "MP3";

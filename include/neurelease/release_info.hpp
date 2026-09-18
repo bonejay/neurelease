@@ -87,6 +87,9 @@ enum class ResolutionTier : std::uint8_t {
 };
 enum class SourceKind : std::uint8_t {
     Unknown = 0, BluRay = 1, WebDl = 2, WebRip = 3, Hdtv = 4, Dvd = 5, Cam = 6,
+    // A REVIEWER'S COPY. Not a cam - a screener is a clean transfer - and not the disc it came
+    // from either, because it carries watermarks and is often cut. Appended: the C ABI pins these.
+    Screener = 7,
 };
 enum class VideoCodec : std::uint8_t {
     Unknown = 0, Av1 = 1, Hevc = 2, H264 = 3, Xvid = 4, Mpeg2 = 5, Vp9 = 6,
@@ -131,6 +134,16 @@ enum class EditionKind : std::uint8_t {
     // Chinese encode editions - 高码版 high bitrate, 60帧率版本 sixty frames, 高清版 HD - which all
     // mean "the better of the two encodes we published".
     Numbered = 38, Regional = 39, HighQuality = 40, Ultimate = 41,
+    // QUEUE FILE 02. `Censored` is the stated opposite of `Uncensored` and just as convertible.
+    // `FanEdit` is a RE-CUT BY SOMEONE OTHER THAN THE STUDIO - a different work from the release
+    // it was made out of, which is why it is not folded into Unofficial. `Bootleg` is an
+    // unofficial recording, the word the music scene uses; `Unofficial` is the wider claim, an
+    // encode or batch nobody official published. `Bonus` is bonus-disc material, which Sonarr
+    // models as season extras. `Festival` is the cut shown at festivals, distinct from the
+    // theatrical one. `MultiDisc` says a release spans several discs without saying how many -
+    // the same compromise `Numbered` makes, for the same reason: there is no field for the count.
+    Censored = 42, FanEdit = 43, Bootleg = 44, Unofficial = 45, Bonus = 46, Festival = 47,
+    MultiDisc = 48,
 };
 
 [[nodiscard]] std::string_view label(ResolutionTier value) noexcept;
