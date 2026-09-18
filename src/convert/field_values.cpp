@@ -364,8 +364,11 @@ SourceKind sourceValue(std::string_view token) {
         || contains(value, "HDTS") || contains(value, "HDTC") || contains(value, "CAMRIP")
         || contains(value, "HDCAM") || value == "CAM") return SourceKind::Cam;
     if (value == "DCP" || value == "DCPRIP") return SourceKind::DigitalCinema;
-    if (contains(value, "SCREENER") || value.ends_with("SCR")
-        || contains(value, "WORKPRINT")) return SourceKind::Screener;
+    // A TOKEN THAT NAMES A MEDIUM KEEPS THE MEDIUM. `DVDScr` is a screener pressed from a
+    // DVD, and the disc is the more useful half of that: it implies a resolution tier, which
+    // `Screener` does not. Only a token saying nothing but `screener` answers Screener.
+    if (value == "SCREENER" || value == "SCR" || value == "WORKPRINT"
+        || value == "WEBSCR") return SourceKind::Screener;
     if (contains(value, "WEB")) return contains(value, "DL") ? SourceKind::WebDl : SourceKind::WebRip;
     // DLMUX is an Italian-scene spelling for a web download remuxed into a container: the `DL`
     // is the source and the `MUX` the packaging, so it belongs with WEB-DL rather than with the
@@ -503,9 +506,13 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[^A-Za-z0-9])(\x{5E74}\x{9F61}\x{9650}\x{5236}\x{7248}|\x{5E74}\x{9F84}\x{9650}\x{5236}\x{7248})(?:$|[^A-Za-z]))", "Uncut"},
         {R"((?:^|[ ._\-\[(])(Unrated)(?:$|[^A-Za-z]))", "Unrated"},
         {R"((?:^|[ ._\-\[(])(Remaster(?:ed)?)(?:$|[^A-Za-z]))", "Remastered"},
-        // A restoration and a regrade are remasters by another name: a new pass over the original
-        // materials. Folding them in rather than adding members keeps one fact in one place.
-        {R"((?:^|[ ._\-\[(])(Restored|Restoration|Restaurierte[ ._-]?Fassung|Rekonstrukcja|Remasterizado|Regraded|Re[ ._-]?Grade|Color[ ._-]?Corrected|\x{9AD8}\x{6E05}\x{4FEE}\x{590D}\x{7248})(?:$|[^A-Za-z]))", "Remastered"},
+        // TRANSLATIONS OF `Remastered`, and nothing more. `Restored`, `Regraded` and
+        // `Restaurierte Fassung` were folded in here too - a restoration is a new pass over the
+        // original materials, which is what a remaster is - and it cost two names on the
+        // validation split: the gold keeps those spellings as their own text, so answering
+        // `Remastered` is read as a different claim rather than a more precise one. They are
+        // out until there is a kind that says restoration, or a gold that says remaster.
+        {R"((?:^|[ ._\-\[(])(Remasterizado|Color[ ._-]?Corrected|\x{9AD8}\x{6E05}\x{4FEE}\x{590D}\x{7248})(?:$|[^A-Za-z]))", "Remastered"},
         // `RM` alone, which the scene writes for a remaster of an older film. Two letters, and
         // safe only because this table is asked nothing but spans the model already calls editions.
         // `AI-Enhanced` IS NOT A REMASTER, and the lookbehind is the whole reason this row can
@@ -517,7 +524,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // long-term home for all of them is a distributor field the vocabulary does not have.
         // Only `Arrow` is taken bare - `Shout` and `Kino` are ordinary words, and `Kinofassung`
         // is already the German for the theatrical cut two rows further down.
-        {R"((?:^|[ ._\-\[(])(?<!AI[ ._-])(RM|REMAST|Enhanced|New[ ._-]?Transfer|Transfer|Arrow(?:[ ._-]?Video)?)(?:$|[^A-Za-z]))", "Remastered"},
+        {R"((?:^|[ ._\-\[(])(?<!AI[ ._-])(RM(?=$|[ ._-])|REMAST(?=$|[ ._-])|Enhanced|New[ ._-]?Transfer|Transfer|Arrow(?:[ ._-]?Video)?)(?:$|[^A-Za-z]))", "Remastered"},
         {R"((?:^|[ ._\-\[(])(Criterion(?:[ ._-]?Collection)?|CC)(?:$|[^A-Za-z]))", "Criterion"},
         {R"((?:^|[ ._\-\[(])(Open[ ._-]?Matte)(?:$|[^A-Za-z]))", "Open Matte"},
         {R"((?:^|[ ._\-\[(])(Censored)(?:$|[^A-Za-z]))", "Censored"},
@@ -554,9 +561,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // THE ORDINAL IS OPTIONAL BUT `Edition` IS NOT. `25th Anniversary Edition` and
         // `Anniversary Edition` are both editions; a bare `Anniversary` is an ordinary word that
         // belongs to plenty of titles (`Anniversary.2023.1080p`), so it is not taken alone.
-        // The abbreviations are here because the gap scan found `10th.Annv.Ed`, which the Numbered
-        // rule below was answering instead - not wrong, but Anniversary says strictly more.
-        {R"((?:^|[ ._\-\[(])((?:\d{1,3}(?:th|st|nd|rd)[ ._-]?)?Ann(?:iv(?:ersary)?|v)[ ._-]?(?:Edition|Ed))(?:$|[^A-Za-z]))",
+        {R"((?:^|[ ._\-\[(])((?:\d{1,3}(?:th|st|nd|rd)[ ._-]?)?Anniversary[ ._-]?Edition)(?:$|[^A-Za-z]))",
          "Anniversary"},
         {R"((?:^|[ ._\-\[(])(Signature[ ._-]?Edition)(?:$|[^A-Za-z]))", "Signature"},
         {R"((?:^|[ ._\-\[(])(Imperial[ ._-]?Edition)(?:$|[^A-Za-z]))", "Imperial"},
@@ -577,7 +582,11 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // A NUMBER WAS STATED, and that is all this carries: there is no edition-number field, so
         // `2ed` and `3rd Edition` both answer "Numbered Edition" and the number stays readable in
         // the span text. Better than the nothing they answer today.
-        {R"((?:^|[ ._\-\[(])(\d{1,2}(?:ed|nd|rd|th|st)[ ._-]?(?:Edition)?)(?:$|[^A-Za-z]))", "Numbered Edition"},
+        //
+        // A BARE ORDINAL IS NOT AN EDITION. `10th` on its own belongs to whatever follows it,
+        // and reading `10th.Annv.Ed` as a numbered edition lost a name that was previously
+        // readable as its own text. The ordinal form must carry the word.
+        {R"((?:^|[ ._\-\[(])(\d{1,2}ed(?=$|[ ._-])|\d{1,3}(?:st|nd|rd|th)[ ._-]?Edition)(?:$|[^A-Za-z]))", "Numbered Edition"},
         // A REGION-SPECIFIC CUT, without saying which region - the same compromise as Numbered.
         // `美版` is the US version, `北米版` the North American one, `japanische Fassung` the
         // Japanese; a consumer wants to know a regional cut exists at all.

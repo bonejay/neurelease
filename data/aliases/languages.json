@@ -308,14 +308,6 @@
     "code": "eng"
   },
   {
-    "expression": "MULTI|MULTI[ ._-]?\\d|MULTILANG|MULTILANGUAGE|M[ ._-]?SUBS?|MUTI[ ._-]?SUB|MULTIPLE[ ._-]?SUBS?|MULTISUB|\\d[ ._-]?LANG|双语字幕|雙語字幕|双语|雙語|双字幕",
-    "code": "mul"
-  },
-  {
-    "expression": "多言語字幕|多字幕|多语字幕|複数字幕|简繁多语字幕|多語字幕|双语字幕|雙語字幕|双语|雙語|双字幕",
-    "code": "mul"
-  },
-  {
     "expression": "粤|粤语|粵語|粤语音轨|粤语配音|粵語音軌|CANTONESE|YUE|(?:国|國)?(?:粤|粵)(?:日|英|韩)*多?(?:音轨|音軌|语配音|語配音|双语|語音軌)",
     "code": "yue"
   },
@@ -352,7 +344,7 @@
     "code": "ita"
   },
   {
-    "expression": "NACIONAL|DUBLADA|DUBLADO|LEG|LEGENDADO",
+    "expression": "LEGENDADO",
     "code": "por"
   },
   {

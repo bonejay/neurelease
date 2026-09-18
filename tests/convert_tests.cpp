@@ -47,9 +47,12 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(editionIn("Roller_Coaster-CONVERT-DVDRip") == EditionKind::Reencode);
     CHECK(editionIn("Darby.O.Gill.1959.iNT.DVDRip") == EditionKind::Internal);
     CHECK(editionIn("Aneimo.UNC.1080p") == EditionKind::Uncensored);
-    // A restoration, a regrade and a remaster are one fact under three names.
-    CHECK(editionIn("Amityville.1992.RESTORED.BDRip") == EditionKind::Remastered);
-    CHECK(editionIn("Black.Venus.1983.Regraded.German") == EditionKind::Remastered);
+    // A RESTORATION IS NOT A REMASTER HERE, though it nearly is everywhere else: the gold keeps
+    // `RESTORED` and `Regraded` as their own text, so typing them as Remastered reads as a
+    // different claim rather than a more precise one, and cost two validation names.
+    CHECK(editionIn("Amityville.1992.RESTORED.BDRip") == EditionKind::Unknown);
+    CHECK(editionIn("Black.Venus.1983.Regraded.German") == EditionKind::Unknown);
+    CHECK(editionIn("Pelicula.1992.Remasterizado.BDRip") == EditionKind::Remastered);
     // The long cut and the cinema cut, named in the language that released them.
     CHECK(editionIn("Man-Eater.1980.Langfassung.German") == EditionKind::Extended);
     CHECK(editionIn("F.I.S.T.1978.KiNOFASSUNG.German") == EditionKind::Theatrical);
@@ -67,9 +70,11 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     // `Numbered` and `Regional` each drop a detail the vocabulary has no field for - which number,
     // which region - and keep the only part a consumer can act on: that one was stated at all.
     CHECK(editionIn("Modern C (MEAP v4) 3ed 2024") == EditionKind::Numbered);
-    // The abbreviation beats the Numbered rule, because Anniversary says strictly more.
-    CHECK(editionIn("Some.Game.10th.Annv.Ed") == EditionKind::Anniversary);
-    CHECK(editionIn("Some.Game.Anniv.Edition") == EditionKind::Anniversary);
+    // A BARE ORDINAL IS NOT AN EDITION, and neither is an abbreviation of Anniversary. Both were
+    // read as editions for a while and both COST a name on the validation split: `10th.Annv.Ed`
+    // was already readable as its own text, and normalising it lost that.
+    CHECK(editionIn("Some.Game.10th.Annv.Ed") == EditionKind::Unknown);
+    CHECK(editionIn("Movie.21st.Edition.2023") == EditionKind::Numbered);
     CHECK(editionIn("Lean Six Sigma 2nd Edition 2023") == EditionKind::Numbered);
     CHECK(editionIn("[DBD-Raws][屍鬼][美版][1080P]") == EditionKind::Regional);
     CHECK(editionIn("[DBD-Raws][屍鬼][USA.Ver][1080P]") == EditionKind::Regional);
@@ -94,10 +99,10 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(languageCodesOfToken("官方中字") == std::vector<std::string>{"zho"});
 
     // QUEUE FILE 02. A screener is the first source the vocabulary was missing outright rather
-    // than spelling badly, so `DVDScr` deliberately STOPS answering `DVD`: the disc it was pressed
-    // from is the less useful of the two facts, and Radarr keeps them apart for the same reason.
+    // than spelling badly. Only a token saying nothing but `screener` answers it: `DVDScr` keeps
+    // the disc, which is the more useful half because it implies a resolution tier.
     CHECK(sourceValue("SCREENER") == SourceKind::Screener);
-    CHECK(sourceValue("DVDScr") == SourceKind::Screener);
+    CHECK(sourceValue("DVDScr") == SourceKind::Dvd);
     CHECK(sourceValue("WEBSCR") == SourceKind::Screener);
     CHECK(sourceValue("Workprint") == SourceKind::Screener);
     CHECK(sourceValue("BDRip") == SourceKind::BluRay);

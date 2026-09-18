@@ -658,7 +658,13 @@ constexpr int FloorTolerance = 2;
 // fields 89.44% against 89.08%, and the new `anime` field lands at 96.50% through the int8 runtime.
 // A ratchet that only ever goes up would have to refuse a better parser to keep a fixture score, so
 // the total is re-pinned and the reason is written here rather than argued again next time.
-constexpr int RecordedFullyCorrect = 663;   // 2026-09-11, model 3 (was 667 on the hybrid-labelled
+constexpr int RecordedFullyCorrect = 670;   // 2026-09-18, the unmapped-span queue: seven more
+                                            // cases, almost all of them SOURCE spellings the
+                                            // tables could not read (457 -> 460 on that field
+                                            // alone). Five readings added in the same work were
+                                            // reverted first, for disagreeing with the gold on
+                                            // the validation split; see the commit
+                                            // (was 663, 2026-09-11, model 3; 667 on the hybrid-labelled
                                             // weights, which was 652: merge-sub plus the source and
                                             // codec spellings, the two group reconciliations and
                                             // the channel-count spelling
