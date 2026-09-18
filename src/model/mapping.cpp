@@ -90,7 +90,7 @@ bool hasMultiAudioTag(std::string_view value) {
 }
 
 bool isProper(std::string_view value) {
-    static const text::Regex pattern(R"((?:^|[ ._\-\[(])(?:REAL[ ._-]+)?PROPER(?:$|[^A-Za-z]))", true);
+    static const text::Regex pattern(R"((?:^|[ ._\-\[(])(?:REAL[ ._-]+)?PROPER(?:FIX)?(?:$|[^A-Za-z]))", true);
     return matches(value, pattern);
 }
 

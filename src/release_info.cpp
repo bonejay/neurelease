@@ -41,6 +41,7 @@ std::string_view label(VideoCodec value) noexcept {
     case VideoCodec::Wmv: return "WMV";
     case VideoCodec::Vvc: return "VVC";
     case VideoCodec::Vp8: return "VP8";
+    case VideoCodec::RealVideo: return "RealVideo";
     case VideoCodec::Unknown: return {};
     }
     return {};
@@ -119,6 +120,11 @@ std::string_view label(EditionKind value) noexcept {
     case EditionKind::Bonus: return "Bonus";
     case EditionKind::Festival: return "Festival";
     case EditionKind::MultiDisc: return "Multi-Disc";
+    case EditionKind::AlternateCut: return "Alternate Cut";
+    case EditionKind::Shortened: return "Shortened";
+    case EditionKind::Leaked: return "Leaked";
+    case EditionKind::Colorized: return "Colorized";
+    case EditionKind::Fullscreen: return "Fullscreen";
     case EditionKind::Theatrical: return "Theatrical";
     case EditionKind::Despecialized: return "Despecialized";
     case EditionKind::AssemblyCut: return "Assembly Cut";

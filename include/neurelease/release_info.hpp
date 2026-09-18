@@ -94,6 +94,9 @@ enum class SourceKind : std::uint8_t {
 enum class VideoCodec : std::uint8_t {
     Unknown = 0, Av1 = 1, Hevc = 2, H264 = 3, Xvid = 4, Mpeg2 = 5, Vp9 = 6,
     Vc1 = 7, Wmv = 8, Vvc = 9, Vp8 = 10,
+    // RealVideo, which `.rmvb` releases still carry. Written `RV10`, `RV20`, `RV30`, `RV40`; the
+    // generation is not carried, for the same reason `Numbered` drops its number.
+    RealVideo = 11,
 };
 enum class MediumKind : std::uint8_t {
     Unknown = 0, Video = 1, Music = 2, Audiobook = 3, Book = 4, Comic = 5,
@@ -144,6 +147,12 @@ enum class EditionKind : std::uint8_t {
     // the same compromise `Numbered` makes, for the same reason: there is no field for the count.
     Censored = 42, FanEdit = 43, Bootleg = 44, Unofficial = 45, Bonus = 46, Festival = 47,
     MultiDisc = 48,
+    // QUEUE FILE 03. `AlternateCut` is a different cut that claims no direction - unlike
+    // `Extended` and `Shortened`, which say which way. `Leaked` marks a release that escaped
+    // before its publisher meant it to. `Colorized` is a colourised print of a black-and-white
+    // film, a real edition of a real film. `Fullscreen` is the 4:3 transfer, the counterpart of
+    // the `Widescreen` the table already had.
+    AlternateCut = 49, Shortened = 50, Leaked = 51, Colorized = 52, Fullscreen = 53,
 };
 
 [[nodiscard]] std::string_view label(ResolutionTier value) noexcept;

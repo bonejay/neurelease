@@ -134,6 +134,35 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(editionIn("Castle.in.the.Sky.1986.RM.1080p") == EditionKind::Remastered);
     CHECK(editionIn("Berserk.MEMORIAL.EDITION.02") == EditionKind::SpecialEdition);
 
+    // QUEUE FILE 03. RealVideo is a codec the enum lacked; `.rmvb` releases still carry it.
+    CHECK(codecValue("RV10") == VideoCodec::RealVideo);
+    CHECK(codecValue("RV40") == VideoCodec::RealVideo);
+    CHECK(codecValue("RV") == VideoCodec::Unknown);
+    // A platform with `DL` glued on is the mirror of the platform-rip rule: nothing says `WEB`.
+    CHECK(sourceValue("CR-DL") == SourceKind::WebDl);
+    CHECK(sourceValue("LDRip") == SourceKind::Dvd);
+    CHECK(sourceValue("蓝光") == SourceKind::BluRay);
+    CHECK(audioCodecValue("WAV") == "PCM");
+
+    CHECK(editionIn("Movie.2024.LEAKED.1080p") == EditionKind::Leaked);
+    CHECK(editionIn("Rewind.1990s.S01E04.SHORTENED.720p") == EditionKind::Shortened);
+    CHECK(editionIn("Puppet.Master.2003.ALTERNATIVE.CUT.720P") == EditionKind::AlternateCut);
+    CHECK(editionIn("Phaeton.an.Erde.1981.Alternate.Cut.German") == EditionKind::AlternateCut);
+    CHECK(editionIn("Arrested.Development.S04.Remix.Part.1") == EditionKind::AlternateCut);
+    CHECK(editionIn("Holiday.Inn.1942.Colorized.1080p") == EditionKind::Colorized);
+    CHECK(editionIn("The.Running.Man.1987.FS.DVDRip") == EditionKind::Fullscreen);
+    CHECK(editionIn("Movie.1987.WS.DVDRip") == EditionKind::Widescreen);
+    CHECK(editionIn("Human.Condition.1959.CC.1080p") == EditionKind::Criterion);
+    CHECK(editionIn("The.Faculty.1998.SHOUT.CE.1080p") == EditionKind::Collector);
+    CHECK(editionIn("Hamidashi.Creative.豪華版") == EditionKind::Deluxe);
+    CHECK(editionIn("Culture.Club.Kissing.To.Be.Clever.Expanded.Edition") == EditionKind::Extended);
+    // PROPERFIX runs two words together, so both rules used to miss it: it is a proper AND a fix.
+    CHECK(editionIn("Arabasta.17.PROPERFIX-One.Pace") == EditionKind::Fix);
+    // A bare PROPER stays a proper - it is not an edition of its own.
+    CHECK(editionIn("Movie.2024.PROPER.1080p") == EditionKind::Unknown);
+    CHECK(languageCodesOfToken("国英双语") == std::vector<std::string>{"cmn", "eng"});
+    CHECK(languageCodesOfToken("简繁日双语") == std::vector<std::string>{"zho", "jpn"});
+
     // Languages added from the same triage. The CJK entries must match the WHOLE token, because
     // the matcher demands an ASCII boundary on each side.
     CHECK(languageCodesOfToken("粤语音轨") == std::vector<std::string>{"yue"});

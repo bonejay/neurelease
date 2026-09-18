@@ -379,11 +379,17 @@ SourceKind sourceValue(std::string_view token) {
     // A LASERDISC AND A SUPER VIDEO CD ARE DISCS. Neither is a Blu-ray, but the family this
     // vocabulary offers for a pressed optical disc is the disc family, and answering nothing
     // at all - which is what 138 corpus names got - is further from the truth than that.
-    if (value == "LD" || value == "LASERDISC" || value == "SVCD" || value == "VCD")
+    if (value == "LD" || value == "LASERDISC" || value == "LDRIP" || value == "SVCD"
+        || value == "VCD")
         return SourceKind::Dvd;
     // `DVRIP` is `DVDRip` with a letter dropped, 19 times in the corpus.
     if (contains(value, "DVD") || contains(value, "DVRIP")) return SourceKind::Dvd;
     if (contains(value, "HDRIP")) return SourceKind::WebRip;
+    if (value.ends_with("DL") && (startsWith(value, "CR") || startsWith(value, "NETFLIX")
+        || startsWith(value, "NF") || startsWith(value, "AMZN") || startsWith(value, "AMAZON")
+        || startsWith(value, "HULU") || startsWith(value, "DSNP") || startsWith(value, "DISNEY")
+        || startsWith(value, "ITUNES") || startsWith(value, "ATVP") || startsWith(value, "HMAX")
+        || startsWith(value, "FUNI") || startsWith(value, "ADN"))) return SourceKind::WebDl;
     if (value.ends_with("RIP") && (startsWith(value, "NETFLIX") || startsWith(value, "NF")
         || startsWith(value, "AMZN") || startsWith(value, "AMAZON") || startsWith(value, "HULU")
         || startsWith(value, "DSNP") || startsWith(value, "DISNEY") || startsWith(value, "ITUNES")
@@ -392,6 +398,8 @@ SourceKind sourceValue(std::string_view token) {
         return SourceKind::WebRip;
     if (contains(value, "REMUX") || contains(value, "BDMV") || value == "DISC"
         || isDiscSpelling(value)) return SourceKind::BluRay;
+    if (contains(value, "\u84dd\u5149") || contains(value, "\u85cd\u5149"))
+        return SourceKind::BluRay;
     if (contains(value, "BLURAY") || contains(value, "BDRIP") || contains(value, "BRRIP")
         || value == "BD" || value == "BURAY" || contains(value, "BLUURY")
         || contains(value, "BLUERAY") || value.ends_with("SD-BD")) return SourceKind::BluRay;
@@ -413,6 +421,8 @@ VideoCodec codecValue(std::string_view token) {
     if (contains(value, "WMV")) return VideoCodec::Wmv;
     if (contains(value, "VVC") || contains(value, "H266") || contains(value, "H.266")) return VideoCodec::Vvc;
     if (contains(value, "VP8")) return VideoCodec::Vp8;
+    if (contains(value, "RV10") || contains(value, "RV20") || contains(value, "RV30")
+        || contains(value, "RV40") || contains(value, "REALVIDEO")) return VideoCodec::RealVideo;
     if (contains(value, "MPEG4") || contains(value, "MPEG-4")) return VideoCodec::Xvid;
     if (contains(value, "MPEG")) return VideoCodec::Mpeg2;
     return VideoCodec::Unknown;
@@ -477,7 +487,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // A NAMED EXTENDED CUT. `Super Duper Cut` is what Deadpool 2 called its longer version and
         // `Ultimate Cut` what Batman v Superman called its own; both are the Extended claim under a
         // marketing name, so they answer Extended rather than earning members of their own.
-        {R"((?:^|[ ._\-\[(])(Super[ ._-]?Duper[ ._-]?Cut|Extended[ ._-]?Fassung|Long[ ._-]?Version)(?:$|[^A-Za-z]))", "Extended"},
+        {R"((?:^|[ ._\-\[(])(Super[ ._-]?Duper[ ._-]?Cut|Extended[ ._-]?Fassung|Long[ ._-]?Version|Expanded(?:[ ._-]?(?:Edition|Version))?)(?:$|[^A-Za-z]))", "Extended"},
         {R"((?:^|[ ._\-\[(])(IMAX(?:[ ._-]?Enhanced)?)(?:$|[^A-Za-z]))", "IMAX"},
         {R"((?:^|[ ._\-\[(])(Redux)(?:$|[^A-Za-z]))", "Redux"},
         {R"((?:^|[ ._\-\[(])(Theatrical(?:[ ._-]?Cut)?)(?:$|[^A-Za-z]))", "Theatrical"},
@@ -492,7 +502,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // `RM` alone, which the scene writes for a remaster of an older film. Two letters, and
         // safe only because this table is asked nothing but spans the model already calls editions.
         {R"((?:^|[ ._\-\[(])(RM|REMAST)(?:$|[^A-Za-z]))", "Remastered"},
-        {R"((?:^|[ ._\-\[(])(Criterion(?:[ ._-]?Collection)?)(?:$|[^A-Za-z]))", "Criterion"},
+        {R"((?:^|[ ._\-\[(])(Criterion(?:[ ._-]?Collection)?|CC)(?:$|[^A-Za-z]))", "Criterion"},
         {R"((?:^|[ ._\-\[(])(Open[ ._-]?Matte)(?:$|[^A-Za-z]))", "Open Matte"},
         {R"((?:^|[ ._\-\[(])(Censored)(?:$|[^A-Za-z]))", "Censored"},
         {R"((?:^|[^A-Za-z0-9])(\x{6709}\x{7801}|\x{6709}\x{78BC}|\x{30E2}\x{30B6}\x{30A4}\x{30AF}\x{6709})(?:$|[^A-Za-z]))", "Censored"},
@@ -511,13 +521,13 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // The decensoring family in its own scripts: `无码流出` and `無碼流出` are "uncensored leak",
         // `モザイク破壊版` and `破坏版` are "the mosaic-destroyed version". One fact, five spellings.
         {R"((?:^|[^A-Za-z0-9])(\x{65E0}\x{7801}\x{6D41}\x{51FA}\x{7248}?|\x{7121}\x{78BC}\x{6D41}\x{51FA}\x{7248}?|\x{30E2}\x{30B6}\x{30A4}\x{30AF}\x{7834}\x{58CA}\x{7248}|\x{7834}\x{574F}\x{7248}|\x{7834}\x{58CA}\x{7248}|\x{672A}\x{5220}\x{51CF}\x{7248}?|\x{65E0}\x{7801}|\x{7121}\x{78BC})(?:$|[^A-Za-z]))", "Uncensored"},
-        {R"((?:^|[ ._\-\[(])(Collector.?s[ ._-]?Edition|COLLECTORS?)(?:$|[^A-Za-z]))", "Collector"},
+        {R"((?:^|[ ._\-\[(])(Collector.?s[ ._-]?Edition|COLLECTORS?|CE)(?:$|[^A-Za-z]))", "Collector"},
         {R"((\x{FF24}\x{FF2C}\x{7248}|DL\x{7248}|\x{30C0}\x{30A6}\x{30F3}\x{30ED}\x{30FC}\x{30C9}\x{7248}))", "Download"},
         {R"((\x{30D1}\x{30C3}\x{30B1}\x{30FC}\x{30B8}\x{7248}|\x{30BB}\x{30EB}\x{7248}))", "Retail"},
         {R"((?:^|[ ._\-\[(])(Special[ ._-]?Edition|SE(?=$|[ ._-]))(?:$|[^A-Za-z]))", "Special Edition"},
         // A named retail edition with no SKU family of its own. One anime does not earn a member.
         {R"((?:^|[ ._\-\[(])((?:Memorial|Premium|Legacy|Platinum|Definitive)[ ._-]?Edition)(?:$|[^A-Za-z]))", "Special Edition"},
-        {R"((?:^|[ ._\-\[(])(Deluxe(?:[ ._-]?Edition)?)(?:$|[^A-Za-z]))", "Deluxe"},
+        {R"((?:^|[ ._\-\[(])(Deluxe(?:[ ._-]?Edition)?|\x{8C6A}\x{83EF}\x{7248}|\x{8C6A}\x{534E}\x{7248})(?:$|[^A-Za-z]))", "Deluxe"},
         // APPENDED BELOW THE FOURTEEN ABOVE, because the table is read in order and the first
         // entry that matches becomes the PRIMARY edition. These eight are rarer and weaker
         // identifiers than the originals, so a `Criterion 40th Anniversary Edition` stays
@@ -543,7 +553,7 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         {R"((?:^|[ ._\-\[(])(FINAL)(?![ ._-]?Cut)(?:$|[^A-Za-z]))", "Final"},
         {R"((?:^|[ ._\-\[(])(Original(?:[ ._-]?(?:Version|Cut))?|Originalfassung|Org[ ._-]?Vers|\x{539F}\x{7248})(?:$|[^A-Za-z]))", "Original"},
         // The corrective-rerelease family. DIRFIX keeps its own member above; this covers the rest.
-        {R"((?:^|[ ._\-\[(])((?:Proof|Sync|Rar|Sample|Crack)?Fix(?:ed)?|Corrected|Corregido|Updated|Update[ ._-]?\d|\x{4FEE}\x{6B63}\x{7248})(?:$|[^A-Za-z]))", "Fix"},
+        {R"((?:^|[ ._\-\[(])((?:Proof|Sync|Rar|Sample|Crack|Proper)?Fix(?:ed)?|Corrected|Corregido|Updated|Update[ ._-]?\d|\x{4FEE}\x{6B63}\x{7248})(?:$|[^A-Za-z]))", "Fix"},
         {R"((?:^|[ ._\-\[(])(Complete[ ._-]?Edition|\x{5B8C}\x{5168}\x{7248}|\x{5B8C}\x{6574}\x{7248})(?:$|[^A-Za-z]))", "Complete Edition"},
         {R"((?:^|[ ._\-\[(])(Unabridged)(?:$|[^A-Za-z]))", "Unabridged"},
         {R"((?:^|[ ._\-\[(])(Convert|Re[ ._-]?Enc(?:ode[d]?)?|Remake|Rework)(?:$|[^A-Za-z]))", "Re-encode"},
@@ -567,6 +577,17 @@ const std::vector<CompiledSpelling>& editionSpellings() {
         // scene marks on the whole release.
         {R"((?:^|[ ._\-\[(])(BONUS(?:[ ._-]?(?:Disc|DVD|CD|Material))?|Extras[ ._-]?Disc)(?:$|[^A-Za-z]))", "Bonus"},
         {R"((?:^|[ ._\-\[(])(Festival(?:[ ._-]?(?:Cut|Version|Edition))?)(?:$|[^A-Za-z]))", "Festival"},
+        // `Remix` rides with the alternate cut: in an edition span it names a reworking of an
+        // existing release, which is what the scene means by Arrested Development's `Remix`. A
+        // music remix lands here too - `A Milli (Official Remix)` - and the label reads oddly
+        // there, but the claim it makes is the true one: this is another version of that work.
+        {R"((?:^|[ ._\-\[(])(Alternat(?:e|ive)[ ._-]?(?:Cut|Version|Edit)|Alt[ ._-]?Cut|Remix)(?:$|[^A-Za-z]))", "Alternate Cut"},
+        {R"((?:^|[ ._\-\[(])(Shortened|Short[ ._-]?Version|Kurzfassung)(?:$|[^A-Za-z]))", "Shortened"},
+        {R"((?:^|[ ._\-\[(])(Leaked|Leak)(?:$|[^A-Za-z]))", "Leaked"},
+        {R"((?:^|[ ._\-\[(])(Colou?rized|Colou?rised|In[ ._-]?Colou?r)(?:$|[^A-Za-z]))", "Colorized"},
+        // The 4:3 transfer. `FS` is two letters, and safe only because nothing but a span the
+        // model already calls an edition is ever asked of this table - the same footing as `WS`.
+        {R"((?:^|[ ._\-\[(])(FS|FULLSCREEN|Full[ ._-]?Screen|PanAndScan|Pan[ ._-]?(?:and|&)[ ._-]?Scan)(?:$|[^A-Za-z]))", "Fullscreen"},
         // The count is not carried, only that there is more than one disc - see the enum comment.
         {R"((?:^|[ ._\-\[(])([2-9][ ._-]?(?:DISC|DVD|BD|CD)S?|Multi[ ._-]?Disc|Dual[ ._-]?Disc)(?:$|[^A-Za-z]))", "Multi-Disc"},
     };
@@ -608,6 +629,11 @@ EditionKind editionOfLabel(std::string_view value) {
     if (value == "Bonus") return EditionKind::Bonus;
     if (value == "Festival") return EditionKind::Festival;
     if (value == "Multi-Disc") return EditionKind::MultiDisc;
+    if (value == "Alternate Cut") return EditionKind::AlternateCut;
+    if (value == "Shortened") return EditionKind::Shortened;
+    if (value == "Leaked") return EditionKind::Leaked;
+    if (value == "Colorized") return EditionKind::Colorized;
+    if (value == "Fullscreen") return EditionKind::Fullscreen;
     if (value == "Special Edition") return EditionKind::SpecialEdition;
     if (value == "Deluxe") return EditionKind::Deluxe;
     if (value == "Redux") return EditionKind::Redux;
@@ -691,7 +717,8 @@ std::string audioCodecValue(std::string_view token) {
     // An OGG file carries Vorbis unless it says otherwise, which is how the scene uses the word.
     if (contains(value, "VORBIS") || contains(value, "OGG")) return "VORBIS";
     if (contains(value, "ALAC")) return "ALAC";
-    if (contains(value, "PCM")) return "PCM";
+    // A WAV file carries PCM, which is the fact the audio field is asking about.
+    if (contains(value, "PCM") || value == "WAV") return "PCM";
     if (contains(value, "MP3")) return "MP3";
     // MPEG-1 Layer II, common in broadcast captures. Must precede the trailing-digit
     // fallback below, which would strip the 2 and leave "MP".

@@ -104,6 +104,7 @@ class VideoCodec(Kind):
     WMV = (8, 'WMV')
     VVC = (9, 'VVC')
     VP8 = (10, 'VP8')
+    REAL_VIDEO = (11, 'RealVideo')
 
 
 class MediumKind(Kind):
@@ -213,6 +214,11 @@ class EditionKind(Kind):
     BONUS = (46, 'Bonus')
     FESTIVAL = (47, 'Festival')
     MULTI_DISC = (48, 'Multi-Disc')
+    ALTERNATE_CUT = (49, 'Alternate Cut')
+    SHORTENED = (50, 'Shortened')
+    LEAKED = (51, 'Leaked')
+    COLORIZED = (52, 'Colorized')
+    FULLSCREEN = (53, 'Fullscreen')
 
 
 class OriginField(IntEnum):
