@@ -80,10 +80,14 @@ for r in releases:
 # {'title': 'Blade Runner', 'year': 1982, 'content': 'movie', 'edition': 'Final Cut', 'version': 2}
 ```
 
-Install the Python package with `pip install ./bindings/python` after building the library (see
-Build). The wheel bundles the built library and the model files, so `Parser()` needs no paths and
-works from any directory. `parse_batch` runs many names at once on several threads and returns them
-in input order.
+```sh
+pip install neurelease
+```
+
+[The package is on PyPI](https://pypi.org/project/neurelease/); the wheel bundles the built library
+and the model files, so `Parser()` needs no paths, downloads nothing and works from any directory.
+To build it yourself instead, `pip install ./bindings/python` after building the library (see
+Build). `parse_batch` runs many names at once on several threads and returns them in input order.
 The C++ and C APIs: [docs/API.md](docs/API.md).
 Everything a result contains, field by field: [docs/RESULT.md](docs/RESULT.md). Titles and evidence
 keep the original script - Latin, Han, Kana, Cyrillic.
