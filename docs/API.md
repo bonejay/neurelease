@@ -36,6 +36,35 @@ with Parser() as parser:
                                   "Show.S01E02.1080p.WEB-DL.x264-GRP.mkv"])
 ```
 
+**Episode numbering: three questions, three fields.** A name numbers an episode within its season,
+or from the start of the series, or across a range, and the three are not interchangeable - which
+is why `episode` stays `None` when the name numbers absolutely rather than being filled with a
+number that means something else.
+
+```python
+r = parser.parse("Show.Name.S01E01-E03.1080p.WEB-DL.x264-GRP")
+r.season, r.episode, r.episode_end   # 1, 1, 3: a range states where it ends
+r.absolute_episode                   # None: this name numbers within the season
+
+r = parser.parse("[SubsPlease] One Piece - 1071 (1080p) [A1B2C3D4].mkv")
+r.episode, r.season                  # None, None: the name says neither
+r.absolute_episode                   # 1071: counted from the start of the series
+```
+
+**The revision: which copy of the same release this is.** A scene re-release states it in several
+ways and they stack, so `release_version` is the one number to sort on - a proper or a repack IS
+the second version, and `REAL` counts the times a botched proper was redone.
+
+```python
+r = parser.parse("The.Expanse.S05E06.REAL.PROPER.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb")
+r.proper, r.repack                   # True, False
+r.release_real                       # 1: counted, not flagged - the scene stacks `REAL.REAL`
+r.release_version                    # 2
+
+r = parser.parse("[Erai-raws] Frieren - 12v2 [1080p][Multiple Subtitle].mkv")
+r.absolute_episode, r.release_version  # 12, 2: the anime convention writes the version on the episode
+```
+
 **The result object.** `ParsedRelease` is a frozen dataclass. Its fields carry GuessIt's
 property names wherever the fact is the same, singular for the tuples as GuessIt has them, and
 our own names only for facts GuessIt lacks. Open facts are strings or tuples (`title`,

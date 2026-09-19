@@ -109,8 +109,8 @@ fields all four answer: `work_title`, `year`, `resolution`, `source_family`, `re
 | **each parser's own suite** | | | | | |
 | GuessIt's corpus, films | 194 | 88.1% | **95.4%** | 49.5% | 2.1% |
 | GuessIt's corpus, series | 461 | 87.2% | **94.4%** | 7.2% | 57.3% |
-| Sonarr's suite | 935 | 89.5% | 80.7% | 45.0% | **95.2%** |
-| Radarr's suite | 535 | 85.8% | 76.8% | **98.5%** | 68.8% |
+| Sonarr's suite, series | 935 | 89.5% | 80.7% | 45.0% | **95.2%** |
+| Radarr's suite, films | 535 | 85.8% | 76.8% | **98.5%** | 68.8% |
 
 Read the two halves differently. The first is our own gold - we chose the names, wrote the labels
 and fixed the contract, and NeuRelease is developed against them, so a lead there is expected. The
