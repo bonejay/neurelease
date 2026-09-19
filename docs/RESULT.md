@@ -109,8 +109,28 @@ An empty `language` means the name did not say, not that the audio is English.
 | `release_group` | `tuple[str, ...]` | The groups, in name order. Site banners and tracker tags are not groups and are kept out. | `TERMiNAL`, `SubsPlease`, `桜都字幕组`; not `[EZTVx.to]` or `[TGx]` |
 | `container` | `str` | Lower case, no dot. | `mkv`, `mp4`, `epub`, `iso` |
 | `proper`, `repack`, `remux` | `bool` | Re-release and remux markers. | `PROPER`, `REPACK`, `REMUX` |
-| `light_encode`, `ai_upscale` | `bool` | Encode provenance. | `HDLight`, `AI upscale` |
+| `release_version` | `int` | Which copy of the same release this is. `1` unless the name says otherwise. | `v2`, `REPACK`, `PROPER`, `REPACK2` |
+| `release_real` | `int` | How many times the scene had to redo a botched re-release. Counted, not flagged. | `REAL`, `REAL.REAL.PROPER` |
+| `hybrid` | `bool` | Two sources combined into one release; which two is not stated. | `Hybrid`, `HybridRip` |
+| `light_encode`, `ai_upscale` | `bool` | Encode provenance. | `HDLight`, `VERSION_LIGHT`, `AI upscale`, `Topaz`, `AI增强` |
 | `tokens` | `int` | How many tokens the model pooled the name to. Explains attention cost, not the release. | |
+
+**The revision, and why it is one number.** A scene re-release says so in several ways at once and
+they stack: `REPACK` is the second copy, `PROPER` is the second copy someone else made because the
+first was broken, `v2` is the anime convention for the same thing, and `REPACK2` is the SECOND repack,
+which makes it version 3. `release_version` is the single number to sort on - a proper or a repack
+IS version 2, and a numbered one adds its number -
+while `proper` and `repack` stay available for a caller that needs to know WHICH kind of re-release
+it was. They are not alternatives: `PROPER.REPACK` sets both booleans and one version.
+
+`release_real` is counted rather than flagged because the scene stacks the word: `REAL.PROPER` is
+a fixed proper and `REAL.REAL.PROPER` the second attempt at fixing it. A boolean would read those
+two as the same release.
+
+**`hybrid` names no source, and that is the point.** `2160p.Hybrid.HDR10` says two sources were
+combined and refuses to say which, so `source` stays unknown rather than guessing one of them. The
+flag is the part that can be carried honestly, and it is raised whether the name puts the word
+where a source belongs or among the editions.
 
 ## Whole-name verdicts
 

@@ -47,9 +47,10 @@ r.to_dict()                            # {'title': 'Ted Lasso', 'season': 3, 'ep
 
 names = ["Blade.Runner.2049.2017.2160p.UHD.BluRay.x265-TERMiNAL.mkv",
          "Stray_v1.5-Razor1911",
-         "El Joven Sheldon - Temporada 6 [HDTV 720p][Cap.604][AC3 5.1 Castellano][www.pctnew.org]",
+         "La Casa de Papel - Temporada 3 [HDTV 720p][Cap.305][AC3 5.1 Castellano]",
          "【高清剧集网 www.BTHDTV.com】邻家哥哥给我爱[第05-06集][简繁英字幕].Brother.Next.Door.2024.S01E05-06.1080p.WEB-DL.H264.AAC-BTHDTV",
-         "葬送のフリーレン 第28話 「また会ったときに恥ずかしいからね」 (1080p).mkv"]
+         "葬送のフリーレン 第28話 「また会ったときに恥ずかしいからね」 (1080p).mkv",
+         "Blade.Runner.1982.Final.Cut.REPACK.2160p.UHD.BluRay.DV.HDR.TrueHD.7.1-FraMeSToR"]
 releases = parser.parse_batch(names)   # one result per name, in order
 
 # Editions, revisions and the flags a name states about ITSELF rather than its content.
@@ -66,15 +67,17 @@ r.edition                              # ('Colorized', 'Restored'): a restoratio
 r = parser.parse("Knight.Rider.2000.1991.OAR.GERMAN.DL.BDRIP.X264-WATCHABLE")
 r.edition                              # ('Original Aspect Ratio',): not reframed, whatever shape
 
-SHOW = ("title", "alternative_title", "season", "episode", "absolute_episode", "episode_title", "year", "content")
+SHOW = ("title", "alternative_title", "season", "episode", "absolute_episode",
+        "episode_title", "year", "content", "edition", "version")
 for r in releases:
     d = r.to_dict()
     print({k: d[k] for k in SHOW if d.get(k) is not None})
 # {'title': 'Blade Runner 2049', 'year': 2017, 'content': 'movie'}
 # {'title': 'Stray', 'content': 'game'}
-# {'title': 'El Joven Sheldon', 'season': 6, 'episode': 4, 'content': 'series'}
+# {'title': 'La Casa de Papel', 'season': 3, 'episode': 5, 'content': 'series'}
 # {'title': 'Brother Next Door', 'alternative_title': '邻家哥哥给我爱', 'season': 1, 'episode': [5, 6], 'year': 2024, 'content': 'series'}
-# {'title': '葬送のフリーレン', 'absolute_episode': 28, 'episode_title': 'また会ったときに恥ずかしいからね', 'content': 'series', 'anime': True}
+# {'title': '葬送のフリーレン', 'absolute_episode': 28, 'episode_title': 'また会ったときに恥ずかしいからね', 'content': 'series'}
+# {'title': 'Blade Runner', 'year': 1982, 'content': 'movie', 'edition': 'Final Cut', 'version': 2}
 ```
 
 Install the Python package with `pip install ./bindings/python` after building the library (see
