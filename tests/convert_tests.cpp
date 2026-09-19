@@ -32,7 +32,11 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(sourceTokenExtras("UHDRDV").dolbyVision);
     CHECK(sourceTokenExtras("UHDR").hdr10);
     CHECK_FALSE(sourceTokenExtras("UHDR").dolbyVision);
-    CHECK_FALSE(sourceTokenExtras("UHD").any());
+    // BARE `UHD` STATES ITS RESOLUTION AND NOTHING ELSE. It used to state nothing at all, which
+    // left `COMPLETE.UHD.BLURAY` with an empty resolution on a name that says 2160p plainly.
+    CHECK(sourceTokenExtras("UHD").screenSize == ResolutionTier::P2160);
+    CHECK_FALSE(sourceTokenExtras("UHD").hdr10);
+    CHECK_FALSE(sourceTokenExtras("UHD").dolbyVision);
     CHECK_FALSE(sourceTokenExtras("BluRay").any());
 
     // QUEUE 01 of the unmapped-span triage. `FINAL` and `Final Cut` are the pair worth pinning:

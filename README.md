@@ -61,11 +61,7 @@ r.remux, r.hdr                         # True, 'DV'
 r.to_dict()["other"]                   # ['Proper', 'Repack', 'Remux', 'HDR10', 'Dolby Vision']
 
 r = parser.parse("The.Wire.S01E01.INTERNAL.RESTORED.1080p.BluRay.x265-SARTRE")
-r.edition                              # ('Internal', 'Restored'): a name may state several
-r = parser.parse("Nosferatu.1922.RESTORED.Colorized.1080p.BluRay.x264-CiNEFiLE")
-r.edition                              # ('Colorized', 'Restored'): a restoration is not a remaster
-r = parser.parse("Knight.Rider.2000.1991.OAR.GERMAN.DL.BDRIP.X264-WATCHABLE")
-r.edition                              # ('Original Aspect Ratio',): not reframed, whatever shape
+r.edition                              # ('Internal', 'Restored'): a release is often several
 
 SHOW = ("title", "alternative_title", "season", "episode", "absolute_episode",
         "episode_title", "year", "content", "edition", "version")
@@ -84,13 +80,14 @@ for r in releases:
 pip install neurelease
 ```
 
-[The package is on PyPI](https://pypi.org/project/neurelease/); the wheel bundles the built library
-and the model files, so `Parser()` needs no paths, downloads nothing and works from any directory.
-To build it yourself instead, `pip install ./bindings/python` after building the library (see
-Build). `parse_batch` runs many names at once on several threads and returns them in input order.
-The C++ and C APIs: [docs/API.md](docs/API.md).
-Everything a result contains, field by field: [docs/RESULT.md](docs/RESULT.md). Titles and evidence
-keep the original script - Latin, Han, Kana, Cyrillic.
+[The package is on PyPI](https://pypi.org/project/neurelease/); the wheel bundles the library and
+the model files, so `Parser()` needs no paths, downloads nothing and works from any directory.
+`parse_batch` runs many names at once on several threads and returns them in input order.
+
+The C++ and C APIs: [docs/API.md](docs/API.md). Everything a result contains, field by field:
+[docs/RESULT.md](docs/RESULT.md). Building from source:
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#build). Titles and evidence keep the original script -
+Latin, Han, Kana, Cyrillic.
 
 ## Compared with GuessIt, Sonarr and Radarr
 
@@ -147,31 +144,13 @@ Method, exact model identity, scoring snapshot and reproduction:
 [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md).
 Hardware and native kernel timings: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Build
-
-Requirements: CMake 3.24+, a C++23 compiler, and Ninja or another CMake generator. PCRE2 is the
-only third-party library dependency and is fetched automatically when not installed.
-
-```sh
-git clone https://github.com/bonejay/neurelease.git
-cd neurelease
-cmake --preset release
-cmake --build --preset release --parallel
-ctest --preset release
-python -m pytest bindings/python/tests
-```
-
-`cmake --install build/release --prefix dist` produces a self-contained package. Build options,
-the optional GuessIt-corpus test, and benchmark instructions are in
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
 ## Documentation
 
 | | |
 |---|---|
 | [docs/API.md](docs/API.md) | Python, C++ and C usage |
 | [docs/RESULT.md](docs/RESULT.md) | Every result field and its conventions |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Model, conversion layer, performance, build options, model versions |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Model, conversion layer, performance, building from source, model versions |
 | [docs/C_ABI.md](docs/C_ABI.md) | The C binary interface |
 | [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md) | Method and per-field numbers of the GuessIt comparison |
 | [docs/ANIME.md](docs/ANIME.md) | The anime verdict, and five anime names read by both parsers |

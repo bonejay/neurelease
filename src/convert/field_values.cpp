@@ -339,6 +339,15 @@ SourceTokenExtras sourceTokenExtras(std::string_view token) {
         {"UHDRDV", {ResolutionTier::P2160, true, true}},
         // The same convention without the Dolby Vision layer.
         {"UHDR", {ResolutionTier::P2160, true, false}},
+        // BARE `UHD` IS 2160p, and saying only "a disc" threw half of what the word means away.
+        // `COMPLETE.UHD.BLURAY` and `UHD.BDRiP` state no other resolution, so the field was left
+        // empty on names that name their resolution perfectly clearly. The reading stays weak in
+        // the way that matters: the walk fills the resolution from here ONLY when no span gave
+        // one, so `1080p.UHD.BluRay` - a downscale of a UHD source - still reads 1080p.
+        {"UHD", {ResolutionTier::P2160, false, false}},
+        {"ULTRAHD", {ResolutionTier::P2160, false, false}},
+        // 4K is the same claim in the spelling the scene uses beside it.
+        {"4K", {ResolutionTier::P2160, false, false}},
     };
     const std::string value = cleanedSourceToken(token);
     for (const auto& entry : kCompound)
