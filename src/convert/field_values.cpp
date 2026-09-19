@@ -378,7 +378,17 @@ SourceKind sourceValue(std::string_view token) {
     // `Screener` does not. Only a token saying nothing but `screener` answers Screener.
     if (value == "SCREENER" || value == "SCR" || value == "WORKPRINT"
         || value == "WEBSCR") return SourceKind::Screener;
-    if (contains(value, "WEB")) return contains(value, "DL") ? SourceKind::WebDl : SourceKind::WebRip;
+    // A BARE `WEB` DECLINES TO SAY WHICH. `WEB-DL` is the stream as served and `WEBRip` is
+    // re-encoded from it; a name spelling only `WEB` - or `WebHD`, which adds a resolution claim
+    // and not a method - has said neither. Answering WEBRip was the bare-UHD fault: a token naming
+    // a family answered as one member of it, wrong on 503 hard-slice names where the gold and
+    // GuessIt both say `Web`. Where the name really does spell `WEBRip` we already agreed with the
+    // gold 260 times, so only the bare spellings move.
+    if (contains(value, "WEB")) {
+        if (contains(value, "DL")) return SourceKind::WebDl;
+        if (contains(value, "RIP")) return SourceKind::WebRip;
+        return SourceKind::Web;
+    }
     // DLMUX is an Italian-scene spelling for a web download remuxed into a container: the `DL`
     // is the source and the `MUX` the packaging, so it belongs with WEB-DL rather than with the
     // disc muxes above.

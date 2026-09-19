@@ -79,6 +79,15 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(sourceValue("AMZNRip") == SourceKind::WebRip);
     CHECK(sourceValue("DVDRip") == SourceKind::Dvd);
 
+    // A BARE `WEB` CLAIMS NEITHER METHOD, and answering WEBRip was wrong on 503 hard-slice names.
+    // Only the bare spellings moved: a name that says WEBRip still reads WEBRip.
+    CHECK(sourceValue("WEB") == SourceKind::Web);
+    CHECK(sourceValue("WebHD") == SourceKind::Web);
+    CHECK(sourceValue("WEBRip") == SourceKind::WebRip);
+    CHECK(sourceValue("WEB-DL") == SourceKind::WebDl);
+    CHECK(sourceValue("WEBDL") == SourceKind::WebDl);
+    CHECK(label(SourceKind::Web) == "WEB");
+
     // `Numbered` and `Regional` each drop a detail the vocabulary has no field for - which number,
     // which region - and keep the only part a consumer can act on: that one was stated at all.
     CHECK(editionIn("Modern C (MEAP v4) 3ed 2024") == EditionKind::Numbered);

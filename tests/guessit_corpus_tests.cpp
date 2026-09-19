@@ -465,22 +465,28 @@ Outcome check(const ReleaseInfo& info, const Expectation& expectation,
         const ResolutionTier* wanted = lookup(Resolutions, lowered(expected.front()));
         return wanted == nullptr ? Outcome::Unmapped : asOutcome(info.screenSize == *wanted);
     }
+    // THREE READINGS, ONE GUESSIT WORD. `WEB-DL`, `WEBRip` and a bare `WEB` are distinct answers
+    // here and all spelled `Web` there, so the comparison folds them rather than charging us for a
+    // distinction the corpus does not draw.
+    static constexpr auto isWeb = [](SourceKind value) {
+        return value == SourceKind::WebDl || value == SourceKind::WebRip
+            || value == SourceKind::Web;
+    };
     if (property == "source") {
         bool mapped = false;
         for (const std::string& want : expected) {
             const SourceKind* wanted = lookup(Sources, lowered(want));
             if (wanted == nullptr) continue;
             mapped = true;
-            // GuessIt writes one generic `Web` where our contract separates WEB-DL from WEBRip,
-            // so either reading satisfies it.
-            const bool web = *wanted == SourceKind::WebDl || *wanted == SourceKind::WebRip;
-            if (info.source == *wanted ||
-                (web && (info.source == SourceKind::WebDl || info.source == SourceKind::WebRip)))
+            // GuessIt writes one generic `Web` where our contract separates WEB-DL from WEBRip
+            // from a bare WEB that claims neither, so any of the three satisfies it.
+            const bool web = isWeb(*wanted);
+            if (info.source == *wanted || (web && isWeb(info.source)))
                 return Outcome::Pass;
         }
         if (std::ranges::any_of(expected, [](const std::string& want) {
                 return lowered(want) == "web" || lowered(want) == "video-on-demand"; })) {
-            return asOutcome(info.source == SourceKind::WebDl || info.source == SourceKind::WebRip);
+            return asOutcome(isWeb(info.source));
         }
         return mapped ? Outcome::Fail : Outcome::Unmapped;
     }

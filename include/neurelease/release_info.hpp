@@ -97,6 +97,12 @@ enum class SourceKind : std::uint8_t {
     // not a disc, not a broadcast, and not the telecine the cam family means by that word - a
     // scene TELECINE is a leak, while `35MM.FilmScan` is someone's own scan of their own reel.
     Film = 9,
+    // A STREAM THAT DECLINES TO SAY HOW IT WAS TAKEN. `WEB` on its own is neither claim: a WEB-DL
+    // is the stream as served, a WEBRip is re-encoded from it, and a name spelling only `WEB` has
+    // stated the source without stating which. It was answered WEBRip, which is the bare-UHD fault
+    // - a token naming a family answered as one member of it - and 447 names in the hard slice
+    // alone spell it. Appended, so every existing value keeps its number.
+    Web = 10,
 };
 enum class VideoCodec : std::uint8_t {
     Unknown = 0, Av1 = 1, Hevc = 2, H264 = 3, Xvid = 4, Mpeg2 = 5, Vp9 = 6,

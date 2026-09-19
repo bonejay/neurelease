@@ -86,6 +86,7 @@ class SourceKind(Kind):
     BLURAY = (1, 'BluRay')
     WEB_DL = (2, 'WEB-DL')
     WEB_RIP = (3, 'WEBRip')
+    WEB = (10, 'WEB')
     HDTV = (4, 'HDTV')
     DVD = (5, 'DVD')
     CAM = (6, 'CAM')
