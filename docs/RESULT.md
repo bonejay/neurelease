@@ -50,16 +50,41 @@ one it used is the `numbering` verdict below.
 | `screen_size` | `ResolutionTier` | `480p` `720p` `1080p` `1440p` `2160p` `4320p` | `1080p`, `2160P`, bare `720`, `1920x1080` |
 | `screen_size_text` | `str` | The resolution as the name wrote it, which is what `4K` or a bare `720` looked like before it became a tier. | `720`, `4K`, `1080p` |
 | `frame_size` | `tuple[int, int]` | Exact dimensions, when the name gives them. | `1920x1080` → `(1920, 1080)` |
-| `source` | `SourceKind` | `BluRay` `WEB-DL` `WEBRip` `HDTV` `DVD` `CAM` | `BluRay`, `BDRip`, `BD`, `WEB-DL`, `WEBRip`, `HDTV`, `DVDRip` |
-| `video_codec` | `VideoCodec` | `AV1` `HEVC` `H264` `XviD` `MPEG2` `VP9` `VC1` `WMV` `VVC` `VP8` | `x265`, `HEVC`, `h264`, `AVC`, `264`, `XviD` |
+| `source` | `SourceKind` | `BluRay` `WEB-DL` `WEBRip` `HDTV` `DVD` `CAM` `Screener` `DCP` `Film` | `BluRay`, `BDRip`, `BD`, `WEB-DL`, `WEBRip`, `HDTV`, `DVDRip`, `SCREENER`, `DCPRip`, `35MM.FilmScan` |
+| `video_codec` | `VideoCodec` | `AV1` `HEVC` `H264` `XviD` `MPEG2` `VP9` `VC1` `WMV` `VVC` `VP8` `RealVideo` | `x265`, `HEVC`, `h264`, `AVC`, `264`, `XviD`, `RV10` |
 | `streaming_service` | `str` | Service, channel or broadcaster. Open set. | `AMZN`, `NF`, `ATVP`, `BAHA`, `CR`, `DSNP` |
 | `hdr` | `str` | The summary of the four flags below, else `SDR`. | `DV`, `HDR10+`, `HLG` |
 | `hdr10`, `hdr10_plus`, `dolby_vision`, `hlg` | `bool` | The formats individually, since a release can carry several. | `HDR10`, `DV`, `HLG` |
 | `ten_bit` | `bool` | Ten-bit video. | `10bit`, `Hi10P`, `HEVC-10bit` |
-| `edition` | `tuple[EditionKind, ...]` | `IMAX` `Criterion` `Open Matte` `Remastered` `Unrated` `Uncut` `Uncensored` `Special Edition` `Deluxe` `Redux` `Extended` `Director's Cut` `Final Cut` `Theatrical` | `EXTENDED`, `DC`, `UNRATED`, `IMAX` |
+| `edition` | `tuple[EditionKind, ...]` | 61 kinds; see below | `EXTENDED`, `DC`, `UNRATED`, `IMAX`, `RESTORED`, `OAR`, `FANEDIT`, `初回限定版` |
 
 A release is routinely several editions at once: `Uncut Unrated DC` is all three, so `edition` is a
 tuple rather than one value.
+
+The full set, in ABI order. A word the tables do not recognise is NOT forced into one of them: it
+stays in `origins` as an edition span carrying its own text and no value, so a caller can tell
+"read it and had no name for it" from "did not read it":
+
+`IMAX` `Criterion` `Open Matte` `Remastered` `Unrated` `Uncut` `Uncensored` `Special Edition`
+`Deluxe` `Redux` `Extended` `Director's Cut` `Final Cut` `Theatrical` `Despecialized`
+`Assembly Cut` `Anniversary` `Signature` `Imperial` `Diamond` `2in1` `Preair` `Internal` `Limited`
+`Untouched` `Dirfix` `Custom` `Widescreen` `Download` `Retail` `Collector` `Final` `Original`
+`Fix` `Complete Edition` `Unabridged` `Re-encode` `Numbered Edition` `Regional` `High Quality`
+`Ultimate` `Censored` `Fan Edit` `Bootleg` `Unofficial` `Bonus` `Festival` `Multi-Disc`
+`Alternate Cut` `Shortened` `Leaked` `Colorized` `Fullscreen` `Standard` `Creditless`
+`Re-recorded` `Commentary` `Explicit` `Reissue` `Original Aspect Ratio` `Restored`
+
+Some of these draw distinctions that cost nothing to keep and are wrong to collapse.
+`Final` is NOT `Final Cut`: French releases write `S01E08.FiNAL` for a season's last episode, and
+routing that to a director's recut would be wrong on every one of them. `Restored` is not
+`Remastered`: a restoration repairs damaged materials, a remaster re-derives from undamaged ones.
+`Original Aspect Ratio` is not `Widescreen`: it says the transfer was not reframed, whatever shape
+the frame is. `Censored` is the stated opposite of `Uncensored`, and both occur.
+
+Two carry less than they appear to. `Numbered Edition` says a number was stated - `2ed`, `3rd
+Edition` - without carrying which, because there is no edition-number field; the number stays
+readable in the span text. `Regional` is the same compromise for `美版` and `japanische Fassung`: a
+region-specific cut exists, without saying which region.
 
 ## Audio and subtitles
 
