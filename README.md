@@ -80,14 +80,13 @@ for r in releases:
 pip install neurelease
 ```
 
-[The package is on PyPI](https://pypi.org/project/neurelease/); the wheel bundles the library and
-the model files, so `Parser()` needs no paths, downloads nothing and works from any directory.
-`parse_batch` runs many names at once on several threads and returns them in input order.
+The [wheel](https://pypi.org/project/neurelease/) bundles the library and the model.
+`parse_batch` runs many names at once on several threads and returns them in input order. Titles
+and evidence keep their original script - Latin, Han, Kana, Cyrillic.
 
-The C++ and C APIs: [docs/API.md](docs/API.md). Everything a result contains, field by field:
-[docs/RESULT.md](docs/RESULT.md). Building from source:
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#build). Titles and evidence keep the original script -
-Latin, Han, Kana, Cyrillic.
+- [docs/API.md](docs/API.md) - the C++ and C APIs
+- [docs/RESULT.md](docs/RESULT.md) - every field a result can carry
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#build) - building from source
 
 ## Compared with GuessIt, Sonarr and Radarr
 
