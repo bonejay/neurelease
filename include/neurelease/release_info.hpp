@@ -103,6 +103,12 @@ enum class SourceKind : std::uint8_t {
     // - a token naming a family answered as one member of it - and 447 names in the hard slice
     // alone spell it. Appended, so every existing value keeps its number.
     Web = 10,
+    // AN HD RIP OF UNSTATED ORIGIN. `HDRip`, `FHDRip` and `UHDRip` say the rip is high definition
+    // and nothing about where it came from - historically a re-encode of whatever HD source was
+    // to hand, disc or stream. Answering WEBRip was the bare-WEB fault in another coat, wrong on
+    // 35 hard-slice names where the gold says `hdrip`. GuessIt answers no source at all for it,
+    // which is the other honest option; this one keeps the fact that was stated. Appended.
+    HdRip = 11,
 };
 enum class VideoCodec : std::uint8_t {
     Unknown = 0, Av1 = 1, Hevc = 2, H264 = 3, Xvid = 4, Mpeg2 = 5, Vp9 = 6,

@@ -21,6 +21,7 @@ std::string_view label(SourceKind value) noexcept {
     case SourceKind::WebDl: return "WEB-DL";
     case SourceKind::WebRip: return "WEBRip";
     case SourceKind::Web: return "WEB";
+    case SourceKind::HdRip: return "HDRip";
     case SourceKind::Hdtv: return "HDTV";
     case SourceKind::Dvd: return "DVD";
     case SourceKind::Cam: return "CAM";

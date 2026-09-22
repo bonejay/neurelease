@@ -87,6 +87,7 @@ class SourceKind(Kind):
     WEB_DL = (2, 'WEB-DL')
     WEB_RIP = (3, 'WEBRip')
     WEB = (10, 'WEB')
+    HDRIP = (11, 'HDRip')
     HDTV = (4, 'HDTV')
     DVD = (5, 'DVD')
     CAM = (6, 'CAM')

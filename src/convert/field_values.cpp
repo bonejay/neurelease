@@ -413,8 +413,11 @@ SourceKind sourceValue(std::string_view token) {
         return SourceKind::Dvd;
     // `DVRIP` is `DVDRip` with a letter dropped, 19 times in the corpus.
     if (contains(value, "DVD") || contains(value, "DVRIP")) return SourceKind::Dvd;
-    if (contains(value, "HDRIP") || value == "DLRIP" || value == "FBRIP"
-        || value == "STREAMRIP") return SourceKind::WebRip;
+    // `HDRip` SAYS HIGH DEFINITION AND NOTHING ABOUT THE ORIGIN - a re-encode of whatever HD
+    // source was to hand. It was answered WEBRip, which the gold contradicts on 35 hard-slice
+    // names, and `FHDRip`/`UHDRip` are the same claim with a resolution glued on.
+    if (contains(value, "HDRIP")) return SourceKind::HdRip;
+    if (value == "DLRIP" || value == "FBRIP" || value == "STREAMRIP") return SourceKind::WebRip;
     if (value == "VOD" || value == "VODHD") return SourceKind::WebDl;
     if (value.ends_with("DL") && (startsWith(value, "CR") || startsWith(value, "NETFLIX")
         || startsWith(value, "NF") || startsWith(value, "AMZN") || startsWith(value, "DSNP")
