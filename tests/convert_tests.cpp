@@ -87,6 +87,12 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(sourceValue("WEB-DL") == SourceKind::WebDl);
     CHECK(sourceValue("WEBDL") == SourceKind::WebDl);
     CHECK(label(SourceKind::Web) == "WEB");
+    // An HD rip names no origin; it used to be answered WEBRip.
+    CHECK(sourceValue("HDRip") == SourceKind::HdRip);
+    CHECK(sourceValue("FHDRip") == SourceKind::HdRip);
+    CHECK(sourceValue("UHDRip") == SourceKind::HdRip);
+    CHECK(sourceValue("WEB-HDRip") == SourceKind::WebRip);         // the WEB is stated, so it wins
+    CHECK(label(SourceKind::HdRip) == "HDRip");
 
     // `Numbered` and `Regional` each drop a detail the vocabulary has no field for - which number,
     // which region - and keep the only part a consumer can act on: that one was stated at all.

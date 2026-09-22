@@ -50,7 +50,7 @@ one it used is the `numbering` verdict below.
 | `screen_size` | `ResolutionTier` | `480p` `720p` `1080p` `1440p` `2160p` `4320p` | `1080p`, `2160P`, bare `720`, `1920x1080` |
 | `screen_size_text` | `str` | The resolution as the name wrote it, which is what `4K` or a bare `720` looked like before it became a tier. | `720`, `4K`, `1080p` |
 | `frame_size` | `tuple[int, int]` | Exact dimensions, when the name gives them. | `1920x1080` → `(1920, 1080)` |
-| `source` | `SourceKind` | `BluRay` `WEB-DL` `WEBRip` `HDTV` `DVD` `CAM` `Screener` `DCP` `Film` | `BluRay`, `BDRip`, `BD`, `WEB-DL`, `WEBRip`, `HDTV`, `DVDRip`, `SCREENER`, `DCPRip`, `35MM.FilmScan` |
+| `source` | `SourceKind` | `BluRay` `WEB-DL` `WEBRip` `HDTV` `DVD` `CAM` `Screener` `DCP` `Film` `WEB` `HDRip` | `BluRay`, `BDRip`, `BD`, `WEB-DL`, `WEBRip`, `HDTV`, `DVDRip`, `SCREENER`, `DCPRip`, `35MM.FilmScan` |
 | `video_codec` | `VideoCodec` | `AV1` `HEVC` `H264` `XviD` `MPEG2` `VP9` `VC1` `WMV` `VVC` `VP8` `RealVideo` | `x265`, `HEVC`, `h264`, `AVC`, `264`, `XviD`, `RV10` |
 | `streaming_service` | `str` | Service, channel or broadcaster. Open set. | `AMZN`, `NF`, `ATVP`, `BAHA`, `CR`, `DSNP` |
 | `hdr` | `str` | The summary of the four flags below, else `SDR`. | `DV`, `HDR10+`, `HLG` |

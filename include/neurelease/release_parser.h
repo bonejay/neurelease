@@ -184,7 +184,9 @@ typedef enum rp_source_kind {
     RP_SOURCE_WEB_RIP = 3, RP_SOURCE_HDTV = 4, RP_SOURCE_DVD = 5, RP_SOURCE_CAM = 6,
     RP_SOURCE_SCREENER = 7, RP_SOURCE_DIGITAL_CINEMA = 8, RP_SOURCE_FILM = 9,
     /* A bare `WEB`, which says a stream without saying WEB-DL or WEBRip. */
-    RP_SOURCE_WEB = 10
+    RP_SOURCE_WEB = 10,
+    /* HDRip, FHDRip, UHDRip: high definition, origin unstated. */
+    RP_SOURCE_HDRIP = 11
 } rp_source_kind;
 
 typedef enum rp_video_codec {
