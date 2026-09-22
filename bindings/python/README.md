@@ -111,8 +111,8 @@ defaults, or values our closed vocabulary cannot express. Sonarr's and Radarr's 
 unfiltered.
 
 On the full twenty-field contract, video names: **97.88% macro field F1 and 91.54% exact** against
-GuessIt's 86.74% and 52.96%. About **3.3x faster on one thread** (2,604 us/name against 8,621),
-711 us/name in batch.
+GuessIt's 86.74% and 52.96%. About **3x faster on one thread**
+(2,793 us/name against 8,275), 949 us/name in batch on four threads.
 
 Method, exact model identity, scoring snapshot and reproduction:
 [docs/GUESSIT_COMPARISON.md](https://github.com/bonejay/neurelease/blob/main/docs/GUESSIT_COMPARISON.md).

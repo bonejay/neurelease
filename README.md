@@ -121,8 +121,8 @@ values our closed vocabulary cannot express, all listed in the full report. Sona
 suites run almost unfiltered.
 
 On the full twenty-field contract, video names, our validation split: **97.88% macro field F1 and
-91.54% exact** against GuessIt's 86.74% and 52.96%. About **3.3x faster on one thread**
-(2,604 us/name against 8,621), 711 us/name in batch.
+91.54% exact** against GuessIt's 86.74% and 52.96%. About **3x faster on one thread**
+(2,793 us/name against 8,275), 949 us/name in batch on four threads.
 
 Name-by-name: [docs/ANIME.md](docs/ANIME.md), [docs/LIVE_ACTION.md](docs/LIVE_ACTION.md).
 Method and reproduction: [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md).
