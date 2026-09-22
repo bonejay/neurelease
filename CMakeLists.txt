@@ -10,7 +10,7 @@
 # runtime by CPUID — the library itself runs on any x86-64.
 
 cmake_minimum_required(VERSION 3.24)
-project(neurelease VERSION 0.1.0 LANGUAGES C CXX)
+project(neurelease VERSION 0.2.0 LANGUAGES C CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
