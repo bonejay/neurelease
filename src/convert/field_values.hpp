@@ -65,6 +65,27 @@ bool sourceTokenIsRemux(std::string_view token);
 // from, and the consumer already has a field for it.
 bool sourceTokenIsLightEncode(std::string_view token);
 
+// A SOURCE-POSITION TOKEN THAT STATES OTHER FIELDS TOO. Some scenes compress several facts into
+// one word, and the model correctly marks the whole word as the source span because that is where
+// it sits. `UHDRDV` is the clearest: Czech and Slovak uploaders use it for 2160p video carrying
+// both HDR10 and Dolby Vision, and the MediaInfo of those releases confirms 3840-wide HEVC Main10
+// with DV profile 8.1 over an HDR10 base layer. Read as a plain source it answers nothing, and 68
+// labelled names say so.
+//
+// DELIBERATELY NARROW. Each entry is a WHOLE-TOKEN match, never a substring: `UHD` on its own
+// already has a meaning (see sourceTokenIsBareUhd) and a substring rule would swallow it. Adding
+// a row is a decision about one spelling, which is what keeps the table reviewable.
+struct SourceTokenExtras {
+    ResolutionTier screenSize = ResolutionTier::Unknown;
+    bool hdr10 = false;
+    bool dolbyVision = false;
+    // Whether the token said anything at all beyond its source value.
+    bool any() const {
+        return screenSize != ResolutionTier::Unknown || hdr10 || dolbyVision;
+    }
+};
+SourceTokenExtras sourceTokenExtras(std::string_view token);
+
 // "AV1" | "HEVC" | "H.264" | empty.
 VideoCodec codecValue(std::string_view token);
 
@@ -112,7 +133,10 @@ std::string audioProfileValue(std::string_view token);
 // WHAT COUNTS AS A YEAR. Fixed rather than read from the clock, because a parser whose answers
 // change with the date is not reproducible, and a name stating a year a decade out is stating
 // something else - `Blade Runner 2049` and `Cyberpunk 2077` are titles, not release years.
-inline constexpr int PlausibleYearFirst = 1900;
+// CINEMA IS OLDER THAN THE REGEX ALLOWED. `Movie Name (1897) [DVD].mp4` lost its year twice
+// over: the reader matched only `19xx` and `20xx`, so an 1890s film could not be read at all,
+// and this bound would have refused it anyway. The Lumiere programmes date from 1895.
+inline constexpr int PlausibleYearFirst = 1890;
 inline constexpr int PlausibleYearLast = 2035;
 
 // --- coverage markers ---------------------------------------------------------------------

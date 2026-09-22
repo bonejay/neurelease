@@ -47,77 +47,86 @@ r.to_dict()                            # {'title': 'Ted Lasso', 'season': 3, 'ep
 
 names = ["Blade.Runner.2049.2017.2160p.UHD.BluRay.x265-TERMiNAL.mkv",
          "Stray_v1.5-Razor1911",
-         "El Joven Sheldon - Temporada 6 [HDTV 720p][Cap.604][AC3 5.1 Castellano][www.pctnew.org]",
+         "La Casa de Papel - Temporada 3 [HDTV 720p][Cap.305][AC3 5.1 Castellano]",
          "【高清剧集网 www.BTHDTV.com】邻家哥哥给我爱[第05-06集][简繁英字幕].Brother.Next.Door.2024.S01E05-06.1080p.WEB-DL.H264.AAC-BTHDTV",
-         "葬送のフリーレン 第28話 「また会ったときに恥ずかしいからね」 (1080p).mkv"]
+         "葬送のフリーレン 第28話 「また会ったときに恥ずかしいからね」 (1080p).mkv",
+         "Blade.Runner.1982.Final.Cut.REPACK.2160p.UHD.BluRay.DV.HDR.TrueHD.7.1-FraMeSToR"]
 releases = parser.parse_batch(names)   # one result per name, in order
 
-SHOW = ("title", "alternative_title", "season", "episode", "absolute_episode", "episode_title", "year", "content")
+# Editions, revisions and the flags a name states about ITSELF rather than its content.
+r = parser.parse("Dune.Part.Two.2024.PROPER.REPACK.2160p.UHD.BluRay.REMUX.DV.HDR.TrueHD.7.1-FraMeSToR")
+r.proper, r.repack                     # True, True
+r.release_version                      # 2: a proper or a repack IS the second version
+r.remux, r.hdr                         # True, 'DV'
+r.to_dict()["other"]                   # ['Proper', 'Repack', 'Remux', 'HDR10', 'Dolby Vision']
+
+r = parser.parse("The.Wire.S01E01.INTERNAL.RESTORED.1080p.BluRay.x265-SARTRE")
+r.edition                              # ('Internal', 'Restored'): a release is often several
+
+SHOW = ("title", "alternative_title", "season", "episode", "absolute_episode",
+        "episode_title", "year", "content", "edition", "version")
 for r in releases:
     d = r.to_dict()
     print({k: d[k] for k in SHOW if d.get(k) is not None})
 # {'title': 'Blade Runner 2049', 'year': 2017, 'content': 'movie'}
 # {'title': 'Stray', 'content': 'game'}
-# {'title': 'El Joven Sheldon', 'season': 6, 'episode': 4, 'content': 'series'}
+# {'title': 'La Casa de Papel', 'season': 3, 'episode': 5, 'content': 'series'}
 # {'title': 'Brother Next Door', 'alternative_title': '邻家哥哥给我爱', 'season': 1, 'episode': [5, 6], 'year': 2024, 'content': 'series'}
-# {'title': '葬送のフリーレン', 'absolute_episode': 28, 'episode_title': 'また会ったときに恥ずかしいからね', 'content': 'series', 'anime': True}
+# {'title': '葬送のフリーレン', 'absolute_episode': 28, 'episode_title': 'また会ったときに恥ずかしいからね', 'content': 'series'}
+# {'title': 'Blade Runner', 'year': 1982, 'content': 'movie', 'edition': 'Final Cut', 'version': 2}
 ```
-
-Install the Python package with `pip install ./bindings/python` after building the library (see
-Build). The wheel bundles the built library and the model files, so `Parser()` needs no paths and
-works from any directory. `parse_batch` runs many names at once on several threads and returns them
-in input order.
-The C++ and C APIs: [docs/API.md](docs/API.md).
-Everything a result contains, field by field: [docs/RESULT.md](docs/RESULT.md). Titles and evidence
-keep the original script - Latin, Han, Kana, Cyrillic.
-
-## Compared with GuessIt
-
-Measured on the same machine on 2026-09-11 with the shipped model (version 3), on 3,344 video
-validation names:
-
-| Metric, video only (3,344 names, 2026-09-11) | NeuRelease | GuessIt 4.4.0 |
-|---|---:|---:|
-| macro shared-field F1 | **97.57%** | 86.45% |
-| exact on every applicable shared field | **89.44%** | 51.44% |
-| single name, one thread, via Python | **2,446 us/name** | 8,213 us/name |
-| batch, 4 workers, via Python | **833 us/name** | no batch API |
-| GuessIt's 22 documented limitation cases solved | **19/22** | 0/22 |
-| GuessIt's own published regression corpus | **683/859** | 804/859 |
-
-NeuRelease is about **3.4× faster on one thread** in this measurement. The four-worker
-batch result measures throughput through the Python binding, with complete results and evidence.
-
-GuessIt's regression corpus is its own test suite: fixture strings such as `FooBar.307.PDTV-FlexGet`
-and filesystem paths, written to exercise its rules, with every input assumed to be a video.
-NeuRelease parses a single release name as found in real traffic and classifies it before assuming
-anything, so on this corpus it scores 683 to 804 - and on real names the ranking reverses. The 22
-limitation cases are GuessIt's own documented failures, not a representative sample.
-
-Name-by-name comparisons, where the difference is visible rather than averaged:
-[docs/ANIME.md](docs/ANIME.md) and [docs/LIVE_ACTION.md](docs/LIVE_ACTION.md).
-
-Method, exact model identity, scoring snapshot and reproduction:
-[docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md).
-Hardware and native kernel timings: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
-## Build
-
-Requirements: CMake 3.24+, a C++23 compiler, and Ninja or another CMake generator. PCRE2 is the
-only third-party library dependency and is fetched automatically when not installed.
 
 ```sh
-git clone https://github.com/bonejay/neurelease.git
-cd neurelease
-cmake --preset release
-cmake --build --preset release --parallel
-ctest --preset release
-python -m pytest bindings/python/tests
+pip install neurelease
 ```
 
-`cmake --install build/release --prefix dist` produces a self-contained package. Build options,
-the optional GuessIt-corpus test, and benchmark instructions are in
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The [wheel](https://pypi.org/project/neurelease/) bundles the library and the model.
+`parse_batch` runs many names at once on several threads and returns them in input order. Titles
+and evidence keep their original script - Latin, Han, Kana, Cyrillic.
+
+- [docs/API.md](docs/API.md) - the C++ and C APIs
+- [docs/RESULT.md](docs/RESULT.md) - every field a result can carry
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#build) - building from source
+
+## Compared with GuessIt, Sonarr and Radarr
+
+Measured on 2026-09-22 with the shipped model (version 5). Every figure is the share of names
+answered completely correctly - every field the name states read right, nothing invented. One
+wrong field fails the name.
+
+Sonarr answers only series and Radarr only films, and they model 16 and 14 fields against 29 here,
+so the table is split by content kind and scored only on the nine fields all four answer:
+`work_title`, `year`, `resolution`, `source_family`, `release_group`, `release_variant`,
+`audio_language`, `subtitle_language`, `crc32`. Our hard sets keep at most three names per
+franchise.
+
+| | cases | NeuRelease | GuessIt | Radarr | Sonarr |
+|---|---:|---:|---:|---:|---:|
+| **our labelled names** | | | | | |
+| representative, films | 1,001 | **93.5%** | 78.0% | 69.7% | 2.5% |
+| representative, series | 2,075 | **96.0%** | 60.9% | 8.1% | 65.5% |
+| hard, films | 1,037 | **54.1%** | 30.1% | 36.1% | 1.4% |
+| hard, series | 915 | **79.2%** | 42.2% | 5.8% | 55.0% |
+| **each parser's own suite** | | | | | |
+| GuessIt's corpus, films | 194 | 88.7% | **95.4%** | 49.5% | 2.1% |
+| GuessIt's corpus, series | 461 | 85.5% | **94.4%** | 7.2% | 57.3% |
+| Sonarr's suite, series | 935 | 91.0% | 80.7% | 45.0% | **95.2%** |
+| Radarr's suite, films | 535 | 88.0% | 76.8% | **98.5%** | 68.8% |
+
+The lower half is each parser's own regression suite: strings written to pin its own regexes down,
+which is why every parser wins its own and why those wins say little about real names. NeuRelease
+is second on all three, having trained on none of them. GuessIt's suite is scored on 859 of its
+1,048 entries - the rest are filesystem paths, `type` assertions inherited from file defaults, or
+values our closed vocabulary cannot express, all listed in the full report. Sonarr's and Radarr's
+suites run almost unfiltered.
+
+On the full twenty-field contract, video names, our validation split: **97.88% macro field F1 and
+91.54% exact** against GuessIt's 86.74% and 52.96%. About **3x faster on one thread**
+(2,793 us/name against 8,275), 949 us/name in batch on four threads.
+
+Name-by-name: [docs/ANIME.md](docs/ANIME.md), [docs/LIVE_ACTION.md](docs/LIVE_ACTION.md).
+Method and reproduction: [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md).
+Timings: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Documentation
 
@@ -125,7 +134,7 @@ the optional GuessIt-corpus test, and benchmark instructions are in
 |---|---|
 | [docs/API.md](docs/API.md) | Python, C++ and C usage |
 | [docs/RESULT.md](docs/RESULT.md) | Every result field and its conventions |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Model, conversion layer, performance, build options, model versions |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Model, conversion layer, performance, building from source, model versions |
 | [docs/C_ABI.md](docs/C_ABI.md) | The C binary interface |
 | [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md) | Method and per-field numbers of the GuessIt comparison |
 | [docs/ANIME.md](docs/ANIME.md) | The anime verdict, and five anime names read by both parsers |

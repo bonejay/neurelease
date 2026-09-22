@@ -1,9 +1,10 @@
 # Comparison with GuessIt 4.4.0
 
-Rerun on 2026-09-11 using the installed **model version 3**, retained epoch 17 from
-`anime2/20260911-032100` - the run that replaced the animated/live-action content kinds with a
-`movie`/`series` form and a separate `anime` verdict. The model SHA-256 is
-`4a08a096be6a40b14434f2aa1de9bdb45bca7d0e8f4e61db37c7127bfd44d531`.
+Rerun on 2026-09-22 using the installed **model version 5**, retained epoch 19 from
+`corrected/20260921-233603` - the first model trained after the corpus repairs: the DeepSeek second
+pass and its adjudication over every row that rested on a low-effort label, the settled `Part N`
+convention, the walk relabel, and the split that keeps every scored name out of training. The
+model SHA-256 is `7857dcdb813fac941198b4243384f51a91d291b4022258501c5317092d932c34`.
 
 The [scoring snapshot](SCORING_SNAPSHOT.json) records the model, dataset, library and scoring-source
 hashes, repository revisions, raw timing samples and per-field scores. The build was brought up to
@@ -49,30 +50,30 @@ positives. Full evaluated counts, precision, recall and exact-present rates are 
 
 | Field | Names with it | NeuRelease F1 | GuessIt F1 |
 |---|---:|---:|---:|
-| `work_title` | 2,997 | 98.07% | 90.97% |
-| `episode_title` | 173 | 92.70% | 73.66% |
-| `year` | 1,176 | 98.30% | 98.60% |
-| `season` | 1,227 | 99.23% | 91.30% |
+| `work_title` | 2,997 | 97.42% | 90.97% |
+| `episode_title` | 173 | 91.57% | 73.66% |
+| `year` | 1,175 | 99.74% | 98.68% |
+| `season` | 1,227 | 99.15% | 91.30% |
 | `season_end` | 25 | 95.83% | 82.14% |
-| `episode` | 1,280 | 99.38% | 90.70% |
-| `episode_end` | 130 | 97.28% | 82.87% |
+| `episode` | 1,280 | 97.86% | 90.70% |
+| `episode_end` | 130 | 95.38% | 82.87% |
 | `resolution` | 2,372 | 99.81% | 99.73% |
-| `source_family` | 1,913 | 98.12% | 96.51% |
-| `platform` | 415 | 97.83% | 69.45% |
-| `video_codec` | 1,820 | 99.21% | 98.52% |
-| `audio_codec` | 927 | 99.17% | 97.73% |
-| `audio_channels` | 511 | 95.07% | 95.86% |
-| `audio_language` | 264 | 97.13% | 66.40% |
-| `subtitle_language` | 151 | 96.10% | 46.19% |
-| `bit_depth` | 253 | 99.02% | 97.86% |
-| `container` | 1,028 | 97.66% | 98.08% |
+| `source_family` | 1,913 | 98.61% | 96.95% |
+| `platform` | 415 | 98.31% | 69.45% |
+| `video_codec` | 1,818 | 99.23% | 98.58% |
+| `audio_codec` | 927 | 99.12% | 97.73% |
+| `audio_channels` | 550 | 99.73% | 99.46% |
+| `audio_language` | 265 | 97.01% | 66.31% |
+| `subtitle_language` | 154 | 95.76% | 45.81% |
+| `bit_depth` | 253 | 98.64% | 97.86% |
+| `container` | 999 | 99.85% | 99.50% |
 | `crc32` | 164 | 100.00% | 98.80% |
 | `release_group` | 2,320 | 99.28% | 69.76% |
-| `release_variant` | 125 | 92.20% | 83.79% |
+| `release_variant` | 125 | 95.37% | 84.58% |
 
 ## External case sets
 
-On GuessIt's regression corpus NeuRelease passes **683/859** cases (4,381/4,613 field assertions),
+On GuessIt's regression corpus NeuRelease passes **693/859** cases (4,386/4,613 field assertions),
 GuessIt **804/859** (4,552/4,613). The corpus is GuessIt's own test suite: fixture strings such as
 `FooBar.307.PDTV-FlexGet` and filesystem paths, written to exercise its rules, with every input
 assumed to be a video. NeuRelease parses a single release name and classifies it before assuming
@@ -84,8 +85,8 @@ and only fields a case explicitly states are checked.
 The native `guessit_corpus_tests` uses a stricter title contract and a different denominator; its
 score must not be substituted for the comparison harness's 859-case score.
 
-On the 22 cases from GuessIt's documented limitations, NeuRelease passes **19/22** cases and
-**69/73** assertions; GuessIt passes **0/22** and **31/73**. These are selected failure cases for
+On the 22 cases from GuessIt's documented limitations, NeuRelease passes **21/22** cases and
+**71/72** assertions; GuessIt passes **0/22** and **31/72**. These are selected failure cases for
 GuessIt, not a representative accuracy sample. They are scored separately from validation.
 
 ## Timing

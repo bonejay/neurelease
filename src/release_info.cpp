@@ -20,9 +20,13 @@ std::string_view label(SourceKind value) noexcept {
     case SourceKind::BluRay: return "BluRay";
     case SourceKind::WebDl: return "WEB-DL";
     case SourceKind::WebRip: return "WEBRip";
+    case SourceKind::Web: return "WEB";
     case SourceKind::Hdtv: return "HDTV";
     case SourceKind::Dvd: return "DVD";
     case SourceKind::Cam: return "CAM";
+    case SourceKind::Screener: return "Screener";
+    case SourceKind::DigitalCinema: return "DCP";
+    case SourceKind::Film: return "Film";
     case SourceKind::Unknown: return {};
     }
     return {};
@@ -40,6 +44,7 @@ std::string_view label(VideoCodec value) noexcept {
     case VideoCodec::Wmv: return "WMV";
     case VideoCodec::Vvc: return "VVC";
     case VideoCodec::Vp8: return "VP8";
+    case VideoCodec::RealVideo: return "RealVideo";
     case VideoCodec::Unknown: return {};
     }
     return {};
@@ -90,6 +95,47 @@ std::string_view label(EditionKind value) noexcept {
     case EditionKind::Extended: return "Extended";
     case EditionKind::DirectorsCut: return "Director's Cut";
     case EditionKind::FinalCut: return "Final Cut";
+    case EditionKind::Internal: return "Internal";
+    case EditionKind::Limited: return "Limited";
+    case EditionKind::Untouched: return "Untouched";
+    case EditionKind::Dirfix: return "Dirfix";
+    case EditionKind::Custom: return "Custom";
+    case EditionKind::Widescreen: return "Widescreen";
+    case EditionKind::Download: return "Download";
+    case EditionKind::Retail: return "Retail";
+    case EditionKind::Collector: return "Collector";
+    // "Final" and "Final Cut" are deliberately different strings: one marks the last episode of a
+    // season, the other a recut of a film.
+    case EditionKind::Final: return "Final";
+    case EditionKind::Original: return "Original";
+    case EditionKind::Fix: return "Fix";
+    case EditionKind::CompleteEdition: return "Complete Edition";
+    case EditionKind::Unabridged: return "Unabridged";
+    case EditionKind::Reencode: return "Re-encode";
+    case EditionKind::Numbered: return "Numbered Edition";
+    case EditionKind::Regional: return "Regional";
+    case EditionKind::HighQuality: return "High Quality";
+    case EditionKind::Ultimate: return "Ultimate";
+    case EditionKind::Censored: return "Censored";
+    case EditionKind::FanEdit: return "Fan Edit";
+    case EditionKind::Bootleg: return "Bootleg";
+    case EditionKind::Unofficial: return "Unofficial";
+    case EditionKind::Bonus: return "Bonus";
+    case EditionKind::Festival: return "Festival";
+    case EditionKind::MultiDisc: return "Multi-Disc";
+    case EditionKind::AlternateCut: return "Alternate Cut";
+    case EditionKind::Shortened: return "Shortened";
+    case EditionKind::Leaked: return "Leaked";
+    case EditionKind::Colorized: return "Colorized";
+    case EditionKind::Fullscreen: return "Fullscreen";
+    case EditionKind::Standard: return "Standard";
+    case EditionKind::Creditless: return "Creditless";
+    case EditionKind::ReRecorded: return "Re-recorded";
+    case EditionKind::Commentary: return "Commentary";
+    case EditionKind::Explicit: return "Explicit";
+    case EditionKind::Reissue: return "Reissue";
+    case EditionKind::OriginalAspectRatio: return "Original Aspect Ratio";
+    case EditionKind::Restored: return "Restored";
     case EditionKind::Theatrical: return "Theatrical";
     case EditionKind::Despecialized: return "Despecialized";
     case EditionKind::AssemblyCut: return "Assembly Cut";

@@ -106,9 +106,26 @@ native `guessit_corpus_tests` floor, cases fully correct of 858. An older versio
   must not share one parser concurrently.
 - Diagnostics and timing live beside the semantic result so equality is deterministic.
 
-## Build options
+## Build
 
-The build itself is three commands, in the [README](../README.md#build). Options: `RP_BUILD_C_API`
+Requirements: CMake 3.24+, a C++23 compiler, and Ninja or another CMake generator. PCRE2 is the
+only third-party library dependency and is fetched automatically when not installed.
+
+```sh
+git clone https://github.com/bonejay/neurelease.git
+cd neurelease
+cmake --preset release
+cmake --build --preset release --parallel
+ctest --preset release
+python -m pytest bindings/python/tests
+```
+
+`cmake --install build/release --prefix dist` produces a self-contained package. To use the Python
+binding from a source build rather than from PyPI, `pip install ./bindings/python` afterwards.
+
+### Options
+
+Options: `RP_BUILD_C_API`
 (default on), `RP_BUILD_TESTS` (on), `RP_BUILD_BENCHMARKS` (off), `RP_FETCH_DEPENDENCIES` (on;
 fetches PCRE2 when it is not installed), `RP_RUN_MODEL_TESTS` (off; puts the weight-sensitive
 GuessIt-corpus test into the default ctest set, which needs a sibling `../guessit` checkout). The

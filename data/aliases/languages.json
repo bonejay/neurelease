@@ -8,7 +8,7 @@
     "code": "eng"
   },
   {
-    "expression": "JPN|JAP|JAPANESE|JP",
+    "expression": "JPN|JAP|JA|JAPANESE|JP",
     "code": "jpn"
   },
   {
@@ -32,11 +32,11 @@
     "code": "fra"
   },
   {
-    "expression": "SPA|ESP|SPANISH|CASTELLANO|LATINO|ESPANOL|ESPA\\x{00D1}OL",
+    "expression": "SPA|ESP|SPANISH|CASTELLANO|LATINO|ESPANOL|ESPA\\x{00D1}OL|LATIN|LATI|LATINOAMERICANO",
     "code": "spa"
   },
   {
-    "expression": "ES|ES[ ._-]?LA|SPA[ ._-]?LA|LAT|VOSE|SUBSPA",
+    "expression": "ES|ES[ ._-]?LA|SPA[ ._-]?LA|LAT|VOSE|SUBSPA|SUBTITULADO|SUBTITULADA",
     "code": "spa"
   },
   {
@@ -68,7 +68,7 @@
     "code": "ces"
   },
   {
-    "expression": "SLO|SLOVAK|SLOVENSKY",
+    "expression": "SLO|SK|SVK|SLOVAK|SLOVENSKY",
     "code": "slk"
   },
   {
@@ -88,7 +88,7 @@
     "code": "ron"
   },
   {
-    "expression": "DUT|NLD|DUTCH|NEDERLANDS",
+    "expression": "DUT|NLD|DUTCH|NEDERLANDS|FLEMISH|VLAAMS",
     "code": "nld"
   },
   {
@@ -96,7 +96,7 @@
     "code": "nld"
   },
   {
-    "expression": "SWE|SWEDISH|SVENSKA|SWESUB",
+    "expression": "SWE|SE|SWEDISH|SVENSKA|SWESUB",
     "code": "swe"
   },
   {
@@ -180,7 +180,7 @@
     "code": "pan"
   },
   {
-    "expression": "CAT|CATALAN|CATALA",
+    "expression": "CAT|CA|CATALAN|CATALA|CATALÁN",
     "code": "cat"
   },
   {
@@ -192,7 +192,7 @@
     "code": "zho"
   },
   {
-    "expression": "CHS|CHT|BIG5|GB|CH|SC|TC|JPSC|JPTC|\\x{4E2D}\\x{6587}",
+    "expression": "CHS|CHT|BIG5|GB|CH|SC|TC|JPSC|JPTC|中文|繁中|简中|简繁外挂|繁體|简体|中文字幕|中英字幕|中英双字|简繁英字幕|国语配音|中字|简繁字幕|中国翻訳|简繁日双语外挂|简繁内封|国语中字|繁字幕|简字幕",
     "code": "zho"
   },
   {
@@ -210,5 +210,313 @@
   {
     "expression": "\\x{56FD}\\x{8BED}|\\x{56FD}\\x{8BED}\\x{97F3}\\x{8F68}|\\x{666E}\\x{901A}\\x{8BDD}",
     "code": "zho"
+  },
+  {
+    "expression": "ISL|ICE|ICELANDIC|ISLENSKA",
+    "code": "isl"
+  },
+  {
+    "expression": "LAV|LV|LATVIAN|LATVIESU",
+    "code": "lav"
+  },
+  {
+    "expression": "LIT|LT|LITHUANIAN|LIETUVIU",
+    "code": "lit"
+  },
+  {
+    "expression": "EST|ET|EE|ESTONIAN|EESTI",
+    "code": "est"
+  },
+  {
+    "expression": "ALB|SQI|ALBANIAN|SHQIP",
+    "code": "sqi"
+  },
+  {
+    "expression": "PER|FAS|PERSIAN|FARSI",
+    "code": "fas"
+  },
+  {
+    "expression": "GEO|KAT|GEORGIAN",
+    "code": "kat"
+  },
+  {
+    "expression": "SRP|SERBIAN|SRPSKI",
+    "code": "srp"
+  },
+  {
+    "expression": "HRV|CROATIAN|HRVATSKI",
+    "code": "hrv"
+  },
+  {
+    "expression": "SLV|SLOVENIAN|SLOVENSCINA",
+    "code": "slv"
+  },
+  {
+    "expression": "MKD|MACEDONIAN",
+    "code": "mkd"
+  },
+  {
+    "expression": "URD|URDU",
+    "code": "urd"
+  },
+  {
+    "expression": "NEP|NEPALI",
+    "code": "nep"
+  },
+  {
+    "expression": "SIN|SINHALA",
+    "code": "sin"
+  },
+  {
+    "expression": "BUR|MYA|BURMESE",
+    "code": "mya"
+  },
+  {
+    "expression": "KHM|KHMER",
+    "code": "khm"
+  },
+  {
+    "expression": "LAO|LAOTIAN",
+    "code": "lao"
+  },
+  {
+    "expression": "AZE|AZERBAIJANI",
+    "code": "aze"
+  },
+  {
+    "expression": "ARM|HYE|ARMENIAN",
+    "code": "hye"
+  },
+  {
+    "expression": "KAZ|KAZAKH",
+    "code": "kaz"
+  },
+  {
+    "expression": "UZB|UZBEK",
+    "code": "uzb"
+  },
+  {
+    "expression": "BEL|BELARUSIAN",
+    "code": "bel"
+  },
+  {
+    "expression": "FUNIDUB|FUNI[ ._-]?DUB|CR[ ._-]?DUB|ENGDUB|ENG[ ._-]?DUB",
+    "code": "eng"
+  },
+  {
+    "expression": "中英字幕|中英双字|简繁英字幕",
+    "code": "eng"
+  },
+  {
+    "expression": "粤|粤语|粵語|粤语音轨|粤语配音|粵語音軌|CANTONESE|YUE|(?:国|國)?(?:粤|粵)(?:日|英|韩)*多?(?:音轨|音軌|语配音|語配音|双语|語音軌)",
+    "code": "yue"
+  },
+  {
+    "expression": "国语|國語|官话|官話|台配|国语音轨|国语配音|CMN|MANDARIN|(?:国|國)(?:粤|粵|日|英|韩)*多?(?:音轨|音軌|语配音|語配音)",
+    "code": "cmn"
+  },
+  {
+    "expression": "(?:内封|內封|外挂|外掛|官方|特效|内嵌|DIY)?(?:简|簡|繁)(?:体|體|中|繁|日|英|法)?(?:内封|內封|外挂|外掛|内嵌)?(?:双语|雙語|双字|多语)?(?:字幕|中字|内封|外挂|内嵌|外掛)?|(?:中英|中日|英日|简日|简英|繁英|繁日|简法)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?|中字简体|简体字幕|简中内嵌|内封简繁中字|中文外挂字幕",
+    "code": "zho"
+  },
+  {
+    "expression": "日本語|日语|日文|日本語字幕|日语音轨|日文内封|JAPONES|JAPON\\x{00C9}S|JAPONAIS",
+    "code": "jpn"
+  },
+  {
+    "expression": "韓国語|韓国翻訳|韩语|한글자막|우리말[ ._-]?더빙|한국어|COREANO|CORE(?:EN|AN)",
+    "code": "kor"
+  },
+  {
+    "expression": "INGLES|INGL\\x{00C9}S|ENGLISCH|ANGLAIS|ENGL|英語|英语|英語吹替|英语配音|英語字幕",
+    "code": "eng"
+  },
+  {
+    "expression": "FRANCES|FRANC\\x{00C9}S|フランス語|フランス語字幕|仏語字幕|仏字幕|法语|法语字幕|法语音轨|VOF|VF2",
+    "code": "fra"
+  },
+  {
+    "expression": "SPANI|ESPAGNOL|スペイン語|スペイン語字幕|西班牙语字幕|CAST|CASTELLANO",
+    "code": "spa"
+  },
+  {
+    "expression": "ITALIANO|イタリア語|意语|意英双语",
+    "code": "ita"
+  },
+  {
+    "expression": "LEGENDADO",
+    "code": "por"
+  },
+  {
+    "expression": "SI|SLOVENSKI",
+    "code": "slv"
+  },
+  {
+    "expression": "GR|GR[ ._-]?SUBS|GREEKSUBS",
+    "code": "ell"
+  },
+  {
+    "expression": "HR|HRVATSKI|CROSUBS",
+    "code": "hrv"
+  },
+  {
+    "expression": "DK|DKSUBS|DANSK",
+    "code": "dan"
+  },
+  {
+    "expression": "SVENSK|SVENSKA|SV[ ._-]?TEXT|SVENSK[ ._-]?TEXT",
+    "code": "swe"
+  },
+  {
+    "expression": "ROSUB|ROSUBS|ROMANA",
+    "code": "ron"
+  },
+  {
+    "expression": "SRBSUBS|SRPSKI",
+    "code": "srp"
+  },
+  {
+    "expression": "VIETSUB|TIENGVIET",
+    "code": "vie"
+  },
+  {
+    "expression": "BAHASA[ ._-]?INDONESIA|INDOSUB",
+    "code": "ind"
+  },
+  {
+    "expression": "босански|BOSANSKI",
+    "code": "bos"
+  },
+  {
+    "expression": "български|BALGARSKI",
+    "code": "bul"
+  },
+  {
+    "expression": "ру́сский|русский|рус|русская[ ._-]?озвучка",
+    "code": "rus"
+  },
+  {
+    "expression": "татар|TATAR",
+    "code": "tat"
+  },
+  {
+    "expression": "AZERBAIJAN|AZERI|AZERBAIJAN[ ._-]?DUBBED",
+    "code": "aze"
+  },
+  {
+    "expression": "TELEGU",
+    "code": "tel"
+  },
+  {
+    "expression": "UA",
+    "code": "ukr"
+  },
+  {
+    "expression": "KO",
+    "code": "kor"
+  },
+  {
+    "expression": "CHN|CHIN|CHINO|中国語字幕",
+    "code": "zho"
+  },
+  {
+    "expression": "SWISSGERMAN|SWISS[ ._-]?GERMAN|SCHWEIZERDEUTSCH",
+    "code": "deu"
+  },
+  {
+    "expression": "官方中字|中字|中文字幕",
+    "code": "zho"
+  },
+  {
+    "expression": "国英双语|国英",
+    "code": "cmn"
+  },
+  {
+    "expression": "国英双语|英语音轨",
+    "code": "eng"
+  },
+  {
+    "expression": "简繁日双语|简繁日",
+    "code": "zho"
+  },
+  {
+    "expression": "简繁日双语|日语音轨",
+    "code": "jpn"
+  },
+  {
+    "expression": "简／繁|繁／简",
+    "code": "zho"
+  },
+  {
+    "expression": "国粤语音轨|国粤",
+    "code": "cmn"
+  },
+  {
+    "expression": "国粤语音轨|粤语配音",
+    "code": "yue"
+  },
+  {
+    "expression": "简繁字幕外挂|简繁外挂字幕",
+    "code": "zho"
+  },
+  {
+    "expression": "简繁英双语字幕|简繁英双语特效字幕|中英双字幕",
+    "code": "zho"
+  },
+  {
+    "expression": "简繁日字幕|简繁日外挂",
+    "code": "zho"
+  },
+  {
+    "expression": "简繁英双语字幕|简繁英双语特效字幕|中英双字幕|英文字幕",
+    "code": "eng"
+  },
+  {
+    "expression": "简繁日字幕|简繁日外挂|日文内嵌",
+    "code": "jpn"
+  },
+  {
+    "expression": "(?:中日|日英|英日|简日|繁日)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?",
+    "code": "jpn"
+  },
+  {
+    "expression": "(?:中英|简英|繁英|英日|日英|意英)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?",
+    "code": "eng"
+  },
+  {
+    "expression": "(?:简法|中法)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?",
+    "code": "fra"
+  },
+  {
+    "expression": "(?:国粤)(?:双语|雙語|双字)?(?:字幕|中字|内封|外挂|内嵌|特效)?",
+    "code": "cmn"
+  },
+  {
+    "expression": "(?:国粤)(?:双语|雙語|双字)?(?:音轨|配音)?",
+    "code": "yue"
+  },
+  {
+    "expression": "台粤|台粤配|粤配",
+    "code": "yue"
+  },
+  {
+    "expression": "中文配音|华语配音|華語配音",
+    "code": "zho"
+  },
+  {
+    "expression": "(?:国|國)(?:粤|粵|日|韩)*英(?:粤|粵|日|韩)*多?(?:音轨|音軌|语配音|語配音)",
+    "code": "eng"
+  },
+  {
+    "expression": "(?:国|國)(?:粤|粵|英|韩)*日(?:粤|粵|英|韩)*多?(?:音轨|音軌|语配音|語配音)",
+    "code": "jpn"
+  },
+  {
+    "expression": "(?:国|國)(?:粤|粵|日|英)*韩(?:粤|粵|日|英)*多?(?:音轨|音軌|语配音|語配音)",
+    "code": "kor"
+  },
+  {
+    "expression": "(?:国|國)(?:粤|粵)(?:日|英|韩)*多?(?:音轨|音軌|语配音|語配音)",
+    "code": "yue"
   }
 ]

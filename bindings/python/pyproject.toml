@@ -29,6 +29,7 @@ Homepage = "https://github.com/bonejay/neurelease"
 Demo = "https://neurelease-demo.vercel.app"
 Documentation = "https://github.com/bonejay/neurelease/blob/main/docs/API.md"
 Issues = "https://github.com/bonejay/neurelease/issues"
+Changelog = "https://github.com/bonejay/neurelease/releases"
 
 [tool.setuptools.packages.find]
 where = ["."]

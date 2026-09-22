@@ -90,16 +90,20 @@ bool hasMultiAudioTag(std::string_view value) {
 }
 
 bool isProper(std::string_view value) {
-    static const text::Regex pattern(R"((?:^|[ ._\-\[(])(?:REAL[ ._-]+)?PROPER(?:$|[^A-Za-z]))", true);
+    static const text::Regex pattern(R"((?:^|[ ._\-\[(])(?:REAL[ ._-]+)?PROPER(?:FIX)?(?:$|[^A-Za-z]))", true);
     return matches(value, pattern);
 }
 
 // RERIP RIDES WITH REPACK because Sonarr's RepackRegex is `\b(repack|rerip)\d?\b` - one flag for
 // both words. A rerip is the same event under a different scene name, and reading it as neither a
 // repack nor a revision is what left `...RERIP.1080p...` ranked below the release it replaced.
+//
+// THE PAST TENSE IS THE SAME EVENT. Sonarr's regex stops at the bare word, so `REPACKED` - which
+// the corpus writes 23 times - reads as nothing there. Here it raises the same flag.
 bool isRepack(std::string_view value) {
-    static const text::Regex pattern(R"((?:^|[ ._\-\[(])(?:REPACK|RERIP)[ ._-]?\d?(?:$|[^A-Za-z]))",
-                                     true);
+    static const text::Regex pattern(
+        R"((?:^|[ ._\-\[(])(?:REPACK(?:ED)?|RERIP(?:PED)?)[ ._-]?\d?(?:$|[^A-Za-z]))",
+        true);
     return matches(value, pattern);
 }
 
@@ -136,7 +140,18 @@ int realCountIn(std::string_view value) {
 }
 
 bool isAiUpscale(std::string_view value) {
-    static const text::Regex pattern(R"(\b(AI[ ._-]?upscal\w*|Topaz|upscaled?)\b)", true);
+    // The Chinese and hyphenated spellings say the same thing: 增强 is "enhanced",
+    // 生成 "generated". No word boundary before the CJK forms - PCRE2 puts no word boundary between
+    // two non-ASCII characters, so requiring one would never match.
+    static const text::Regex pattern(
+        R"(\b(AI[ ._-]?(?:upscal\w*|enhanced?|generated?)|Topaz|upscaled?)\b|AI增强|AI生成|AI強化)", true);
+    return matches(value, pattern);
+}
+
+bool isLightEncode(std::string_view value) {
+    static const text::Regex pattern(
+        R"((?:^|[ ._\-\[(])(?:Version[ ._-]?Light|Light[ ._-]?Version|LightEncode)(?:$|[^A-Za-z]))",
+        true);
     return matches(value, pattern);
 }
 
@@ -408,6 +423,33 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
             const bool light = convert::sourceTokenIsLightEncode(raw);
             info.remux = info.remux || remux;
             info.lightEncode = info.lightEncode || light;
+            // A HYBRID NAMES NO SOURCE, and that is the point: `2160p.Hybrid.HDR10` says two
+            // sources were combined and refuses to say which, so `sourceValue` rightly answers
+            // nothing. The flag is the part that can be carried, and it is carried here as well as
+            // from the edition branch, because the model routes the word to either one.
+            if (isHybrid(raw)) info.hybrid = true;
+            // A SOURCE TOKEN THAT STATES OTHER FIELDS TOO - `UHDRDV` is 2160p with HDR10 and
+            // Dolby Vision in one word. Applied here rather than by widening sourceValue, because
+            // these are facts about OTHER fields and folding them into a source value would lose
+            // them. A stated span always wins: the resolution is only filled when nothing else
+            // gave one, while the HDR flags are additive exactly as a stated `DV.HDR10` is.
+            const convert::SourceTokenExtras extras = convert::sourceTokenExtras(raw);
+            if (extras.any()) {
+                if (extras.screenSize != ResolutionTier::Unknown &&
+                    info.screenSize == ResolutionTier::Unknown)
+                    info.screenSize = extras.screenSize;
+                if (extras.hdr10) info.hdr10 = true;
+                if (extras.dolbyVision) info.dolbyVision = true;
+                if (extras.hdr10 || extras.dolbyVision) {
+                    const HdrFormat format = extras.dolbyVision ? HdrFormat::DolbyVision
+                                                                : HdrFormat::Hdr10;
+                    const int rank = hdrPrecedence(format);
+                    if (rank > accumulated.hdrRank) {
+                        accumulated.hdrRank = rank;
+                        accumulated.hdr = format;
+                    }
+                }
+            }
             builder.record(Field::ReleaseSource,
                            source != SourceKind::Unknown ? std::string(label(source))
                            : remux ? "remux" : light ? "light encode" : "",
@@ -695,6 +737,10 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
             if (isProper(raw) || isRepack(raw)) revisionBumped = true;
             info.revisionReal += realCountIn(raw);
             if (isAiUpscale(raw)) { info.aiUpscale = true; routed.push_back("ai upscale"); }
+            // A SMALLER ENCODE OF THE SAME RELEASE, stated where the model saw an edition rather
+            // than a source. `VERSION_LIGHT` is what the French fansub scene writes; MicroHD and
+            // HDLight reach the same flag from the source branch, through sourceTokenIsLightEncode.
+            if (isLightEncode(raw)) { info.lightEncode = true; routed.push_back("light encode"); }
             if (isHybrid(raw)) { info.hybrid = true; routed.push_back("hybrid"); }
             if (isThreeD(raw)) { info.threeD = true; routed.push_back("3D"); }
             if (isRemux(raw)) { info.remux = true; routed.push_back("remux"); }

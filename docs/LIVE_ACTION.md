@@ -21,7 +21,8 @@ by title family, so no other release of the same work was either. Anime: [ANIME.
 | episode | — | **2049** |
 | season | — | **2017** |
 | year | 2017 | 2017 |
-| edition | Open Matte | Open Matte |
+| edition | Open Matte, Restored | Open Matte |
+| version | 2 | — |
 | release group | KK650 | **KK650 Regraded** |
 | type | movie | **episode** |
 
@@ -135,8 +136,7 @@ by title family, so no other release of the same work was either. Anime: [ANIME.
 | | NeuRelease | GuessIt 4.4.0 |
 |---|---|---|
 | air date, episode title | 2026-05-08, Breaking Point | same |
-| title | Dateline | Dateline NBC |
-| broadcaster | NBC | — |
+| title | Dateline NBC | Dateline NBC |
 | release group | mSD | **mSD[EZTVx.to]** |
 
 Both read the date, which is the hard part here.
@@ -144,5 +144,5 @@ Both read the date, which is the hard part here.
 ---
 
 These are selected disagreements; on most names the two agree. Over 3,344 names: macro field F1
-97.57% against 86.45%, exact agreement on every shared field 89.44% against 51.44%. GuessIt wins
-its own regression corpus, 804 cases to 683.
+97.88% against 86.74%, exact agreement on every shared field 91.54% against 52.96%. GuessIt wins
+its own regression corpus, 804 cases to 693.

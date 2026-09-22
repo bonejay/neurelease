@@ -87,10 +87,29 @@ enum class ResolutionTier : std::uint8_t {
 };
 enum class SourceKind : std::uint8_t {
     Unknown = 0, BluRay = 1, WebDl = 2, WebRip = 3, Hdtv = 4, Dvd = 5, Cam = 6,
+    // A REVIEWER'S COPY. Not a cam - a screener is a clean transfer - and not the disc it came
+    // from either, because it carries watermarks and is often cut. Appended: the C ABI pins these.
+    Screener = 7,
+    // THE CINEMA MASTER. A Digital Cinema Package is the file a projector is fed; a DCPRip is a
+    // rip of one. Neither is a disc nor a stream, and both outrank every other source here.
+    DigitalCinema = 8,
+    // A PHYSICAL PRINT, SCANNED. Fan restorations of 35mm and 16mm prints are their own category:
+    // not a disc, not a broadcast, and not the telecine the cam family means by that word - a
+    // scene TELECINE is a leak, while `35MM.FilmScan` is someone's own scan of their own reel.
+    Film = 9,
+    // A STREAM THAT DECLINES TO SAY HOW IT WAS TAKEN. `WEB` on its own is neither claim: a WEB-DL
+    // is the stream as served, a WEBRip is re-encoded from it, and a name spelling only `WEB` has
+    // stated the source without stating which. It was answered WEBRip, which is the bare-UHD fault
+    // - a token naming a family answered as one member of it - and 447 names in the hard slice
+    // alone spell it. Appended, so every existing value keeps its number.
+    Web = 10,
 };
 enum class VideoCodec : std::uint8_t {
     Unknown = 0, Av1 = 1, Hevc = 2, H264 = 3, Xvid = 4, Mpeg2 = 5, Vp9 = 6,
     Vc1 = 7, Wmv = 8, Vvc = 9, Vp8 = 10,
+    // RealVideo, which `.rmvb` releases still carry. Written `RV10`, `RV20`, `RV30`, `RV40`; the
+    // generation is not carried, for the same reason `Numbered` drops its number.
+    RealVideo = 11,
 };
 enum class MediumKind : std::uint8_t {
     Unknown = 0, Video = 1, Music = 2, Audiobook = 3, Book = 4, Comic = 5,
@@ -107,6 +126,67 @@ enum class EditionKind : std::uint8_t {
     // goes at the end and nothing above it moves.
     Despecialized = 15, AssemblyCut = 16, Anniversary = 17, Signature = 18,
     Imperial = 19, Diamond = 20, TwoInOne = 21, Preair = 22,
+    // SCENE TAGS THE MODEL ALREADY MARKS AS EDITIONS and the tables had no member for, so
+    // the span was located and converted to nothing. Found by mining 232,595 sampled release
+    // names for spans that need a value and got none: `iNTERNAL` alone is 2,737 non-adult
+    // video names. Appended, so every existing value keeps its number.
+    Internal = 23, Limited = 24, Untouched = 25, Dirfix = 26, Custom = 27, Widescreen = 28,
+    // A DOUJIN RELEASE STATES HOW IT WAS SOLD, and the corpus says so 2,916 times: `DL版`
+    // is the download edition, `パッケージ版` and `セル版` the boxed and retail ones. `RETAIL`
+    // is the same fact in the western scene. `Collector` completes the set the edition
+    // token table already had a word for.
+    Download = 29, Retail = 30, Collector = 31,
+    // QUEUE 01 of the unmapped-span triage: the six commonest editions the tables had no member
+    // for. `Final` is NOT `FinalCut` and the difference is the whole reason it is here - French
+    // releases write `S01E08.FiNAL` to mark the LAST EPISODE of a season, 3,133 times in the
+    // corpus, and routing that to the director's final cut would be confidently wrong on every
+    // one of them. `Fix` is the corrective-rerelease family (FIX, FIXED, PROOFFIX, SYNCFIX,
+    // RARFIX, SAMPLEFIX) beside the DIRFIX the table already had.
+    Final = 32, Original = 33, Fix = 34, CompleteEdition = 35, Unabridged = 36, Reencode = 37,
+    // QUEUE 01, second pass. `Numbered` carries a book's `2ed`/`3rd Edition` - the NUMBER is not
+    // carried, only the fact that one was stated, which is all a consumer can act on without an
+    // edition-number field. `Regional` is the same compromise for `美版`, `Kinofassung`'s cousin:
+    // a region-specific cut is stated, without saying which region. `HighQuality` groups the
+    // Chinese encode editions - 高码版 high bitrate, 60帧率版本 sixty frames, 高清版 HD - which all
+    // mean "the better of the two encodes we published".
+    Numbered = 38, Regional = 39, HighQuality = 40, Ultimate = 41,
+    // QUEUE FILE 02. `Censored` is the stated opposite of `Uncensored` and just as convertible.
+    // `FanEdit` is a RE-CUT BY SOMEONE OTHER THAN THE STUDIO - a different work from the release
+    // it was made out of, which is why it is not folded into Unofficial. `Bootleg` is an
+    // unofficial recording, the word the music scene uses; `Unofficial` is the wider claim, an
+    // encode or batch nobody official published. `Bonus` is bonus-disc material, which Sonarr
+    // models as season extras. `Festival` is the cut shown at festivals, distinct from the
+    // theatrical one. `MultiDisc` says a release spans several discs without saying how many -
+    // the same compromise `Numbered` makes, for the same reason: there is no field for the count.
+    Censored = 42, FanEdit = 43, Bootleg = 44, Unofficial = 45, Bonus = 46, Festival = 47,
+    MultiDisc = 48,
+    // QUEUE FILE 03. `AlternateCut` is a different cut that claims no direction - unlike
+    // `Extended` and `Shortened`, which say which way. `Leaked` marks a release that escaped
+    // before its publisher meant it to. `Colorized` is a colourised print of a black-and-white
+    // film, a real edition of a real film. `Fullscreen` is the 4:3 transfer, the counterpart of
+    // the `Widescreen` the table already had.
+    AlternateCut = 49, Shortened = 50, Leaked = 51, Colorized = 52, Fullscreen = 53,
+    // QUEUE FILE 04. `Standard` is the counterpart of `Limited` - `通常版` exists precisely to say
+    // this is NOT the first-press edition, and answering nothing loses that. `Creditless` is the
+    // opening or ending with no credits over it, a standard anime extra the scene also writes
+    // NCOP and NCED. `ReRecorded` is a new performance of an existing work, not a new transfer of
+    // it: `Taylor's Version` is the spelling the corpus carries, and the distinction matters more
+    // than most here - the two recordings are different masters of different takes.
+    Standard = 54, Creditless = 55, ReRecorded = 56,
+    // QUEUE FILE 05. `Commentary` is the same film with a different audio track over it.
+    // `Explicit` is the unbleeped master of a music release - the opposite claim to the `clean`
+    // this triage refused, and unambiguous where that word is not. `Reissue` is a later pressing
+    // of the same work, which in music is often a different master and always a different SKU.
+    Commentary = 57, Explicit = 58, Reissue = 59,
+    // QUEUE FILE 06. `OriginalAspectRatio` is NOT `Widescreen`: OAR means the frame the film was
+    // shot in, which for a 1950s television production is 4:3 and for a scope feature is 2.39:1.
+    // It says the transfer was not reframed, and that is a different claim from either shape.
+    OriginalAspectRatio = 60,
+    // A RESTORATION IS NOT A REMASTER. It repairs damage - torn frames, faded dye, missing
+    // footage - where a remaster re-derives from materials that were never damaged. Both rulers
+    // this parser is measured against hold the distinction, and folding the two cost names on
+    // each of them.
+    Restored = 61,
 };
 
 [[nodiscard]] std::string_view label(ResolutionTier value) noexcept;

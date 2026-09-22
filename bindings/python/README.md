@@ -45,48 +45,74 @@ r.to_dict()                            # {'title': 'Ted Lasso', 'season': 3, 'ep
 
 names = ["Blade.Runner.2049.2017.2160p.UHD.BluRay.x265-TERMiNAL.mkv",
          "Stray_v1.5-Razor1911",
-         "El Joven Sheldon - Temporada 6 [HDTV 720p][Cap.604][AC3 5.1 Castellano][www.pctnew.org]",
+         "La Casa de Papel - Temporada 3 [HDTV 720p][Cap.305][AC3 5.1 Castellano]",
          "【高清剧集网 www.BTHDTV.com】邻家哥哥给我爱[第05-06集][简繁英字幕].Brother.Next.Door.2024.S01E05-06.1080p.WEB-DL.H264.AAC-BTHDTV",
-         "葬送のフリーレン 第28話 「また会ったときに恥ずかしいからね」 (1080p).mkv"]
+         "葬送のフリーレン 第28話 「また会ったときに恥ずかしいからね」 (1080p).mkv",
+         "Blade.Runner.1982.Final.Cut.REPACK.2160p.UHD.BluRay.DV.HDR.TrueHD.7.1-FraMeSToR"]
 releases = parser.parse_batch(names)   # one result per name, in order
 
-SHOW = ("title", "alternative_title", "season", "episode", "absolute_episode", "episode_title", "year", "content")
+SHOW = ("title", "alternative_title", "season", "episode", "absolute_episode",
+        "episode_title", "year", "content", "edition", "version")
 for r in releases:
     d = r.to_dict()
     print({k: d[k] for k in SHOW if d.get(k) is not None})
 # {'title': 'Blade Runner 2049', 'year': 2017, 'content': 'movie'}
 # {'title': 'Stray', 'content': 'game'}
-# {'title': 'El Joven Sheldon', 'season': 6, 'episode': 4, 'content': 'series'}
+# {'title': 'La Casa de Papel', 'season': 3, 'episode': 5, 'content': 'series'}
 # {'title': 'Brother Next Door', 'alternative_title': '邻家哥哥给我爱', 'season': 1, 'episode': [5, 6], 'year': 2024, 'content': 'series'}
-# {'title': '葬送のフリーレン', 'absolute_episode': 28, 'episode_title': 'また会ったときに恥ずかしいからね', 'content': 'series', 'anime': True}
+# {'title': '葬送のフリーレン', 'absolute_episode': 28, 'episode_title': 'また会ったときに恥ずかしいからね', 'content': 'series'}
+# {'title': 'Blade Runner', 'year': 1982, 'content': 'movie', 'edition': 'Final Cut', 'version': 2}
 ```
 
 `parse_batch` runs many names at once on several threads and returns them in input order. Titles
-and evidence keep the original script - Latin, Han, Kana, Cyrillic. Every field a result can carry
+and evidence keep the original script - Latin, Han, Kana, Cyrillic.
+
+A name also states things about ITSELF rather than its content, and those are fields too:
+
+```python
+r = parser.parse("The.Expanse.S05E06.REAL.PROPER.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTb")
+r.proper, r.release_real, r.release_version   # True, 1, 2
+```
+
+`release_version` is the one number to sort on: a proper or a repack IS the second copy, `v2` is
+the anime spelling of the same thing, and `release_real` counts the times a botched proper had to
+be redone - the scene writes `REAL.REAL.PROPER`, and a boolean would read that as the same release.
+`edition` is a tuple because a release is routinely several at once. Every field a result can carry
 is documented in
 [docs/RESULT.md](https://github.com/bonejay/neurelease/blob/main/docs/RESULT.md).
 
-## Compared with GuessIt
+## Compared with GuessIt, Sonarr and Radarr
 
-Measured on the same machine on 2026-09-11 with the shipped model (version 3), on 3,344 video
-validation names:
+Measured on 2026-09-22 with the shipped model (version 5). Every figure is the share of names
+answered completely correctly - every field the name states read right, nothing invented. One
+wrong field fails the name.
 
-| Metric, video only (3,344 names, 2026-09-11) | NeuRelease | GuessIt 4.4.0 |
-|---|---:|---:|
-| macro shared-field F1 | **97.57%** | 86.45% |
-| exact on every applicable shared field | **89.44%** | 51.44% |
-| single name, one thread, via Python | **2,446 us/name** | 8,213 us/name |
-| batch, 4 workers, via Python | **833 us/name** | no batch API |
-| GuessIt's 22 documented limitation cases solved | **19/22** | 0/22 |
-| GuessIt's own published regression corpus | **683/859** | 804/859 |
+Sonarr answers only series and Radarr only films, and they model 16 and 14 fields against 29 here,
+so the table is split by content kind and scored only on the nine fields all four answer: title,
+year, resolution, source, release group, edition, audio language, subtitle language, checksum. Our
+hard sets keep at most three names per franchise.
 
-About **3.4× faster on one thread** in this measurement, and roughly ten times in batch.
+| | cases | NeuRelease | GuessIt | Radarr | Sonarr |
+|---|---:|---:|---:|---:|---:|
+| our labelled names, films | 1,001 | **93.5%** | 78.0% | 69.7% | 2.5% |
+| our labelled names, series | 2,075 | **96.0%** | 60.9% | 8.1% | 65.5% |
+| our hard names, films | 1,037 | **54.1%** | 30.1% | 36.1% | 1.4% |
+| our hard names, series | 915 | **79.2%** | 42.2% | 5.8% | 55.0% |
+| GuessIt's own corpus, films | 194 | 88.7% | **95.4%** | 49.5% | 2.1% |
+| GuessIt's own corpus, series | 461 | 85.5% | **94.4%** | 7.2% | 57.3% |
+| Sonarr's own suite, series | 935 | 91.0% | 80.7% | 45.0% | **95.2%** |
+| Radarr's own suite, films | 535 | 88.0% | 76.8% | **98.5%** | 68.8% |
 
-GuessIt's regression corpus is its own test suite: fixture strings such as `FooBar.307.PDTV-FlexGet`
-and filesystem paths, written to exercise its rules, with every input assumed to be a video.
-NeuRelease parses a single release name as found in real traffic and classifies it before assuming
-anything, so on this corpus it scores 683 to 804 - and on real names the ranking reverses. The 22
-limitation cases are GuessIt's own documented failures, not a representative sample.
+The last four rows are each parser's own regression suite: strings written to pin its own regexes
+down, which is why every parser wins its own and why those wins say little about real names.
+NeuRelease is second on all three, having trained on none of them. GuessIt's suite is scored on 859
+of its 1,048 entries - the rest are filesystem paths, `type` assertions inherited from file
+defaults, or values our closed vocabulary cannot express. Sonarr's and Radarr's suites run almost
+unfiltered.
+
+On the full twenty-field contract, video names: **97.88% macro field F1 and 91.54% exact** against
+GuessIt's 86.74% and 52.96%. About **3x faster on one thread**
+(2,793 us/name against 8,275), 949 us/name in batch on four threads.
 
 Method, exact model identity, scoring snapshot and reproduction:
 [docs/GUESSIT_COMPARISON.md](https://github.com/bonejay/neurelease/blob/main/docs/GUESSIT_COMPARISON.md).

@@ -11,7 +11,7 @@ None of these names is in the labelled corpus at all, so none was trained on. Ag
 
 ## The anime verdict
 
-A boolean on every result, **96.50% accurate** through the int8 runtime, the best-scoring of the
+A boolean on every result, **96.19% accurate** through the int8 runtime, the best-scoring of the
 model's six classifications. It means animation from **Japan, China or Korea** - donghua and Korean
 animation count; Western animation, live-action adaptations, tokusatsu and manga scans do not.
 
