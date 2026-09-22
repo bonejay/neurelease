@@ -94,6 +94,16 @@ TEST_CASE("video vocabulary stays canonical and typed") {
     CHECK(sourceValue("WEB-HDRip") == SourceKind::WebRip);         // the WEB is stated, so it wins
     CHECK(label(SourceKind::HdRip) == "HDRip");
 
+    // `Cap.604` IS SEASON 6, EPISODE 4, whichever label the model gave the span. Typed as a plain
+    // episode marker beside a stated `Temporada 6` it came through as episode 604.
+    CHECK(episodeMarkerIn("Cap.604").season == 6);
+    CHECK(episodeMarkerIn("Cap.604").first == 4);
+    CHECK(episodeMarkerIn("Cap.3412").season == 34);
+    CHECK(episodeMarkerIn("Cap.3412").first == 12);
+    CHECK(episodeMarkerIn("Cap.101_108").first == 1);
+    CHECK(episodeMarkerIn("Cap.101_108").last == 8);
+    CHECK(episodeMarkerIn("E604").first == 604);                     // no chapter word, no split
+
     // `Numbered` and `Regional` each drop a detail the vocabulary has no field for - which number,
     // which region - and keep the only part a consumer can act on: that one was stated at all.
     CHECK(editionIn("Modern C (MEAP v4) 3ed 2024") == EditionKind::Numbered);

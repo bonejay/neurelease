@@ -892,6 +892,14 @@ EpisodeMarkerReading episodeMarkerIn(std::string_view subject) {
     // `T01XE08` (the cross written between them) episode 1. The letter says which number is which.
     static const Regex seasonEpisode(R"(^[st](\d{1,2})[ ._-]?x?[ ._-]?e(\d{1,4})$)", true);
     static const Regex positionOf(R"(^(\d{1,4})[ ._-]?of[ ._-]?(\d{1,4})$)", true);
+    // THE SPANISH CHAPTER NUMBER CARRIES ITS SEASON. `Cap.604` is temporada 6, capítulo 04, and
+    // `Cap.3412` season 34 episode 12; the last two digits are always the episode. The corpus
+    // types the span both ways - season_episode_marker on two thirds of them, episode_marker on
+    // the rest, and the walk contract only ever the latter - so when a stated `Temporada 6` made
+    // the model type `Cap.604` as a plain episode marker, the number came through as episode 604.
+    // Same decoder as the combined marker; the letters decide, not the label.
+    static const Regex chapter(R"(^cap(?:[ií]tulos?)?[ ._-]?\d{3,4}(?:[ ._-]?[x_-][ ._-]?(?:cap[ ._-]?)?\d{3,4})*$)", true);
+    if (chapter.match(subject)) return seasonEpisodeMarkerIn(subject);
     if (const Match match = cross.match(subject))
         return {integer(match.captured(1)), integer(match.captured(2)), 0, 1, true};
     if (const Match match = seasonEpisode.match(subject))
