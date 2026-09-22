@@ -91,58 +91,43 @@ Latin, Han, Kana, Cyrillic.
 
 ## Compared with GuessIt, Sonarr and Radarr
 
-Measured on 2026-09-19 with the shipped model (version 4). Every figure is the share of names
-answered COMPLETELY correctly - every field the name states read right, nothing invented. One
+Measured on 2026-09-22 with the shipped model (version 5). Every figure is the share of names
+answered completely correctly - every field the name states read right, nothing invented. One
 wrong field fails the name.
 
-Two things make a four-parser comparison unfair unless they are removed, and they compound.
-**Domain**: Sonarr answers series and Radarr answers film, and each returns nothing at all for the
-other, so a mixed set charges both for names they never claimed. **Vocabulary**: Sonarr models 16
-fields and Radarr 14, against 29 here and 28 in GuessIt, so a case asserting a codec or a container
-fails them by construction. So the table below is split by content kind and scored only on the nine
-fields all four answer: `work_title`, `year`, `resolution`, `source_family`, `release_group`,
-`release_variant`, `audio_language`, `subtitle_language`, `crc32`.
+Sonarr answers only series and Radarr only films, and they model 16 and 14 fields against 29 here,
+so the table is split by content kind and scored only on the nine fields all four answer:
+`work_title`, `year`, `resolution`, `source_family`, `release_group`, `release_variant`,
+`audio_language`, `subtitle_language`, `crc32`. Our hard sets keep at most three names per
+franchise.
 
 | | cases | NeuRelease | GuessIt | Radarr | Sonarr |
 |---|---:|---:|---:|---:|---:|
 | **our labelled names** | | | | | |
 | representative, films | 1,001 | **93.5%** | 78.0% | 69.7% | 2.5% |
-| representative, series | 2,075 | **96.1%** | 60.9% | 8.1% | 65.5% |
-| hard, films | 1,736 | **63.3%** | 36.7% | 45.7% | 1.2% |
-| hard, series | 1,794 | **79.3%** | 41.0% | 4.3% | 48.7% |
+| representative, series | 2,075 | **96.0%** | 60.9% | 8.1% | 65.5% |
+| hard, films | 1,037 | **54.1%** | 30.1% | 36.1% | 1.4% |
+| hard, series | 915 | **79.2%** | 42.2% | 5.8% | 55.0% |
 | **each parser's own suite** | | | | | |
-| GuessIt's corpus, films | 194 | 88.1% | **95.4%** | 49.5% | 2.1% |
-| GuessIt's corpus, series | 461 | 87.2% | **94.4%** | 7.2% | 57.3% |
-| Sonarr's suite, series | 935 | 89.5% | 80.7% | 45.0% | **95.2%** |
-| Radarr's suite, films | 535 | 85.8% | 76.8% | **98.5%** | 68.8% |
+| GuessIt's corpus, films | 194 | 88.7% | **95.4%** | 49.5% | 2.1% |
+| GuessIt's corpus, series | 461 | 85.5% | **94.4%** | 7.2% | 57.3% |
+| Sonarr's suite, series | 935 | 91.0% | 80.7% | 45.0% | **95.2%** |
+| Radarr's suite, films | 535 | 88.0% | 76.8% | **98.5%** | 68.8% |
 
-Read the two halves differently. The first is our own gold - we chose the names, wrote the labels
-and fixed the contract, and NeuRelease is developed against them, so a lead there is expected. The
-second belongs to the other parsers: written to pin down their own behaviour, and nobody here
-trained on them. Each parser wins its own suite; NeuRelease is second on all three and first on
-none, which is what a parser written against none of them should look like.
+The lower half is each parser's own regression suite: strings written to pin its own regexes down,
+which is why every parser wins its own and why those wins say little about real names. NeuRelease
+is second on all three, having trained on none of them. GuessIt's suite is scored on 859 of its
+1,048 entries - the rest are filesystem paths, `type` assertions inherited from file defaults, or
+values our closed vocabulary cannot express, all listed in the full report. Sonarr's and Radarr's
+suites run almost unfiltered.
 
-On the full twenty-field contract, video names, our validation split: **97.86% macro field F1 and
-90.04% exact** against GuessIt's 86.67% and 52.72%. It is about **3.3x faster on one thread**
-(2,604 us/name against 8,621) and reaches 711 us/name in batch, which GuessIt has no API for.
-Of GuessIt's 22 documented limitation cases it solves **19**; GuessIt solves 0, Sonarr 7.
+On the full twenty-field contract, video names, our validation split: **97.88% macro field F1 and
+91.54% exact** against GuessIt's 86.74% and 52.96%. About **3.3x faster on one thread**
+(2,604 us/name against 8,621), 711 us/name in batch.
 
-**What is filtered, and why.** GuessIt's corpus is its own test suite - fixture strings such as
-`FooBar.307.PDTV-FlexGet`, written to exercise its rules - so three kinds of entry are left out
-rather than scored: those written as filesystem PATHS, whose expectations come from parent
-directories a release name does not carry; those asserting `type`, which every entry inherits from
-its file's defaults and which assumes the input is video before anything has read it; and checks
-naming a value our closed vocabulary cannot express. 859 of 1,048 entries are scored, and what is
-dropped is listed in the full report rather than quietly excluded. Sonarr's and Radarr's suites are
-scored almost unfiltered: their expectations are stated per case rather than inherited, so only
-assertions about things this vocabulary has no field for are left out.
-
-Name-by-name comparisons, where the difference is visible rather than averaged:
-[docs/ANIME.md](docs/ANIME.md) and [docs/LIVE_ACTION.md](docs/LIVE_ACTION.md).
-
-Method, exact model identity, scoring snapshot and reproduction:
-[docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md).
-Hardware and native kernel timings: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Name-by-name: [docs/ANIME.md](docs/ANIME.md), [docs/LIVE_ACTION.md](docs/LIVE_ACTION.md).
+Method and reproduction: [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md).
+Timings: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Documentation
 

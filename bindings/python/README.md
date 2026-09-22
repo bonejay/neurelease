@@ -83,42 +83,36 @@ is documented in
 
 ## Compared with GuessIt, Sonarr and Radarr
 
-Measured on 2026-09-19 with the shipped model (version 4). Every figure is the share of names
-answered COMPLETELY correctly - every field the name states read right, nothing invented. One
+Measured on 2026-09-22 with the shipped model (version 5). Every figure is the share of names
+answered completely correctly - every field the name states read right, nothing invented. One
 wrong field fails the name.
 
-Sonarr answers series and Radarr answers film, and each returns nothing at all for the other, so
-the table is split by content kind. Sonarr also models 16 fields and Radarr 14, against 29 here, so
-it is scored only on the nine all four answer: title, year, resolution, source, release group,
-edition, audio language, subtitle language, checksum.
+Sonarr answers only series and Radarr only films, and they model 16 and 14 fields against 29 here,
+so the table is split by content kind and scored only on the nine fields all four answer: title,
+year, resolution, source, release group, edition, audio language, subtitle language, checksum. Our
+hard sets keep at most three names per franchise.
 
 | | cases | NeuRelease | GuessIt | Radarr | Sonarr |
 |---|---:|---:|---:|---:|---:|
 | our labelled names, films | 1,001 | **93.5%** | 78.0% | 69.7% | 2.5% |
-| our labelled names, series | 2,075 | **96.1%** | 60.9% | 8.1% | 65.5% |
-| our hard names, films | 1,736 | **63.3%** | 36.7% | 45.7% | 1.2% |
-| our hard names, series | 1,794 | **79.3%** | 41.0% | 4.3% | 48.7% |
-| GuessIt's own corpus, films | 194 | 88.1% | **95.4%** | 49.5% | 2.1% |
-| GuessIt's own corpus, series | 461 | 87.2% | **94.4%** | 7.2% | 57.3% |
-| Sonarr's own suite, series | 935 | 89.5% | 80.7% | 45.0% | **95.2%** |
-| Radarr's own suite, films | 535 | 85.8% | 76.8% | **98.5%** | 68.8% |
+| our labelled names, series | 2,075 | **96.0%** | 60.9% | 8.1% | 65.5% |
+| our hard names, films | 1,037 | **54.1%** | 30.1% | 36.1% | 1.4% |
+| our hard names, series | 915 | **79.2%** | 42.2% | 5.8% | 55.0% |
+| GuessIt's own corpus, films | 194 | 88.7% | **95.4%** | 49.5% | 2.1% |
+| GuessIt's own corpus, series | 461 | 85.5% | **94.4%** | 7.2% | 57.3% |
+| Sonarr's own suite, series | 935 | 91.0% | 80.7% | 45.0% | **95.2%** |
+| Radarr's own suite, films | 535 | 88.0% | 76.8% | **98.5%** | 68.8% |
 
-Read the halves differently. The first four rows are our own labelled names - we chose them, wrote
-the labels and fixed the contract, and NeuRelease is developed against them, so a lead there is
-expected. The last four belong to the other parsers, written to pin down their own behaviour, and
-nobody here trained on them. Each parser wins its own suite; NeuRelease is second on all three and
-first on none, which is what a parser written against none of them should look like.
+The last four rows are each parser's own regression suite: strings written to pin its own regexes
+down, which is why every parser wins its own and why those wins say little about real names.
+NeuRelease is second on all three, having trained on none of them. GuessIt's suite is scored on 859
+of its 1,048 entries - the rest are filesystem paths, `type` assertions inherited from file
+defaults, or values our closed vocabulary cannot express. Sonarr's and Radarr's suites run almost
+unfiltered.
 
-On the full twenty-field contract, video names: **97.86% macro field F1 and 90.04% exact** against
-GuessIt's 86.67% and 52.72%. About **3.3x faster on one thread** (2,604 us/name against 8,621) and
-711 us/name in batch, which GuessIt has no API for. Of GuessIt's 22 documented limitation cases it
-solves **19**; GuessIt solves 0.
-
-GuessIt's corpus is its own test suite - fixture strings such as `FooBar.307.PDTV-FlexGet`, written
-to exercise its rules - so entries written as filesystem paths are left out, along with `type`
-assertions inherited from each file's defaults, which assume the input is video before anything has
-read it. 859 of 1,048 entries are scored. Sonarr's and Radarr's suites are scored almost
-unfiltered: their expectations are stated per case rather than inherited.
+On the full twenty-field contract, video names: **97.88% macro field F1 and 91.54% exact** against
+GuessIt's 86.74% and 52.96%. About **3.3x faster on one thread** (2,604 us/name against 8,621),
+711 us/name in batch.
 
 Method, exact model identity, scoring snapshot and reproduction:
 [docs/GUESSIT_COMPARISON.md](https://github.com/bonejay/neurelease/blob/main/docs/GUESSIT_COMPARISON.md).
