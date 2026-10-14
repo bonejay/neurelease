@@ -361,6 +361,17 @@ TEST_CASE("coverage, containers, and language decorations are value conversions"
     CHECK(plain.first == 11);
     CHECK(plain.last == 0);
     CHECK(episodeMarkerIn("1920x1080").season == 0);
+    // A cross with a range: a two-part episode in one file. Both spellings, the season once or
+    // twice; a later season in the tail is not this range.
+    const EpisodeMarkerReading pilot = episodeMarkerIn("1x01-02");
+    CHECK(pilot.season == 1);
+    CHECK(pilot.first == 1);
+    CHECK(pilot.last == 2);
+    CHECK(pilot.count == 2);
+    const EpisodeMarkerReading twice = episodeMarkerIn("1x01-1x02");
+    CHECK(twice.season == 1);
+    CHECK(twice.last == 2);
+    CHECK(episodeMarkerIn("1x01-2x02").last == 0);
     // The episode word may lead the cross, the cross may be the multiplication sign, and a
     // season letter left inside an episode span still says which number is which. All three
     // were GuessIt-corpus spans the model typed correctly and this read as one bare number.
