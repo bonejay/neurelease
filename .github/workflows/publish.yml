@@ -173,7 +173,8 @@ jobs:
       # THE WHEEL IS INSTALLED SOMEWHERE ELSE AND USED. A wheel that builds and then cannot find
       # its own library is the failure this package is most exposed to, and it looks like success
       # right up to the first import. The check runs from a directory that is not the repository,
-      # so nothing can fall back to the build tree. A musl wheel cannot install on the runner's
+      # so nothing can fall back to the build tree; then the binding's test suite runs against the
+      # library and model inside the wheel, on every platform shipped. A musl wheel cannot install on the runner's
       # glibc, so it is tried in a stock Alpine Python instead - which, having no C++ runtime, is
       # also the test that libstdc++ really was linked in.
       - name: Install it clean and parse a name
@@ -189,6 +190,7 @@ jobs:
           "$PY" -m pip install --quiet bindings/python/dist/*.whl
           cd "${RUNNER_TEMP}"
           "$PY" "${GITHUB_WORKSPACE}/.github/scripts/wheel_smoke.py"
+          sh "${GITHUB_WORKSPACE}/.github/scripts/wheel_tests.sh" "$PY"
 
       - name: Install it clean on Alpine and parse a name
         if: matrix.musl
@@ -197,17 +199,28 @@ jobs:
           docker run --rm -v "$PWD:/io:ro" -w /tmp python:3.12-alpine sh -euc '
             pip install --quiet --root-user-action=ignore /io/bindings/python/dist/*.whl
             python /io/.github/scripts/wheel_smoke.py
+            sh /io/.github/scripts/wheel_tests.sh python
           '
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: wheel-${{ matrix.name }}
           path: bindings/python/dist/*.whl
 
-  publish:
-    # Only for a tag, and only after every wheel built and proved itself.
+  tests:
+    # A TAG PUBLISHES ONLY TESTED CODE. The build workflow also runs for the push to main, but
+    # nothing waited for it: 0.2.0 went to PyPI while its tests were still running. Here the whole
+    # suite - three operating systems, the binding, the GuessIt corpus floors - runs for the tag
+    # itself, and publishing needs it to pass.
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: wheels
+    uses: ./.github/workflows/build.yml
+    with:
+      release: true
+
+  publish:
+    # Only for a tag, and only after the tests passed and every wheel built and proved itself.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [tests, wheels]
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
