@@ -3,7 +3,7 @@
 Each version's section is also its GitHub release notes: the publish workflow copies the section
 whose heading names the tag, and refuses to publish a tag that has none.
 
-## Unreleased
+## 0.2.2 - 2026-10-30
 
 ### Parsing
 - `MULTi` and `Multi-Audio` read as multi-audio, not dual audio, when the model tags them as dual.
