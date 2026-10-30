@@ -468,6 +468,75 @@ TEST_CASE("a 3D layout tag with no span of its own is still a 3D rip") {
     CHECK(!releaseInfoFromAnalysis(title, inTitle).threeD);
 }
 
+TEST_CASE("a bracketed dub tag with no span of its own is still the English dub") {
+    const std::string name = "[Pn8] Date A Live S02 [Funi-DL] [1080p] [Dub]";
+    Analysis analysis;
+    analysis.valid = true;
+    // No span for `Dub`, which is what models 4 and 5 return for this name.
+    analysis.spans = {span(name, SpanType::ReleaseGroup, "Pn8"), span(name, SpanType::Main, "Date A Live"),
+                      span(name, SpanType::SeasonMarker, "S02"), span(name, SpanType::Resolution, "1080p")};
+    const ReleaseInfo info = releaseInfoFromAnalysis(name, analysis);
+    CHECK(info.englishDub);
+    REQUIRE(originOf(info, Field::AudioLanguage) != nullptr);
+    CHECK(originOf(info, Field::AudioLanguage)->text == "Dub");
+
+    // A TITLE IS NOT A TAG: the rule reads only after the title.
+    const std::string title = "[Grp] (Dub) Chronicles S01E01 [1080p]";
+    Analysis inTitle;
+    inTitle.valid = true;
+    inTitle.spans = {span(title, SpanType::ReleaseGroup, "Grp"), span(title, SpanType::Main, "(Dub) Chronicles"),
+                     span(title, SpanType::SeasonEpisodeMarker, "S01E01")};
+    CHECK(!releaseInfoFromAnalysis(title, inTitle).englishDub);
+}
+
+TEST_CASE("a multi-audio tag labelled dual audio is multi audio") {
+    const std::string name = "Show S01E03 1080p NF WEB-DL MULTi AAC2.0 H.264-GRP (Alt, Multi-Audio, Multi-Subs)";
+    Analysis analysis;
+    analysis.valid = true;
+    analysis.spans = {span(name, SpanType::Main, "Show"), span(name, SpanType::SeasonEpisodeMarker, "S01E03"),
+                      span(name, SpanType::DualAudioTag, "MULTi"),
+                      span(name, SpanType::DualAudioTag, "Multi-Audio")};
+    const ReleaseInfo info = releaseInfoFromAnalysis(name, analysis);
+    CHECK(info.multiAudio);
+    CHECK(!info.dualAudio);
+
+    const std::string dual = "Show S01E03 1080p NF WEB-DL DUAL AAC2.0 H.264-GRP";
+    Analysis stated;
+    stated.valid = true;
+    stated.spans = {span(dual, SpanType::Main, "Show"), span(dual, SpanType::DualAudioTag, "DUAL")};
+    const ReleaseInfo withDual = releaseInfoFromAnalysis(dual, stated);
+    CHECK(withDual.dualAudio);
+    CHECK(!withDual.multiAudio);
+}
+
+TEST_CASE("one stated episode overrules a pack verdict unless a pack marker is located") {
+    const std::string name = "Show S01E03 1080p NF WEB-DL DUAL AAC2.0 H.264-GRP (Alt, Dual-Audio, Multi-Subs)";
+    Analysis analysis;
+    analysis.valid = true;
+    analysis.spans = {span(name, SpanType::Main, "Show"), span(name, SpanType::SeasonEpisodeMarker, "S01E03")};
+    analysis.packScope = {"season", 0.75F};
+    const ReleaseInfo info = releaseInfoFromAnalysis(name, analysis);
+    CHECK(!info.pack);
+    CHECK(info.packScope == PackScope::Single);
+    REQUIRE(originOf(info, Field::PackScope) != nullptr);
+    CHECK(originOf(info, Field::PackScope)->value == "single");
+
+    const std::string batch = "Show S01E01 Batch 1080p WEB-DL-GRP";
+    Analysis marked;
+    marked.valid = true;
+    marked.spans = {span(batch, SpanType::Main, "Show"), span(batch, SpanType::SeasonEpisodeMarker, "S01E01"),
+                    span(batch, SpanType::PackMarker, "Batch")};
+    marked.packScope = {"season", 0.75F};
+    CHECK(releaseInfoFromAnalysis(batch, marked).pack);
+
+    const std::string season = "Show S01 1080p WEB-DL-GRP";
+    Analysis whole;
+    whole.valid = true;
+    whole.spans = {span(season, SpanType::Main, "Show"), span(season, SpanType::SeasonMarker, "S01")};
+    whole.packScope = {"season", 0.9F};
+    CHECK(releaseInfoFromAnalysis(season, whole).pack);
+}
+
 TEST_CASE("titles with no main reading still publish one") {
     // Two title spans, both typed as alternates: the name used to come back with no title at all,
     // and an application matching a request against the title dropped the release entirely.
@@ -492,4 +561,46 @@ TEST_CASE("titles with no main reading still publish one") {
     const ReleaseInfo stated = releaseInfoFromAnalysis(name, withMain);
     CHECK(stated.title == "Kowloon Generic Romance");
     CHECK(stated.alternativeTitles.size() == 1);
+}
+
+TEST_CASE("a range across seasons is one range, not its first episode") {
+    // `S01E001-S04E143`: the model marks each end as its own season and episode, and the walk kept
+    // the first pair - a 131 GB pack of four seasons came out as season 1, episode 1.
+    const std::string runsOn =
+        "Swallowed.Star.(Tunshi.Xingkong).1080p.10Bit.S01E001-S04E143.x265.HEVC.Donghua.EngSoftSubs.Edited.for.Content.(EFC)";
+    Analysis marked;
+    marked.valid = true;
+    marked.spans = {span(runsOn, SpanType::Main, "Swallowed.Star"), span(runsOn, SpanType::SeasonMarker, "S01"),
+                    span(runsOn, SpanType::EpisodeMarker, "E001"), span(runsOn, SpanType::SeasonMarker, "S04"),
+                    span(runsOn, SpanType::EpisodeMarker, "E143"), span(runsOn, SpanType::ReleaseGroup, "EFC")};
+    marked.packScope = {"single", 0.8F};
+    const ReleaseInfo info = releaseInfoFromAnalysis(runsOn, marked);
+    CHECK(info.pack);
+    CHECK(info.season == 1);
+    CHECK(info.seasonEnd == 4);
+    // Zero-padded and rising: the count runs on across the seasons.
+    CHECK(info.episode == 1);
+    CHECK(info.episodeEnd == 143);
+    CHECK(info.episodeCount == 143);
+
+    // Counted per season (`S03E10`): only the seasons are stated.
+    const std::string perSeason = "Show.S01E01-S03E10.1080p.WEB-DL.x265-GRP";
+    Analysis seasons;
+    seasons.valid = true;
+    seasons.spans = {span(perSeason, SpanType::Main, "Show"), span(perSeason, SpanType::SeasonMarker, "S01"),
+                     span(perSeason, SpanType::EpisodeMarker, "E01"), span(perSeason, SpanType::SeasonMarker, "S03"),
+                     span(perSeason, SpanType::EpisodeMarker, "E10")};
+    seasons.packScope = {"single", 0.8F};
+    const ReleaseInfo pack = releaseInfoFromAnalysis(perSeason, seasons);
+    CHECK(pack.pack);
+    CHECK(pack.season == 1);
+    CHECK(pack.seasonEnd == 3);
+    CHECK_FALSE(pack.episode.has_value());
+
+    // One season's range is not touched: `S01E01-E10` is the episode marker's own business.
+    const std::string within = "Show.S01E01-S01E10.1080p.WEB-DL-GRP";
+    Analysis one;
+    one.valid = true;
+    one.spans = {span(within, SpanType::Main, "Show"), span(within, SpanType::SeasonEpisodeMarker, "S01E01-S01E10")};
+    CHECK_FALSE(releaseInfoFromAnalysis(within, one).seasonEnd.has_value());
 }

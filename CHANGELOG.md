@@ -3,6 +3,16 @@
 Each version's section is also its GitHub release notes: the publish workflow copies the section
 whose heading names the tag, and refuses to publish a tag that has none.
 
+## Unreleased
+
+### Parsing
+- `MULTi` and `Multi-Audio` read as multi-audio, not dual audio, when the model tags them as dual.
+- A bracketed `[Dub]` after the title is the English dub again; models 4 and 5 stopped marking it.
+- A range across seasons is one range: `S01E001-S04E143` is seasons 1-4, episodes 1-143 (padded,
+  running numbering), and `S01E01-S03E10` is a pack of seasons 1-3, where both read episode 1.
+- One stated episode overrules a pack verdict unless a pack marker is located: `Show S01E03 ...
+  (Dual-Audio, Multi-Subs)` is a single episode, not a season.
+
 ## 0.2.1 - 2026-10-30
 
 ### Parsing
