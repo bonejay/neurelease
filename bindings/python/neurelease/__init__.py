@@ -14,6 +14,14 @@ from typing import Iterable
 
 ABI_VERSION = 4
 
+# THE INSTALLED DISTRIBUTION'S VERSION, read from its metadata so pyproject.toml stays the one place
+# it is written. Imported from a source tree that was never installed there is no metadata to read.
+try:
+    from importlib.metadata import PackageNotFoundError, version as _distribution_version
+    __version__ = _distribution_version("neurelease")
+except PackageNotFoundError:
+    __version__ = "0+unknown"
+
 
 class NeureleaseError(RuntimeError):
     pass

@@ -80,13 +80,15 @@ for r in releases:
 pip install neurelease
 ```
 
-The [wheel](https://pypi.org/project/neurelease/) bundles the library and the model.
+The [wheel](https://pypi.org/project/neurelease/) bundles the library and the model, for Linux
+(x86-64 and ARM64, glibc and Alpine's musl), macOS (Apple Silicon and Intel) and Windows x86-64.
 `parse_batch` runs many names at once on several threads and returns them in input order. Titles
 and evidence keep their original script - Latin, Han, Kana, Cyrillic.
 
 - [docs/API.md](docs/API.md) - the C++ and C APIs
 - [docs/RESULT.md](docs/RESULT.md) - every field a result can carry
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#build) - building from source
+- [CHANGELOG.md](CHANGELOG.md) - what changed in each version
 
 ## Compared with GuessIt, Sonarr and Radarr
 

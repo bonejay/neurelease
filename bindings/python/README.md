@@ -122,14 +122,23 @@ Method, exact model identity, scoring snapshot and reproduction:
 Python 3.10 or newer. The wheels are tagged `py3-none-<platform>`, one per platform rather than one
 per interpreter, because the library is loaded through `ctypes` and speaks the stable C ABI.
 
-| Platform | Wheel |
-|---|---|
-| Linux x86-64 | `manylinux_2_28` |
-| macOS, Apple Silicon | `macosx_11_0_arm64` |
-| Windows x86-64 | `win_amd64` |
+| Platform | Wheel | Covers |
+|---|---|---|
+| Linux x86-64 | `manylinux_2_28_x86_64` | Debian 10+, Ubuntu 18.10+, Fedora, RHEL 8+, most Docker images |
+| Linux ARM64 | `manylinux_2_28_aarch64` | Raspberry Pi OS 64-bit, ARM servers, ARM NAS boxes |
+| Alpine Linux x86-64 / ARM64 | `musllinux_1_2` | `python:*-alpine` and other musl containers |
+| macOS, Apple Silicon | `macosx_11_0_arm64` | macOS 11 Big Sur and later |
+| macOS, Intel | `macosx_11_0_x86_64` | macOS 11 Big Sur and later |
+| Windows x86-64 | `win_amd64` | Windows 10 and later |
 
-Anywhere else, build from source: the C++ library, the C ABI and the build instructions are in the
-[repository](https://github.com/bonejay/neurelease).
+On x86-64 the fastest kernels the CPU supports (AVX2, AVX-VNNI, AVX-512) are chosen at load time;
+ARM runs the portable kernels, which read every name the same way, only slower. If pip reports
+no matching distribution on one of these platforms, `pip install --upgrade pip` first: older pips
+do not know the newer platform tags. Anywhere else, build from source: the C++ library, the C ABI
+and the build instructions are in the [repository](https://github.com/bonejay/neurelease).
+
+What changed in each version:
+[CHANGELOG.md](https://github.com/bonejay/neurelease/blob/main/CHANGELOG.md).
 
 ## License
 

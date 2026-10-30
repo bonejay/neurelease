@@ -19,6 +19,12 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Multimedia :: Video",
     "Topic :: Text Processing :: Linguistic",
     "Typing :: Typed",
@@ -29,7 +35,7 @@ Homepage = "https://github.com/bonejay/neurelease"
 Demo = "https://neurelease-demo.vercel.app"
 Documentation = "https://github.com/bonejay/neurelease/blob/main/docs/API.md"
 Issues = "https://github.com/bonejay/neurelease/issues"
-Changelog = "https://github.com/bonejay/neurelease/releases"
+Changelog = "https://github.com/bonejay/neurelease/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["."]
