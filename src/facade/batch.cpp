@@ -106,7 +106,17 @@ std::vector<ParseResult> BatchParser::parse(std::span<const std::string> names) 
     std::atomic<bool> failed{false};
     std::exception_ptr failure;
     std::mutex failureMutex;
-    std::vector<std::jthread> pool;
+    // std::thread JOINED BY A GUARD, not std::jthread: the libc++ that Xcode 16 ships - the Intel
+    // macOS runners build with it - has no jthread. The guard keeps the one jthread guarantee this
+    // relies on: a worker started before a later one failed to start is joined, not terminated.
+    std::vector<std::thread> pool;
+    struct JoinAll {
+        std::vector<std::thread>& threads;
+        ~JoinAll() {
+            for (std::thread& thread : threads)
+                if (thread.joinable()) thread.join();
+        }
+    } joinAll{pool};
     pool.reserve(static_cast<std::size_t>(workers));
     for (int worker = 0; worker < workers; ++worker) {
         pool.emplace_back([this, worker, workers, names, bucket, bucketCount, &order, &nextBucket,
@@ -133,7 +143,7 @@ std::vector<ParseResult> BatchParser::parse(std::span<const std::string> names) 
             }
         });
     }
-    pool.clear(); // jthread joins; results and the captured exception are now stable
+    for (std::thread& thread : pool) thread.join(); // results and the captured exception are now stable
     if (failure) std::rethrow_exception(failure);
     for (std::vector<Claimed>& mine : perWorker)
         for (Claimed& claimed : mine) results[claimed.first] = std::move(claimed.second);

@@ -885,7 +885,12 @@ EpisodeMarkerReading episodeMarkerIn(std::string_view subject) {
     // THE EPISODE WORD MAY LEAD, AND THE CROSS MAY BE THE MULTIPLICATION SIGN. `Ep 2x03` read as
     // episode 2 and `2×7` as episode 2 with no season, both on GuessIt's corpus (2026-09-16), each
     // a span the model typed correctly. The left operand stays two digits: `1920x1080` is a frame.
-    static const Regex cross(R"(^(?:ep(?:isode)?[ ._-]?)?(\d{1,2})[ ._-]?[x×][ ._-]?(\d{1,4})$)", true);
+    // A CROSS MAY STATE A RANGE: `1x01-02` and `1x01-1x02` are season 1, episodes 1 and 2 - a
+    // two-part pilot in one file (Total Recall 2070, 2026-10-14). Without the tail the whole span
+    // fell to the numbers reader: episode 1, no season, the second episode gone. The tail's season,
+    // when written, must be the same one; a dash joins them, never another `x` (the chained form
+    // above stays out).
+    static const Regex cross(R"(^(?:ep(?:isode)?[ ._-]?)?(\d{1,2})[ ._-]?[x×][ ._-]?(\d{1,4})(?:[ ._]?[-–][ ._]?(?:(\d{1,2})[x×])?(\d{1,4}))?$)", true);
     // `S8E6` AND `T01E08` AS ONE EPISODE SPAN. The model separates the season letter from the
     // episode when it can; when it hands both over in one span - the Spanish `T` for temporada, or
     // an `S` it did not cut - the numbers reader answered episode 8 for season 8 episode 6, and
@@ -900,8 +905,14 @@ EpisodeMarkerReading episodeMarkerIn(std::string_view subject) {
     // Same decoder as the combined marker; the letters decide, not the label.
     static const Regex chapter(R"(^cap(?:[ií]tulos?)?[ ._-]?\d{3,4}(?:[ ._-]?[x_-][ ._-]?(?:cap[ ._-]?)?\d{3,4})*$)", true);
     if (chapter.match(subject)) return seasonEpisodeMarkerIn(subject);
-    if (const Match match = cross.match(subject))
-        return {integer(match.captured(1)), integer(match.captured(2)), 0, 1, true};
+    if (const Match match = cross.match(subject)) {
+        const int season = integer(match.captured(1));
+        const int first = integer(match.captured(2));
+        const int last = match.captured(4).empty() ? 0 : integer(match.captured(4));
+        const bool sameSeason = match.captured(3).empty() || integer(match.captured(3)) == season;
+        if (last > first && sameSeason) return {season, first, last, last - first + 1, true};
+        return {season, first, 0, 1, true};
+    }
     if (const Match match = seasonEpisode.match(subject))
         return {integer(match.captured(1)), integer(match.captured(2)), 0, 1, true};
     if (const Match match = positionOf.match(subject))
