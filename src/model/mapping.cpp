@@ -306,6 +306,9 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
     // what keeps the correction below from touching the many names where a season marker sits
     // beside genuinely absolute numbering.
     bool combinedMarkerSeen = false;
+    // A PACK OR VOLUME MARKER WAS LOCATED: the name itself says it is more than one episode, which
+    // is what lets a pack verdict stand beside a single stated episode.
+    bool packMarkerSeen = false;
     std::int32_t episodeTitleEnd = -1;
     // THE REVISION IS SPELLED ACROSS SEVERAL SPANS, so it cannot be decided inside one of them.
     // `REAL.REAL.PROPER` and `PROPER` beside `v2` arrive here as separate edition tokens, and the
@@ -567,6 +570,15 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
             if (format != SubtitleFormat::Unknown)
                 builder.record(Field::SubtitleFormat, std::string(label(format)), span, raw);
         } else if (type == SpanType::DualAudioTag) {
+            // `MULTi` AND `Multi-Audio` ARE NOT DUAL. The model labels them dual-audio tags - the
+            // same family, a second track present - but the text says more than two, and a caller
+            // charging for extra tracks needs the difference. The text decides, as it does for the
+            // English dub below.
+            if (hasMultiAudioTag(raw)) {
+                info.multiAudio = true;
+                builder.record(Field::MultiAudio, "yes", span, raw);
+                continue;
+            }
             info.dualAudio = true;
             if (containsInsensitive(raw, "dub") && containsInsensitive(raw, "eng")) info.englishDub = true;
             builder.record(Field::DualAudio, "yes", span, raw);
@@ -713,9 +725,11 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
             }
         } else if (type == SpanType::VolumeMarker) {
             info.pack = true;
+            packMarkerSeen = true;
             builder.record(Field::PackMarker, raw, span, raw);
         } else if (type == SpanType::PackMarker) {
             info.pack = true;
+            packMarkerSeen = true;
             if (containsInsensitive(raw, "complete")) info.explicitCompleteRange = true;
             builder.record(Field::PackMarker, raw, span, raw);
         } else if (type == SpanType::SpecialMarker) {
@@ -881,6 +895,25 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
         }
     }
 
+    // A BRACKETED DUB TAG THE SEGMENTER STOPPED MARKING. `[Pn8] Date A Live S02 [1080p] [Dub]`:
+    // model 3 located `Dub` as an audio language, models 4 and 5 return no span for it, and the
+    // English dub - the one fact an anime release states this way - was lost. Only the bracketed
+    // spelling, standing alone in its brackets, and only after the title: a bare `Dub` word is
+    // too often part of a title to read outside a span the model vouched for.
+    if (!info.englishDub && titleEnd >= 0 && static_cast<std::size_t>(titleEnd) < name.size()) {
+        static const text::Regex bracketedDub(R"([\[(]\s*(Dub(?:bed)?)\s*[\])])", true);
+        const std::string_view tail = name.substr(static_cast<std::size_t>(titleEnd));
+        if (const text::Match found = bracketedDub.match(tail)) {
+            SegmentedSpan dubSpan;
+            dubSpan.type = SpanType::AudioLanguage;
+            dubSpan.begin = titleEnd + static_cast<std::int32_t>(found.capturedStart(1));
+            dubSpan.end = titleEnd + static_cast<std::int32_t>(found.capturedEnd(1));
+            dubSpan.confidence = 1.0F;
+            info.englishDub = true;
+            builder.record(Field::AudioLanguage, "english dub", dubSpan, found.captured(1));
+        }
+    }
+
     if (!seasonSeen || !episodeSeen) {
         static const text::Regex writtenOut(
             R"((?:^|[^A-Za-z0-9])(s(\d{1,2}))[ ._-]?(e(\d{1,4})))", true);
@@ -906,6 +939,103 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
                 info.episode = integer(found.captured(4));
                 builder.record(Field::Episode, std::to_string(*info.episode), episodeSpan,
                                found.captured(3));
+            }
+        }
+    }
+
+    // `SxxEyy-SxxEzz` AND `NxNN-NxNN`: TWO WHOLE MARKERS JOINED, and the walk reads neither as a
+    // range. It keeps the first marker and takes the second's numbers for something else:
+    // `S07E01-S07E02` came out episode 7, `S36E01-S36E02` episodes 1 to 36, `S01E01-S01E22`
+    // episode 1, and `S01E001-S04E143` - a pack of four seasons - episode 1. The text states it
+    // plainly, so it is read here from the text, and the season and episode origins the walk
+    // recorded are replaced: an origin with a value is what the C ABI reports as stated.
+    //
+    // ONE SEASON: the episodes are the range, `S01E01-S01E22` is 1 to 22.
+    //
+    // SEVERAL SEASONS: the seasons are certain, the episodes are not. The last number either
+    // continues from the first or restarts each season, and the name does not say which:
+    // `Swallowed.Star.S01E001-S04E143` holds 144 files and `Wonderland.S01E001-S05E267.(443)` 444.
+    // The episode range is answered only when restarting is implausible - when the last season
+    // alone would have to hold more than 30 episodes for every season in the pack, 60 for two, which
+    // no ordinary series does - and no total written in the name contradicts it, as Wonderland's
+    // `(443)` does. tests/data/cross_season_ranges.jsonl holds 67 such names labelled from file
+    // counts, the text and knowledge of the shows; the rule answers 40 of the 44 that run on, never
+    // answers episodes for one that restarts, and the four it passes over still read as their seasons.
+    // Even so it is an inference, so the episode carries a confidence below a stated one.
+    //
+    // THE JOIN IS A DASH, A TILDE OR A WORD: `S01E01 To S01E03`, `S02E09_to_S02E13`, German
+    // `S05E11.bis.S05E13`. Markers merely glued together are not a range - `S01E08a_S01E19b` and
+    // `S19E09_S20E14` are two episodes put in one file, the W4F cartoon converts' convention - and
+    // are left to the walk.
+    //
+    // A SEASON THAT GOES DOWN (`S15E05-S14E10`) states nothing coherent; the first marker stands
+    // alone, rather than the walk's reading of the second as an episode.
+    {
+        static const text::Regex markerRange(
+            R"((?:^|[^A-Za-z0-9])((?:s(\d{1,2})[ ._-]?e(\d{1,4})|(\d{1,2})x(\d{2,3}))[ ._]*(?:[-~]|to|thru|bis)[ ._]*(?:s(\d{1,2})[ ._-]?e(\d{1,4})|(\d{1,2})x(\d{2,3})))(?:[^A-Za-z0-9]|$))",
+            true);
+        static const text::Regex statedTotal(R"(\((\d{2,4})\))");
+        if (const text::Match found = markerRange.match(name)) {
+            // Each marker is one of two spellings; the one that matched holds the numbers.
+            const auto either = [&found](int sxe, int nxn) {
+                return found.captured(sxe).empty() ? nxn : sxe;
+            };
+            const int fromSeasonGroup = either(2, 4);
+            const int fromEpisodeGroup = either(3, 5);
+            const int fromSeason = integer(found.captured(fromSeasonGroup));
+            const int fromEpisode = integer(found.captured(fromEpisodeGroup));
+            const int toSeason = integer(found.captured(either(6, 8)));
+            const int toEpisode = integer(found.captured(either(7, 9)));
+            SegmentedSpan rangeSpan;
+            rangeSpan.type = SpanType::SeasonEpisodeMarker;
+            rangeSpan.begin = static_cast<std::int32_t>(found.capturedStart(1));
+            rangeSpan.end = static_cast<std::int32_t>(found.capturedEnd(1));
+            rangeSpan.confidence = 1.0F;
+            std::erase_if(info.origins, [](const auto& origin) {
+                return origin.field == Field::Season || origin.field == Field::Episode;
+            });
+            seasonSeen = true;
+            episodeSeen = true;
+            info.season = fromSeason;
+            info.seasonEnd.reset();
+            info.episode.reset();
+            info.episodeEnd.reset();
+            info.episodeCount.reset();
+            builder.record(Field::Season, std::to_string(fromSeason), rangeSpan, found.captured(1));
+            if (toSeason > fromSeason) {
+                info.seasonEnd = toSeason;
+                info.pack = true;
+                packMarkerSeen = true;
+                builder.record(Field::PackMarker, std::string(found.captured(1)), rangeSpan, found.captured(1));
+                const int count = toEpisode - fromEpisode + 1;
+                bool totalContradicts = false;
+                for (std::size_t from = 0; from < name.size();) {
+                    const text::Match total = statedTotal.match(name, from);
+                    if (!total) break;
+                    const int stated = integer(total.captured(1));
+                    // A year in brackets is not a total.
+                    if ((stated < 1900 || stated > 2100) && stated != count) totalContradicts = true;
+                    from = total.capturedEnd();
+                }
+                const int seasons = toSeason - fromSeason + 1;
+                if (toEpisode > fromEpisode && toEpisode > 30 * seasons && !totalContradicts) {
+                    info.episode = fromEpisode;
+                    info.episodeEnd = toEpisode;
+                    info.episodeCount = count;
+                    SegmentedSpan inferred = rangeSpan;
+                    inferred.confidence = 0.75F;
+                    builder.record(Field::Episode, std::to_string(fromEpisode), inferred, found.captured(1));
+                }
+            } else {
+                info.episode = fromEpisode;
+                if (toSeason == fromSeason && toEpisode > fromEpisode) {
+                    info.episodeEnd = toEpisode;
+                    info.episodeCount = toEpisode - fromEpisode + 1;
+                    info.pack = true;
+                } else {
+                    rangeSpan.end = static_cast<std::int32_t>(found.capturedEnd(fromEpisodeGroup));
+                }
+                builder.record(Field::Episode, std::to_string(fromEpisode), rangeSpan, found.captured(1));
             }
         }
     }
@@ -960,10 +1090,26 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
                     seasonOverrulesAbsolute
                         ? SegmentedField{"season_episode", analysis.numberingKind.confidence}
                         : analysis.numberingKind);
-    builder.verdict(Field::PackScope, analysis.packScope);
+    // ONE STATED EPISODE OVERRULES A PACK VERDICT, unless a pack marker was located too.
+    // `Chainsmoker Cat S01E03 1080p NF WEB-DL DUAL ... (Yani Neko, Dual-Audio, Multi-Subs)` was
+    // read as a season at 0.75 - the bracketed tail looks like a batch's - while its spans say
+    // season 1, episode 3, and nothing else. Every episode number with no range beside it is a
+    // single, and a caller ranking a pack above an episode would take this one for a season.
+    // Corrected here, like the numbering above, so the result and its origins agree.
+    const bool packVerdict = packScope == PackScope::Complete || packScope == PackScope::Season
+                             || packScope == PackScope::MultiSeason
+                             || packScope == PackScope::EpisodeBatch;
+    const bool singleEpisodeStated = (info.episode.value_or(0) > 0 && !info.episodeEnd)
+                                     || (info.absoluteEpisode.value_or(0) > 0 && !info.absoluteEpisodeEnd);
+    const bool episodeOverrulesPack = packVerdict && singleEpisodeStated && !packMarkerSeen;
+    const PackScope scope = episodeOverrulesPack ? PackScope::Single : packScope;
+    if (episodeOverrulesPack) info.packScope = scope;
+    builder.verdict(Field::PackScope, episodeOverrulesPack
+                                          ? SegmentedField{"single", analysis.packScope.confidence}
+                                          : analysis.packScope);
     builder.verdict(Field::SpecialKind, analysis.specialKind);
 
-    switch (packScope) {
+    switch (scope) {
     case PackScope::Complete: info.explicitCompleteRange = true; [[fallthrough]];
     case PackScope::Season:
     case PackScope::MultiSeason:
