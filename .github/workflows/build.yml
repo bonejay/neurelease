@@ -27,7 +27,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Configure
         run: cmake --preset release
       - name: Build
@@ -60,7 +60,7 @@ jobs:
     # and re-pinned only with the trade written beside them.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: NeuRelease
       - name: Fetch the GuessIt corpus
@@ -88,7 +88,7 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install gcovr
         run: pip install gcovr
       - name: Configure with coverage instrumentation

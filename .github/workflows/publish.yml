@@ -28,7 +28,7 @@ jobs:
     # is how GitHub came to show 0.1.1 as the latest for a month after 0.2.0 shipped.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: The versions agree
         shell: bash
         run: |
@@ -88,8 +88,8 @@ jobs:
             name: windows-x86_64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -199,7 +199,7 @@ jobs:
             python /io/.github/scripts/wheel_smoke.py
           '
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: wheel-${{ matrix.name }}
           path: bindings/python/dist/*.whl
@@ -214,8 +214,8 @@ jobs:
       id-token: write        # Trusted Publishing: the OIDC token PyPI verifies. No secrets.
       contents: write        # the GitHub release
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
         with:
           pattern: wheel-*
           path: dist
