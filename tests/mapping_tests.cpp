@@ -636,6 +636,46 @@ TEST_CASE("a range of whole markers in one season is that season's episodes") {
     CHECK(all.episodeCount == 22);
 }
 
+TEST_CASE("a marker range may be joined by a word, and glued markers are not a range") {
+    const std::string worded = "Another Life (2019) S01E01 To S01E03 720p";
+    Analysis analysis;
+    analysis.valid = true;
+    analysis.spans = {span(worded, SpanType::Main, "Another Life"), span(worded, SpanType::Year, "2019"),
+                      span(worded, SpanType::SeasonEpisodeMarker, "S01E01"),
+                      span(worded, SpanType::SeasonEpisodeMarker, "S01E03")};
+    const ReleaseInfo info = releaseInfoFromAnalysis(worded, analysis);
+    CHECK(info.episode == 1);
+    CHECK(info.episodeEnd == 3);
+
+    const std::string german = "Clarissa.S05E11.bis.S05E13.GERMAN.AC3.DL.HDTV.720p.x264-TSCC";
+    Analysis bis;
+    bis.valid = true;
+    bis.spans = {span(german, SpanType::Main, "Clarissa"), span(german, SpanType::SeasonEpisodeMarker, "S05E11"),
+                 span(german, SpanType::SeasonEpisodeMarker, "S05E13")};
+    CHECK(releaseInfoFromAnalysis(german, bis).episodeEnd == 13);
+
+    const std::string complete = "NCIS Complete pack from s01e01 to s11e17";
+    Analysis pack;
+    pack.valid = true;
+    pack.spans = {span(complete, SpanType::Main, "NCIS"), span(complete, SpanType::SeasonEpisodeMarker, "s01e01"),
+                  span(complete, SpanType::SeasonEpisodeMarker, "s11e17")};
+    const ReleaseInfo seasons = releaseInfoFromAnalysis(complete, pack);
+    CHECK(seasons.season == 1);
+    CHECK(seasons.seasonEnd == 11);
+    CHECK_FALSE(seasons.episode.has_value());
+
+    // Two episodes in one file, not the ten between them.
+    const std::string glued = "Thomas.and.Friends.S19E09_S20E14.CONVERT.720p.HDTV.x264-W4F";
+    Analysis two;
+    two.valid = true;
+    two.spans = {span(glued, SpanType::Main, "Thomas.and.Friends"),
+                 span(glued, SpanType::SeasonEpisodeMarker, "S19E09"),
+                 span(glued, SpanType::SeasonEpisodeMarker, "S20E14")};
+    const ReleaseInfo apart = releaseInfoFromAnalysis(glued, two);
+    CHECK(apart.season == 19);
+    CHECK_FALSE(apart.seasonEnd.has_value());
+}
+
 TEST_CASE("a range whose season goes down is its first marker alone") {
     const std::string name = "Antiques Road Trip S15E05-S14E10";
     Analysis analysis;

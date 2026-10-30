@@ -959,11 +959,16 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
     // Through the Heavens the same), zero-padded or not. An episode range would be confidently
     // wrong one time in four, so the answer is the seasons, a pack, and no episode numbers.
     //
+    // THE JOIN IS A DASH, A TILDE OR A WORD: `S01E01 To S01E03`, `S02E09_to_S02E13`, German
+    // `S05E11.bis.S05E13`. Markers merely glued together are not a range - `S01E08a_S01E19b` and
+    // `S19E09_S20E14` are two episodes put in one file, the W4F cartoon converts' convention - and
+    // are left to the walk.
+    //
     // A SEASON THAT GOES DOWN (`S15E05-S14E10`) states nothing coherent; the first marker stands
     // alone, rather than the walk's reading of the second as an episode.
     {
         static const text::Regex markerRange(
-            R"((?:^|[^A-Za-z0-9])((s(\d{1,2})[ ._-]?e(\d{1,4}))[ ._]*[-~][ ._]*s(\d{1,2})[ ._-]?e(\d{1,4}))(?:[^A-Za-z0-9]|$))",
+            R"((?:^|[^A-Za-z0-9])((s(\d{1,2})[ ._-]?e(\d{1,4}))[ ._]*(?:[-~]|to|thru|bis)[ ._]*s(\d{1,2})[ ._-]?e(\d{1,4}))(?:[^A-Za-z0-9]|$))",
             true);
         if (const text::Match found = markerRange.match(name)) {
             const int fromSeason = integer(found.captured(3));

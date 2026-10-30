@@ -10,6 +10,7 @@ whose heading names the tag, and refuses to publish a tag that has none.
 - A bracketed `[Dub]` after the title is the English dub again; models 4 and 5 stopped marking it.
 - A range of whole markers is read as one: `S01E01-S01E22` is season 1, episodes 1-22, where
   `S07E01-S07E02` read episode 7 and `S36E01-S36E02` episodes 1-36 (in every earlier version).
+  Joined by a word as well: `S01E01 To S01E03`, `S02E09_to_S02E13`, `S05E11.bis.S05E13`.
   Across seasons, `S01E001-S04E143` is a pack of seasons 1-4 with no episode numbers: such packs
   number their episodes both ways (25 of 32 checked run on, 7 restart each season), and the name
   does not say which.
