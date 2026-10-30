@@ -943,47 +943,65 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
         }
     }
 
-    // A RANGE ACROSS SEASONS. `Swallowed.Star.S01E001-S04E143` and `Show.S01E01-S03E10` state a
-    // first and a last episode in different seasons; the model marks each end as its own season
-    // and episode, the walk keeps the first pair, and the release came out as season 1 episode 1 -
-    // one episode, for a 131 GB pack of four seasons. Read here from the text, as one range.
+    // `SxxEyy-SxxEzz`: TWO WHOLE MARKERS JOINED BY A DASH, and the walk reads neither as a range.
+    // It keeps the first marker and takes the second's numbers for something else: `S07E01-S07E02`
+    // came out episode 7, `S36E01-S36E02` episodes 1 to 36, `S01E01-S01E22` episode 1, and
+    // `S01E001-S04E143` - a pack of four seasons - episode 1. The text states it plainly, so it is
+    // read here from the text, and the season and episode origins the walk recorded are replaced:
+    // an origin with a value is what the C ABI reports as stated.
     //
-    // WHETHER THE EPISODES RUN ON depends on how they are written. Zero-padded to three digits and
-    // rising (`E001` ... `E143`) the count continues across the seasons - the donghua and anime
-    // convention - so the range is episodes 1 to 143. Otherwise (`S03E10`) the last number counts
-    // from its own season, and only the seasons are stated: a pack of seasons 1 to 3.
+    // ONE SEASON: the episodes are the range, `S01E01-S01E22` is 1 to 22.
+    //
+    // SEVERAL SEASONS: only the seasons are certain. Whether the last number continues from the
+    // first or restarts each season is a convention the name does not state. Against the file
+    // counts of 32 such packs in the Anime Tosho dump, 25 run on (`Swallowed.Star.S01E001-S04E143`
+    // holds 144 files) and 7 restart (`Wonderland.S01E001-S05E267.(443)` holds 444, and Battle
+    // Through the Heavens the same), zero-padded or not. An episode range would be confidently
+    // wrong one time in four, so the answer is the seasons, a pack, and no episode numbers.
+    //
+    // A SEASON THAT GOES DOWN (`S15E05-S14E10`) states nothing coherent; the first marker stands
+    // alone, rather than the walk's reading of the second as an episode.
     {
-        static const text::Regex crossSeason(
-            R"((?:^|[^A-Za-z0-9])(s(\d{1,2})[ ._-]?e(\d{1,4})[ ._]*[-~][ ._]*s(\d{1,2})[ ._-]?e(\d{1,4}))(?:[^A-Za-z0-9]|$))",
+        static const text::Regex markerRange(
+            R"((?:^|[^A-Za-z0-9])((s(\d{1,2})[ ._-]?e(\d{1,4}))[ ._]*[-~][ ._]*s(\d{1,2})[ ._-]?e(\d{1,4}))(?:[^A-Za-z0-9]|$))",
             true);
-        if (const text::Match found = crossSeason.match(name)) {
-            const int fromSeason = integer(found.captured(2));
-            const int fromEpisode = integer(found.captured(3));
-            const int toSeason = integer(found.captured(4));
-            const int toEpisode = integer(found.captured(5));
+        if (const text::Match found = markerRange.match(name)) {
+            const int fromSeason = integer(found.captured(3));
+            const int fromEpisode = integer(found.captured(4));
+            const int toSeason = integer(found.captured(5));
+            const int toEpisode = integer(found.captured(6));
+            SegmentedSpan rangeSpan;
+            rangeSpan.type = SpanType::SeasonEpisodeMarker;
+            rangeSpan.begin = static_cast<std::int32_t>(found.capturedStart(1));
+            rangeSpan.end = static_cast<std::int32_t>(found.capturedEnd(1));
+            rangeSpan.confidence = 1.0F;
+            std::erase_if(info.origins, [](const auto& origin) {
+                return origin.field == Field::Season || origin.field == Field::Episode;
+            });
+            seasonSeen = true;
+            episodeSeen = true;
+            info.season = fromSeason;
+            info.seasonEnd.reset();
+            info.episode.reset();
+            info.episodeEnd.reset();
+            info.episodeCount.reset();
+            builder.record(Field::Season, std::to_string(fromSeason), rangeSpan, found.captured(1));
             if (toSeason > fromSeason) {
-                SegmentedSpan rangeSpan;
-                rangeSpan.type = SpanType::PackMarker;
-                rangeSpan.begin = static_cast<std::int32_t>(found.capturedStart(1));
-                rangeSpan.end = static_cast<std::int32_t>(found.capturedEnd(1));
-                rangeSpan.confidence = 1.0F;
-                seasonSeen = true;
-                episodeSeen = true;
-                packMarkerSeen = true;
-                info.pack = true;
-                info.season = fromSeason;
                 info.seasonEnd = toSeason;
-                const bool runsOn = found.captured(3).size() >= 3 && toEpisode > fromEpisode;
-                if (runsOn) {
-                    info.episode = fromEpisode;
+                info.pack = true;
+                packMarkerSeen = true;
+                builder.record(Field::PackMarker, std::string(found.captured(1)), rangeSpan, found.captured(1));
+            } else {
+                info.episode = fromEpisode;
+                if (toSeason == fromSeason && toEpisode > fromEpisode) {
                     info.episodeEnd = toEpisode;
                     info.episodeCount = toEpisode - fromEpisode + 1;
+                    info.pack = true;
+                    rangeSpan.end = static_cast<std::int32_t>(found.capturedEnd(1));
                 } else {
-                    info.episode.reset();
-                    info.episodeEnd.reset();
-                    info.episodeCount.reset();
+                    rangeSpan.end = static_cast<std::int32_t>(found.capturedEnd(2));
                 }
-                builder.record(Field::PackMarker, std::string(found.captured(1)), rangeSpan, found.captured(1));
+                builder.record(Field::Episode, std::to_string(fromEpisode), rangeSpan, found.captured(1));
             }
         }
     }

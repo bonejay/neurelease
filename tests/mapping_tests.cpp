@@ -563,7 +563,15 @@ TEST_CASE("titles with no main reading still publish one") {
     CHECK(stated.alternativeTitles.size() == 1);
 }
 
-TEST_CASE("a range across seasons is one range, not its first episode") {
+namespace {
+bool statesEpisode(const ReleaseInfo& info) {
+    return std::ranges::any_of(info.origins, [](const FieldOrigin& origin) {
+        return origin.field == Field::Episode && !origin.value.empty();
+    });
+}
+} // namespace
+
+TEST_CASE("a range across seasons is a pack of those seasons, with no episode numbers") {
     // `S01E001-S04E143`: the model marks each end as its own season and episode, and the walk kept
     // the first pair - a 131 GB pack of four seasons came out as season 1, episode 1.
     const std::string runsOn =
@@ -578,29 +586,66 @@ TEST_CASE("a range across seasons is one range, not its first episode") {
     CHECK(info.pack);
     CHECK(info.season == 1);
     CHECK(info.seasonEnd == 4);
-    // Zero-padded and rising: the count runs on across the seasons.
-    CHECK(info.episode == 1);
-    CHECK(info.episodeEnd == 143);
-    CHECK(info.episodeCount == 143);
+    // This pack's numbering runs on (it holds 144 files) and Wonderland's `S01E001-S05E267`
+    // restarts (444 files), written the same way: the name does not say which, so no episodes.
+    CHECK_FALSE(info.episode.has_value());
+    CHECK_FALSE(info.episodeEnd.has_value());
+    CHECK_FALSE(info.episodeCount.has_value());
+    // The walk's E001 origin goes too, or the C ABI would report a stated episode 0.
+    CHECK_FALSE(statesEpisode(info));
 
-    // Counted per season (`S03E10`): only the seasons are stated.
-    const std::string perSeason = "Show.S01E01-S03E10.1080p.WEB-DL.x265-GRP";
+    const std::string perSeason = "American_Dad_S01E01-S03E12";
     Analysis seasons;
     seasons.valid = true;
-    seasons.spans = {span(perSeason, SpanType::Main, "Show"), span(perSeason, SpanType::SeasonMarker, "S01"),
+    seasons.spans = {span(perSeason, SpanType::Main, "American_Dad"), span(perSeason, SpanType::SeasonMarker, "S01"),
                      span(perSeason, SpanType::EpisodeMarker, "E01"), span(perSeason, SpanType::SeasonMarker, "S03"),
-                     span(perSeason, SpanType::EpisodeMarker, "E10")};
-    seasons.packScope = {"single", 0.8F};
+                     span(perSeason, SpanType::EpisodeMarker, "E12")};
     const ReleaseInfo pack = releaseInfoFromAnalysis(perSeason, seasons);
     CHECK(pack.pack);
     CHECK(pack.season == 1);
     CHECK(pack.seasonEnd == 3);
     CHECK_FALSE(pack.episode.has_value());
+    CHECK_FALSE(statesEpisode(pack));
+}
 
-    // One season's range is not touched: `S01E01-E10` is the episode marker's own business.
-    const std::string within = "Show.S01E01-S01E10.1080p.WEB-DL-GRP";
-    Analysis one;
-    one.valid = true;
-    one.spans = {span(within, SpanType::Main, "Show"), span(within, SpanType::SeasonEpisodeMarker, "S01E01-S01E10")};
-    CHECK_FALSE(releaseInfoFromAnalysis(within, one).seasonEnd.has_value());
+TEST_CASE("a range of whole markers in one season is that season's episodes") {
+    // The walk took the second marker's season for an episode: `S36E01-S36E02` read as
+    // episodes 1 to 36 and `S07E01-S07E02` as episode 7.
+    const std::string name = "Survivor.S36E01-S36E02.720p.HDTV.x264";
+    Analysis analysis;
+    analysis.valid = true;
+    analysis.spans = {span(name, SpanType::Main, "Survivor"), span(name, SpanType::SeasonEpisodeMarker, "S36E01"),
+                      span(name, SpanType::EpisodeMarker, "S36E02")};
+    const ReleaseInfo info = releaseInfoFromAnalysis(name, analysis);
+    CHECK(info.season == 36);
+    CHECK_FALSE(info.seasonEnd.has_value());
+    CHECK(info.episode == 1);
+    CHECK(info.episodeEnd == 2);
+    CHECK(info.episodeCount == 2);
+    CHECK(info.pack);
+
+    const std::string whole = "Gotham.S01E01-S01E22.1080p.WEB-DL.DD5.1.H.264-MHQSMY";
+    Analysis season;
+    season.valid = true;
+    season.spans = {span(whole, SpanType::Main, "Gotham"), span(whole, SpanType::SeasonEpisodeMarker, "S01E01"),
+                    span(whole, SpanType::SeasonEpisodeMarker, "S01E22")};
+    const ReleaseInfo all = releaseInfoFromAnalysis(whole, season);
+    CHECK(all.season == 1);
+    CHECK(all.episode == 1);
+    CHECK(all.episodeEnd == 22);
+    CHECK(all.episodeCount == 22);
+}
+
+TEST_CASE("a range whose season goes down is its first marker alone") {
+    const std::string name = "Antiques Road Trip S15E05-S14E10";
+    Analysis analysis;
+    analysis.valid = true;
+    analysis.spans = {span(name, SpanType::Main, "Antiques Road Trip"),
+                      span(name, SpanType::SeasonEpisodeMarker, "S15E05"),
+                      span(name, SpanType::EpisodeMarker, "S14E10")};
+    const ReleaseInfo info = releaseInfoFromAnalysis(name, analysis);
+    CHECK(info.season == 15);
+    CHECK(info.episode == 5);
+    CHECK_FALSE(info.episodeEnd.has_value());
+    CHECK_FALSE(info.seasonEnd.has_value());
 }
