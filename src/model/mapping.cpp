@@ -943,21 +943,25 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
         }
     }
 
-    // `SxxEyy-SxxEzz`: TWO WHOLE MARKERS JOINED BY A DASH, and the walk reads neither as a range.
-    // It keeps the first marker and takes the second's numbers for something else: `S07E01-S07E02`
-    // came out episode 7, `S36E01-S36E02` episodes 1 to 36, `S01E01-S01E22` episode 1, and
-    // `S01E001-S04E143` - a pack of four seasons - episode 1. The text states it plainly, so it is
-    // read here from the text, and the season and episode origins the walk recorded are replaced:
-    // an origin with a value is what the C ABI reports as stated.
+    // `SxxEyy-SxxEzz` AND `NxNN-NxNN`: TWO WHOLE MARKERS JOINED, and the walk reads neither as a
+    // range. It keeps the first marker and takes the second's numbers for something else:
+    // `S07E01-S07E02` came out episode 7, `S36E01-S36E02` episodes 1 to 36, `S01E01-S01E22`
+    // episode 1, and `S01E001-S04E143` - a pack of four seasons - episode 1. The text states it
+    // plainly, so it is read here from the text, and the season and episode origins the walk
+    // recorded are replaced: an origin with a value is what the C ABI reports as stated.
     //
     // ONE SEASON: the episodes are the range, `S01E01-S01E22` is 1 to 22.
     //
-    // SEVERAL SEASONS: only the seasons are certain. Whether the last number continues from the
-    // first or restarts each season is a convention the name does not state. Against the file
-    // counts of 32 such packs in the Anime Tosho dump, 25 run on (`Swallowed.Star.S01E001-S04E143`
-    // holds 144 files) and 7 restart (`Wonderland.S01E001-S05E267.(443)` holds 444, and Battle
-    // Through the Heavens the same), zero-padded or not. An episode range would be confidently
-    // wrong one time in four, so the answer is the seasons, a pack, and no episode numbers.
+    // SEVERAL SEASONS: the seasons are certain, the episodes are not. The last number either
+    // continues from the first or restarts each season, and the name does not say which:
+    // `Swallowed.Star.S01E001-S04E143` holds 144 files and `Wonderland.S01E001-S05E267.(443)` 444.
+    // The episode range is answered only when restarting is implausible - when the last season
+    // alone would have to hold more than 30 episodes for every season in the pack, 60 for two, which
+    // no ordinary series does - and no total written in the name contradicts it, as Wonderland's
+    // `(443)` does. tests/data/cross_season_ranges.jsonl holds 67 such names labelled from file
+    // counts, the text and knowledge of the shows; the rule answers 40 of the 44 that run on, never
+    // answers episodes for one that restarts, and the four it passes over still read as their seasons.
+    // Even so it is an inference, so the episode carries a confidence below a stated one.
     //
     // THE JOIN IS A DASH, A TILDE OR A WORD: `S01E01 To S01E03`, `S02E09_to_S02E13`, German
     // `S05E11.bis.S05E13`. Markers merely glued together are not a range - `S01E08a_S01E19b` and
@@ -968,13 +972,20 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
     // alone, rather than the walk's reading of the second as an episode.
     {
         static const text::Regex markerRange(
-            R"((?:^|[^A-Za-z0-9])((s(\d{1,2})[ ._-]?e(\d{1,4}))[ ._]*(?:[-~]|to|thru|bis)[ ._]*s(\d{1,2})[ ._-]?e(\d{1,4}))(?:[^A-Za-z0-9]|$))",
+            R"((?:^|[^A-Za-z0-9])((?:s(\d{1,2})[ ._-]?e(\d{1,4})|(\d{1,2})x(\d{2,3}))[ ._]*(?:[-~]|to|thru|bis)[ ._]*(?:s(\d{1,2})[ ._-]?e(\d{1,4})|(\d{1,2})x(\d{2,3})))(?:[^A-Za-z0-9]|$))",
             true);
+        static const text::Regex statedTotal(R"(\((\d{2,4})\))");
         if (const text::Match found = markerRange.match(name)) {
-            const int fromSeason = integer(found.captured(3));
-            const int fromEpisode = integer(found.captured(4));
-            const int toSeason = integer(found.captured(5));
-            const int toEpisode = integer(found.captured(6));
+            // Each marker is one of two spellings; the one that matched holds the numbers.
+            const auto either = [&found](int sxe, int nxn) {
+                return found.captured(sxe).empty() ? nxn : sxe;
+            };
+            const int fromSeasonGroup = either(2, 4);
+            const int fromEpisodeGroup = either(3, 5);
+            const int fromSeason = integer(found.captured(fromSeasonGroup));
+            const int fromEpisode = integer(found.captured(fromEpisodeGroup));
+            const int toSeason = integer(found.captured(either(6, 8)));
+            const int toEpisode = integer(found.captured(either(7, 9)));
             SegmentedSpan rangeSpan;
             rangeSpan.type = SpanType::SeasonEpisodeMarker;
             rangeSpan.begin = static_cast<std::int32_t>(found.capturedStart(1));
@@ -996,15 +1007,33 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
                 info.pack = true;
                 packMarkerSeen = true;
                 builder.record(Field::PackMarker, std::string(found.captured(1)), rangeSpan, found.captured(1));
+                const int count = toEpisode - fromEpisode + 1;
+                bool totalContradicts = false;
+                for (std::size_t from = 0; from < name.size();) {
+                    const text::Match total = statedTotal.match(name, from);
+                    if (!total) break;
+                    const int stated = integer(total.captured(1));
+                    // A year in brackets is not a total.
+                    if ((stated < 1900 || stated > 2100) && stated != count) totalContradicts = true;
+                    from = total.capturedEnd();
+                }
+                const int seasons = toSeason - fromSeason + 1;
+                if (toEpisode > fromEpisode && toEpisode > 30 * seasons && !totalContradicts) {
+                    info.episode = fromEpisode;
+                    info.episodeEnd = toEpisode;
+                    info.episodeCount = count;
+                    SegmentedSpan inferred = rangeSpan;
+                    inferred.confidence = 0.75F;
+                    builder.record(Field::Episode, std::to_string(fromEpisode), inferred, found.captured(1));
+                }
             } else {
                 info.episode = fromEpisode;
                 if (toSeason == fromSeason && toEpisode > fromEpisode) {
                     info.episodeEnd = toEpisode;
                     info.episodeCount = toEpisode - fromEpisode + 1;
                     info.pack = true;
-                    rangeSpan.end = static_cast<std::int32_t>(found.capturedEnd(1));
                 } else {
-                    rangeSpan.end = static_cast<std::int32_t>(found.capturedEnd(2));
+                    rangeSpan.end = static_cast<std::int32_t>(found.capturedEnd(fromEpisodeGroup));
                 }
                 builder.record(Field::Episode, std::to_string(fromEpisode), rangeSpan, found.captured(1));
             }

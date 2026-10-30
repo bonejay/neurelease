@@ -571,7 +571,7 @@ bool statesEpisode(const ReleaseInfo& info) {
 }
 } // namespace
 
-TEST_CASE("a range across seasons is a pack of those seasons, with no episode numbers") {
+TEST_CASE("a range across seasons is a pack of those seasons, and its episodes only when they must run on") {
     // `S01E001-S04E143`: the model marks each end as its own season and episode, and the walk kept
     // the first pair - a 131 GB pack of four seasons came out as season 1, episode 1.
     const std::string runsOn =
@@ -586,13 +586,29 @@ TEST_CASE("a range across seasons is a pack of those seasons, with no episode nu
     CHECK(info.pack);
     CHECK(info.season == 1);
     CHECK(info.seasonEnd == 4);
-    // This pack's numbering runs on (it holds 144 files) and Wonderland's `S01E001-S05E267`
-    // restarts (444 files), written the same way: the name does not say which, so no episodes.
-    CHECK_FALSE(info.episode.has_value());
-    CHECK_FALSE(info.episodeEnd.has_value());
-    CHECK_FALSE(info.episodeCount.has_value());
+    // 143 over four seasons: restarting would put 143 episodes in season 4 alone. The pack holds
+    // 144 files, so it runs on - answered, as an inference rather than a stated value.
+    CHECK(info.episode == 1);
+    CHECK(info.episodeEnd == 143);
+    CHECK(info.episodeCount == 143);
+    const auto episode = std::ranges::find_if(info.origins, [](const FieldOrigin& origin) {
+        return origin.field == Field::Episode;
+    });
+    REQUIRE(episode != info.origins.end());
+    CHECK(episode->confidence < 1.0F);
+
+    // Written the same way, but restarting: the stated total (443) is not the last episode.
+    const std::string restarts = "Wonderland.(Wan.Jie.Xian.Zong).S01E001-S05E267.(443).(EFC)";
+    Analysis wonderland;
+    wonderland.valid = true;
+    wonderland.spans = {span(restarts, SpanType::Main, "Wonderland"),
+                        span(restarts, SpanType::SeasonEpisodeMarker, "S01E001"),
+                        span(restarts, SpanType::SeasonEpisodeMarker, "S05E267")};
+    const ReleaseInfo perSeasonTotal = releaseInfoFromAnalysis(restarts, wonderland);
+    CHECK(perSeasonTotal.seasonEnd == 5);
+    CHECK_FALSE(perSeasonTotal.episode.has_value());
     // The walk's E001 origin goes too, or the C ABI would report a stated episode 0.
-    CHECK_FALSE(statesEpisode(info));
+    CHECK_FALSE(statesEpisode(perSeasonTotal));
 
     const std::string perSeason = "American_Dad_S01E01-S03E12";
     Analysis seasons;

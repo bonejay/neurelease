@@ -11,9 +11,12 @@ whose heading names the tag, and refuses to publish a tag that has none.
 - A range of whole markers is read as one: `S01E01-S01E22` is season 1, episodes 1-22, where
   `S07E01-S07E02` read episode 7 and `S36E01-S36E02` episodes 1-36 (in every earlier version).
   Joined by a word as well: `S01E01 To S01E03`, `S02E09_to_S02E13`, `S05E11.bis.S05E13`.
-  Across seasons, `S01E001-S04E143` is a pack of seasons 1-4 with no episode numbers: such packs
-  number their episodes both ways (25 of 32 checked run on, 7 restart each season), and the name
-  does not say which.
+  Across seasons (also `1x01-3x16`), the seasons are always answered and the episodes only when
+  restarting each season is implausible - the last episode above 30 per season in the pack, with
+  no stated total such as `(443)` contradicting it - at 0.75 confidence: `S01E001-S04E143` is
+  seasons 1-4, episodes 1-143, and `S01E001-S05E267.(443)` seasons 1-5 only. Checked against 67
+  hand-labelled packs in `tests/data/cross_season_ranges.jsonl`: never an episode range for a pack
+  numbered per season.
 - One stated episode overrules a pack verdict unless a pack marker is located: `Show S01E03 ...
   (Dual-Audio, Multi-Subs)` is a single episode, not a season.
 
