@@ -3,7 +3,7 @@
 Each version's section is also its GitHub release notes: the publish workflow copies the section
 whose heading names the tag, and refuses to publish a tag that has none.
 
-## Unreleased
+## 0.2.1 - 2026-10-30
 
 ### Parsing
 - `Cap.604` is season 6, episode 4 whichever way the model labelled the span; it used to come
@@ -16,6 +16,7 @@ whose heading names the tag, and refuses to publish a tag that has none.
   (`musllinux_1_2`, x86-64 and ARM), and for Intel Macs (`macosx_11_0_x86_64`), beside the three
   there were. Every wheel is installed into a clean environment and used before anything publishes.
 - `neurelease.__version__`.
+- The C++ library builds against Xcode 16's libc++, which has no `std::jthread`.
 
 ## 0.2.0 - 2026-09-22
 
