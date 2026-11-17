@@ -1,15 +1,15 @@
 {
  "manifest_version": 1,
- "model_version": "5",
- "trained": "2026-09-21",
- "training_run": "corrected/20260921-233603",
+ "model_version": "6",
+ "trained": "2026-11-17",
+ "training_run": "unified_2m_cache/20261117-013706",
  "files": [
   {
    "name": "segmenter.bin",
    "format": "RPSEG2",
    "format_version": 3,
-   "bytes": 4021664,
-   "sha256": "7857dcdb813fac941198b4243384f51a91d291b4022258501c5317092d932c34"
+   "bytes": 4220352,
+   "sha256": "a2e251fadd8ee3ee6b95ea541932fadb37f68dc6746e7eaf4ed45c3df5a766bc"
   },
   {
    "name": "character_map.bin",

@@ -11,7 +11,8 @@ NeuRelease is a fast, high-performance, multilingual neural parser for torrent a
 It reads a name, extracts its fields - title, season and episode, year, quality, codecs, languages,
 release group and more - and classifies what the name is: a film, a series, music, a game,
 software, a book, and whether it is anime. Every value comes with a confidence score and the span
-it was read from.
+it was read from. It also estimates how likely the release is to be easy to get
+([availability](docs/AVAILABILITY.md)).
 
 It combines a character-level CNN with a Transformer encoder, running as int8 inference with
 runtime-dispatched SIMD kernels, behind C++, C and Python APIs. No ML runtime; nothing to download.
@@ -140,6 +141,7 @@ Timings: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | [docs/C_ABI.md](docs/C_ABI.md) | The C binary interface |
 | [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md) | Method and per-field numbers of the GuessIt comparison |
 | [docs/ANIME.md](docs/ANIME.md) | The anime verdict, and five anime names read by both parsers |
+| [docs/AVAILABILITY.md](docs/AVAILABILITY.md) | How likely a release is to be easy to get: what it was learned from, how well it works, its limits |
 | [docs/LIVE_ACTION.md](docs/LIVE_ACTION.md) | Fourteen live-action names, in four languages, read by both parsers |
 
 ## License

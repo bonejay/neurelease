@@ -78,6 +78,9 @@ TEST_CASE("a real learned parse crosses the C boundary as typed values") {
     // confidence is non-zero. Zero confidence would mean a model without the field.
     CHECK(rp_anime(result.value) == 0);
     CHECK(rp_verdict_confidence(result.value, RP_VERDICT_ANIME) > 0.0F);
+    // The installed model carries the availability head, so this is a probability, not -1.
+    CHECK(rp_availability(result.value) >= 0.0F);
+    CHECK(rp_availability(result.value) <= 1.0F);
     CHECK(rp_screen_size(result.value) == RP_RESOLUTION_2160P);
     CHECK(rp_source(result.value) == RP_SOURCE_BLURAY);
     CHECK(rp_video_codec_value(result.value) == RP_CODEC_HEVC);
@@ -155,6 +158,8 @@ TEST_CASE("rp_view carries every scalar at once, and says which zeros are stated
     // binding that laid the struct out for ABI 3 reads a pointer here rather than a 1.
     CHECK(view.release_version == 1);
     CHECK(view.release_real == 0);
+    // The last member: a layout that drifted reads garbage here rather than the getter's value.
+    CHECK(view.availability == rp_availability(specials.value));
 
     ResultOwner revised;
     REQUIRE(rp_parse(parser.value, "Series.Title.S04E05.REAL.REAL.PROPER.HDTV.x264-W4F",

@@ -672,7 +672,9 @@ constexpr int FloorTolerance = 2;
 // fields 89.44% against 89.08%, and the new `anime` field lands at 96.50% through the int8 runtime.
 // A ratchet that only ever goes up would have to refuse a better parser to keep a fixture score, so
 // the total is re-pinned and the reason is written here rather than argued again next time.
-constexpr int RecordedFullyCorrect = 670;   // 2026-09-18, the unmapped-span queue: seven more
+constexpr int RecordedFullyCorrect = 672;   // 2026-11-17, model 6 (the availability head):
+                                            // two more cases with the conversion unchanged
+                                            // (was 670, 2026-09-18, the unmapped-span queue: seven more
                                             // cases, almost all of them SOURCE spellings the
                                             // tables could not read (457 -> 460 on that field
                                             // alone). Five readings added in the same work were

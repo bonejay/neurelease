@@ -80,6 +80,11 @@ numbers are `int | None`, and closed facts are closed values: `screen_size`, `so
 are `None` with `origins=False`; `episode_title`, `alternative_title` and `franchise_prefix` are
 fields of the result itself.
 
+**Availability.** `r.availability` is 0 to 1: how likely the release is to be easy to get, from the
+name alone. It was learned from one debrid cache, and it is a ranking hint, not a quality
+judgement. It is `None` on a model without the head, and `to_dict()` carries it as `availability`.
+See [AVAILABILITY.md](AVAILABILITY.md).
+
 **Confidence.** Every value carries its own: `r.title.confidence`, `r.season.confidence`,
 `r.release_group[0].confidence`, `r.content.confidence`. For a located field it is the lowest span
 probability behind the value; for a verdict, the verdict's probability. Filter on the value you
@@ -143,6 +148,8 @@ info.languages;                     // {"deu"}; info.dualAudio is true
 info.content;                       // ContentKind::Series, info.contentConfidence 0.90
 info.anime;                         // false, info.animeConfidence 0.97 - the form and the
                                     // tradition are separate answers, see docs/RESULT.md
+info.availability;                  // 0.0-1.0, how likely the release is easy to get; -1 when
+                                    // the model has no head, see docs/AVAILABILITY.md
 
 for (const auto& origin : info.origins)     // every located fact with its bytes
     std::cout << neurelease::fieldName(origin.field) << " <- " << origin.text

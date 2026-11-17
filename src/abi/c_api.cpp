@@ -325,6 +325,11 @@ int rp_anime(const rp_result* result) {
     return info != nullptr && info->anime ? 1 : 0;
 }
 
+float rp_availability(const rp_result* result) {
+    const ReleaseInfo* info = infoOf(result);
+    return info == nullptr ? -1.0F : info->availability;
+}
+
 rp_adult_kind rp_adult(const rp_result* result) {
     const ReleaseInfo* info = infoOf(result);
     return info == nullptr ? RP_ADULT_UNKNOWN : static_cast<rp_adult_kind>(info->adult);
@@ -564,6 +569,7 @@ rp_status rp_view(const rp_result* result, rp_result_view* out) {
         }
     }
     out->stated = stated;
+    out->availability = info->availability;
     return RP_OK;
 }
 
