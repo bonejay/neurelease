@@ -304,6 +304,12 @@ if(RP_BUILD_TESTS)
         "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
 endif()
 
+# The cache head's probability per name, for comparing the runtime with torch. Not a test.
+if(RP_BUILD_TESTS)
+    add_executable(cache_probe tests/cache_probe.cpp)
+    target_link_libraries(cache_probe PRIVATE neurelease)
+endif()
+
 if(RP_BUILD_TESTS)
     add_executable(matmul_scaling tests/matmul_scaling.cpp)
     target_link_libraries(matmul_scaling PRIVATE neurelease)

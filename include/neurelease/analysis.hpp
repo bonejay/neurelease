@@ -60,6 +60,12 @@ struct Analysis {
     bool japanese = false;
     float japaneseProbability = 0.0F;
 
+    // How likely a debrid service holds this torrent, from its name alone - only from a model
+    // trained with a cache head (release-parser-training cache_prediction/README.md). A model
+    // without one leaves `cacheEvaluated` false.
+    bool cacheEvaluated = false;
+    float cachedProbability = 0.0F;
+
     std::string kernelPath;
     bool kernelDemoted = false;
     int tokens = 0;
