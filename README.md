@@ -44,6 +44,7 @@ r.streaming_service, r.release_group   # 'ATVP', ('NTb',)
 r.source == "WEB-DL"                   # True: enums equal their labels
 r.year                                 # None: the name does not say
 r.title.confidence, r.episode_title.confidence  # 1.00, 0.80: every value knows how sure the model was
+r.availability                         # 0.75: how likely a debrid service has it cached (see below)
 r.to_dict()                            # {'title': 'Ted Lasso', 'season': 3, 'episode': 3, ...}
 
 names = ["Blade.Runner.2049.2017.2160p.UHD.BluRay.x265-TERMiNAL.mkv",
