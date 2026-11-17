@@ -88,9 +88,11 @@ and evidence keep their original script - Latin, Han, Kana, Cyrillic.
 
 ### Availability
 
-Each result also says how likely the release is to be easy to get, as a number from 0 to 1, read
-from the name alone. It was learned from which torrents a debrid cache held, so it is useful for
-ranking candidates. It is not a quality score.
+Each result also gives `availability`, a number from 0 to 1 read from the name alone. It is the
+model's estimate of how likely a debrid service already has this torrent cached. It was trained on
+the real cache status of about 177,000 torrents at one debrid provider. A cache holds what many
+people fetch, so the number also works as a rough hint for wanted, well-kept releases. It is a
+ranking hint, not a quality score and not a promise.
 
 ```python
 parser.parse("Love.Through.a.Prism.S01.1080p.NF.WEB-DL.MULTi.Opus5.1.AV1.HDR10P-Trix").availability  # 0.98
