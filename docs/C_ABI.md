@@ -26,6 +26,14 @@ The numeric view members keep their `0` for "not stated" together with `stated`,
 exactly the engagement of the C++ `std::optional<int>` fields behind them, so a written `S00` is
 stated and an absent season is not.
 
+## ABI 5 (2026-11-17)
+
+`RP_ABI_VERSION` is 5. `rp_availability(result)` returns how likely the release is to be easy to
+get, 0 to 1, or `-1` when the model has no availability head. `rp_result_view` grew a trailing
+`float availability` holding the same value. The caller allocates the view, so a binding built for
+ABI 4 would pass a buffer that is too small, and the version moves for that reason alone. Nothing
+before the new member changed. See [AVAILABILITY.md](AVAILABILITY.md).
+
 ## ABI 3 (2026-09-04)
 
 `RP_ABI_VERSION` is 3. Names follow GuessIt wherever the fact is the same, matching the Python

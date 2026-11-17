@@ -61,6 +61,10 @@ struct Prediction {
     std::vector<std::vector<float>> typeScores;
     // Per whole-name field, in Segmenter::globalFields() order: distribution over its classes.
     std::vector<std::vector<float>> globals;
+    // A model with a cache head: the probability that a debrid service holds this torrent, read
+    // from the summary token after the global fields' ones. `cacheEvaluated` false without one.
+    bool cacheEvaluated = false;
+    float cachedProbability = 0.0F;
     RunDiagnostics info;
 };
 

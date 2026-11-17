@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Iterable
 
 
-ABI_VERSION = 4
+ABI_VERSION = 5
 
 # THE INSTALLED DISTRIBUTION'S VERSION, read from its metadata so pyproject.toml stays the one place
 # it is written. Imported from a source tree that was never installed there is no metadata to read.
@@ -458,12 +458,17 @@ class ParsedRelease:
     adult_confidence: float
     anime_confidence: float
     origins: tuple[Origin, ...]
+    # How likely the release is to be easy to get, 0 to 1, from the name alone; None on a model
+    # without the head. Learned from one debrid cache (TorBox, November 2026): a ranking hint for
+    # wanted, well-kept releases, not a quality judgement and not a promise. docs/AVAILABILITY.md.
+    availability: float | None = None
 
     def to_dict(self, *, origins: bool = False) -> dict:
         """The stated facts as plain values under GuessIt's property names where GuessIt has the
         same fact, and under our own where it does not.
 
-        Ours also: `anime`, true for Japanese, Chinese or Korean animation.
+        Ours also: `anime`, true for Japanese, Chinese or Korean animation, and `availability`, how
+        likely the release is to be easy to get (0 to 1; absent on a model without the head).
 
     Shared: `title`, `alternative_title`, `episode_title`, `year`, `date`, `season`, `episode`,
         `absolute_episode`, `episode_count`, `screen_size`, `source`, `video_codec`, `audio_codec`,
@@ -585,6 +590,8 @@ class ParsedRelease:
             put("special", str(self.special), self.special.confidence)
         if self.degraded:
             out["degraded"] = True
+        if self.availability is not None:
+            out["availability"] = round(self.availability, 3)   # itself a probability: no confidence entry
         out["confidence"] = confidence
         if origins:
             out["origins"] = [{"field": origin.field.name.lower(), "value": origin.value,
@@ -663,6 +670,7 @@ class _ResultView(ctypes.Structure):
         ("flags", ctypes.c_uint32),
         ("hdr_formats", ctypes.c_uint32),
         ("stated", ctypes.c_uint32),
+        ("availability", ctypes.c_float),
     ]
 
 
@@ -993,6 +1001,7 @@ class Parser:
             pack_scope_confidence=view.pack_confidence,
             special_confidence=view.special_confidence,
             origins=origins,
+            availability=view.availability if view.availability >= 0.0 else None,
         )
 
     def parse(self, name: str, *, origins: bool = True) -> ParsedRelease:

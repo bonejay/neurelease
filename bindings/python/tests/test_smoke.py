@@ -16,6 +16,9 @@ def test_single_and_batch() -> None:
         assert movie.content == ContentKind.MOVIE
         # The medium is no longer guessed at; the tradition is, and a Blade Runner rip is not it.
         assert movie.anime is False
+        # The installed model carries the availability head: a probability, and in the dict too.
+        assert movie.availability is not None and 0.0 <= movie.availability <= 1.0
+        assert movie.to_dict()["availability"] == round(movie.availability, 3)
         assert movie.release_group == ("GRP",)
         assert movie.container == "mkv"
         assert not movie.specials

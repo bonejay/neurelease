@@ -11,7 +11,8 @@ NeuRelease is a fast, high-performance, multilingual neural parser for torrent a
 It reads a name, extracts its fields - title, season and episode, year, quality, codecs, languages,
 release group and more - and classifies what the name is: a film, a series, music, a game,
 software, a book, and whether it is anime. Every value comes with a confidence score and the span
-it was read from.
+it was read from. It also estimates how likely the release is to be easy to get
+([availability](docs/AVAILABILITY.md)).
 
 It combines a character-level CNN with a Transformer encoder, running as int8 inference with
 runtime-dispatched SIMD kernels, behind C++, C and Python APIs. No ML runtime; nothing to download.
@@ -43,6 +44,7 @@ r.streaming_service, r.release_group   # 'ATVP', ('NTb',)
 r.source == "WEB-DL"                   # True: enums equal their labels
 r.year                                 # None: the name does not say
 r.title.confidence, r.episode_title.confidence  # 1.00, 0.80: every value knows how sure the model was
+r.availability                         # 0.75: a rough chance a debrid service has it cached
 r.to_dict()                            # {'title': 'Ted Lasso', 'season': 3, 'episode': 3, ...}
 
 names = ["Blade.Runner.2049.2017.2160p.UHD.BluRay.x265-TERMiNAL.mkv",
@@ -62,18 +64,19 @@ r.to_dict()["other"]                   # ['Proper', 'Repack', 'Remux', 'HDR10', 
 
 r = parser.parse("The.Wire.S01E01.INTERNAL.RESTORED.1080p.BluRay.x265-SARTRE")
 r.edition                              # ('Internal', 'Restored'): a release is often several
+r.availability                         # 0.81: read from the name alone; a ranking hint, not quality
 
 SHOW = ("title", "alternative_title", "season", "episode", "absolute_episode",
-        "episode_title", "year", "content", "edition", "version")
+        "episode_title", "year", "content", "edition", "version", "availability")
 for r in releases:
     d = r.to_dict()
     print({k: d[k] for k in SHOW if d.get(k) is not None})
-# {'title': 'Blade Runner 2049', 'year': 2017, 'content': 'movie'}
-# {'title': 'Stray', 'content': 'game'}
-# {'title': 'La Casa de Papel', 'season': 3, 'episode': 5, 'content': 'series'}
-# {'title': 'Brother Next Door', 'alternative_title': '邻家哥哥给我爱', 'season': 1, 'episode': [5, 6], 'year': 2024, 'content': 'series'}
-# {'title': '葬送のフリーレン', 'absolute_episode': 28, 'episode_title': 'また会ったときに恥ずかしいからね', 'content': 'series'}
-# {'title': 'Blade Runner', 'year': 1982, 'content': 'movie', 'edition': 'Final Cut', 'version': 2}
+# {'title': 'Blade Runner 2049', 'year': 2017, 'content': 'movie', 'availability': 0.921}
+# {'title': 'Stray', 'content': 'game', 'availability': 0.096}
+# {'title': 'La Casa de Papel', 'season': 3, 'episode': 5, 'content': 'series', 'availability': 0.282}
+# {'title': 'Brother Next Door', 'alternative_title': '邻家哥哥给我爱', 'season': 1, 'episode': [5, 6], 'year': 2024, 'content': 'series', 'availability': 0.079}
+# {'title': '葬送のフリーレン', 'absolute_episode': 28, 'episode_title': 'また会ったときに恥ずかしいからね', 'content': 'series', 'availability': 0.029}
+# {'title': 'Blade Runner', 'year': 1982, 'content': 'movie', 'edition': 'Final Cut', 'version': 2, 'availability': 0.978}
 ```
 
 ```sh
@@ -86,15 +89,14 @@ The [wheel](https://pypi.org/project/neurelease/) bundles the library and the mo
 and evidence keep their original script - Latin, Han, Kana, Cyrillic.
 
 - [docs/API.md](docs/API.md) - the C++ and C APIs
-- [docs/RESULT.md](docs/RESULT.md) - every field a result can carry
+- [docs/RESULT.md](docs/RESULT.md) - every field a result can carry, `availability` included
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#build) - building from source
 - [CHANGELOG.md](CHANGELOG.md) - what changed in each version
 
 ## Compared with GuessIt, Sonarr and Radarr
 
-Measured on 2026-09-22 with the shipped model (version 5). Every figure is the share of names
-answered completely correctly - every field the name states read right, nothing invented. One
-wrong field fails the name.
+Every figure is the share of names answered completely correctly - every field the name states
+read right, nothing invented. One wrong field fails the name.
 
 Sonarr answers only series and Radarr only films, and they model 16 and 14 fields against 29 here,
 so the table is split by content kind and scored only on the nine fields all four answer:
@@ -102,18 +104,22 @@ so the table is split by content kind and scored only on the nine fields all fou
 `audio_language`, `subtitle_language`, `crc32`. Our hard sets keep at most three names per
 franchise.
 
+<!-- fair-comparison:start -->
+Measured on 2026-11-17 with the shipped model (version 6).
+
 | | cases | NeuRelease | GuessIt | Radarr | Sonarr |
 |---|---:|---:|---:|---:|---:|
 | **our labelled names** | | | | | |
-| representative, films | 1,001 | **93.5%** | 78.0% | 69.7% | 2.5% |
+| representative, films | 1,001 | **95.1%** | 78.0% | 69.7% | 2.5% |
 | representative, series | 2,075 | **96.0%** | 60.9% | 8.1% | 65.5% |
-| hard, films | 1,037 | **54.1%** | 30.1% | 36.1% | 1.4% |
-| hard, series | 915 | **79.2%** | 42.2% | 5.8% | 55.0% |
+| hard, films | 1,037 | **57.0%** | 30.1% | 36.1% | 1.4% |
+| hard, series | 915 | **81.4%** | 42.2% | 5.8% | 55.0% |
 | **each parser's own suite** | | | | | |
-| GuessIt's corpus, films | 194 | 88.7% | **95.4%** | 49.5% | 2.1% |
-| GuessIt's corpus, series | 461 | 85.5% | **94.4%** | 7.2% | 57.3% |
-| Sonarr's suite, series | 935 | 91.0% | 80.7% | 45.0% | **95.2%** |
-| Radarr's suite, films | 535 | 88.0% | 76.8% | **98.5%** | 68.8% |
+| GuessIt's corpus, films | 194 | 86.6% | **95.4%** | 49.5% | 2.1% |
+| GuessIt's corpus, series | 461 | 87.6% | **94.4%** | 7.2% | 57.3% |
+| Sonarr's suite, series | 935 | 90.7% | 80.7% | 45.0% | **95.2%** |
+| Radarr's suite, films | 535 | 85.8% | 76.8% | **98.5%** | 68.8% |
+<!-- fair-comparison:end -->
 
 The lower half is each parser's own regression suite: strings written to pin its own regexes down,
 which is why every parser wins its own and why those wins say little about real names. NeuRelease
@@ -122,9 +128,9 @@ is second on all three, having trained on none of them. GuessIt's suite is score
 values our closed vocabulary cannot express, all listed in the full report. Sonarr's and Radarr's
 suites run almost unfiltered.
 
-On the full twenty-field contract, video names, our validation split: **97.88% macro field F1 and
-91.54% exact** against GuessIt's 86.74% and 52.96%. About **3x faster on one thread**
-(2,793 us/name against 8,275), 949 us/name in batch on four threads.
+<!-- guessit-comparison:start -->
+On the full twenty-field contract, video names, our validation split (measured 2026-11-17, model 6): **97.76% macro field F1 and 92.25% exact** against GuessIt's 86.74% and 52.96%. About **3x faster on one thread** (2,658 us/name against 8,420), 1,010 us/name in batch on four threads.
+<!-- guessit-comparison:end -->
 
 Name-by-name: [docs/ANIME.md](docs/ANIME.md), [docs/LIVE_ACTION.md](docs/LIVE_ACTION.md).
 Method and reproduction: [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md).
@@ -140,6 +146,7 @@ Timings: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | [docs/C_ABI.md](docs/C_ABI.md) | The C binary interface |
 | [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md) | Method and per-field numbers of the GuessIt comparison |
 | [docs/ANIME.md](docs/ANIME.md) | The anime verdict, and five anime names read by both parsers |
+| [docs/AVAILABILITY.md](docs/AVAILABILITY.md) | How likely a release is to be easy to get: what it was learned from, how well it works, its limits |
 | [docs/LIVE_ACTION.md](docs/LIVE_ACTION.md) | Fourteen live-action names, in four languages, read by both parsers |
 
 ## License

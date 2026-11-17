@@ -95,6 +95,7 @@ native `guessit_corpus_tests` floor, cases fully correct of 858. An older versio
 | 1 | 2026-09-03 | `merge-sub/20260903-004552` | 652 | a work's subtitle folded into its title, the one span boundary two labelling passes never agreed on |
 | 2 | 2026-09-07 | `hybrid-labelled/20260907-002017` | 667 | trained on 6,479 labelled `Temporada 6 [Cap.604]` names: 14 of 16 such corpus cases against 5; the franchise prefix is no longer split from the title and some episode titles split in two |
 | 3 | 2026-09-11 | `anime2/20260911-032100` | 663 | the animated/live-action content kinds became a `movie`/`series` form plus a separate `anime` verdict, which the name can actually be read for: 96.50% accuracy through the int8 runtime. Four fixture cases traded for a better reading of real names (683 of 859 in the comparison harness against 682, exact agreement 89.44% against 89.08%) |
+| 6 | 2026-11-17 | `unified_2m_cache/20261117-013706` | 672 | an availability head (see [AVAILABILITY.md](AVAILABILITY.md)), trained with the parser on the same names; the parser holds within 0.005 of the same training without it on every measure, and the int8 runtime scores the same |
 
 ## Performance rules
 

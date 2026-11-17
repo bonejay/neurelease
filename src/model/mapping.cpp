@@ -289,6 +289,8 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
     // The one distinction a release name makes about animation. See ReleaseInfo::anime.
     info.anime = analysis.anime;
     info.animeConfidence = analysis.animeKind.confidence;
+    // The cache head's probability, under its public name. See ReleaseInfo::availability.
+    info.availability = analysis.cacheEvaluated ? analysis.cachedProbability : -1.0F;
 
     Builder builder(info);
     Accumulated accumulated;

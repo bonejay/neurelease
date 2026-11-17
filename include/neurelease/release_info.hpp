@@ -374,6 +374,15 @@ struct ReleaseInfo {
     float specialConfidence = 0.0F;
     float adultConfidence = 0.0F;
 
+    // AVAILABILITY, 0 to 1: how likely this release is to be easy to get, read from the name
+    // alone. Learned from whether one debrid service (TorBox) held each torrent in its cache in
+    // November 2026, so it tracks what is wanted and well kept - established groups, complete
+    // packs, current encodes - as much as any one cache. A ranking hint, not a promise: it is not
+    // a quality judgement (`720p x264` from a big group scores above a rare remux), and it is a
+    // floor for a cache only where that cache holds at least what TorBox does. -1 on a model
+    // without the head, so "not asked" is never mistaken for "unlikely". docs/AVAILABILITY.md.
+    float availability = -1.0F;
+
     // Everything the model located, in name order. The flat fields above stay the fast path;
     // origins are for the caller that wants to SHOW or CHECK the reading rather than only act
     // on it. NO TIMING HERE, deliberately: two parses of the same name are the same ANSWER even

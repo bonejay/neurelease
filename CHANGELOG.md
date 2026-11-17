@@ -3,6 +3,22 @@
 Each version's section is also its GitHub release notes: the publish workflow copies the section
 whose heading names the tag, and refuses to publish a tag that has none.
 
+## 0.3.0 - 2026-11-17
+
+### Model
+- Model 6 (`unified_2m_cache/20261117-013706`) carries an availability head. The parser reads as
+  before: every measure is within 0.005 of the same training without the head, the int8 runtime
+  scores the same, and GuessIt's corpus reaches 672 cases fully correct against 670.
+
+### API
+- `availability`, 0 to 1: a rough estimate, from the name alone, of how likely a debrid service
+  already has the release cached, learned from real cache data. It is a ranking hint, not a quality
+  score. On names the model never trained on, a cached release scores above an uncached one 88% of
+  the time (AUC 0.883). `None` in Python and `-1` in C/C++ mean the model has no availability head.
+  `to_dict()` carries it as `availability`. See `docs/AVAILABILITY.md`.
+- C ABI 5: `rp_availability()`, and a trailing `availability` member of `rp_result_view`.
+  Bindings built for ABI 4 must be rebuilt.
+
 ## 0.2.2 - 2026-10-30
 
 ### Parsing

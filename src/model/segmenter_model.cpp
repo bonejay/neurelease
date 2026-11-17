@@ -463,6 +463,9 @@ struct Segmenter::Prepared {
 
     std::vector<std::string> spanTypes;
     std::vector<GlobalField> globalFields;
+    // The cache head (training: TwoLevelTagger.cache_head): Linear, GELU, Linear, GELU, Linear
+    // to one logit, over the LAST summary token. Empty on a model without one.
+    std::vector<Matrix> cacheHead;
 
     // --- forward-pass pieces, defined in this translation unit ---
     void applyMatrix(const Matrix &matrix, const float *input, int rows, float *output,
@@ -913,7 +916,19 @@ Segmenter::Segmenter(const Weights &weights, Precision precision) {
         }
         prepared->globalFields.push_back(std::move(field));
     }
-    if (static_cast<int>(prepared->globalFields.size()) != prepared->summaries) {
+    if (weights.has("cache_head.0.weight")) {
+        for (const char *layer : {"0", "2", "4"}) {
+            const std::string base = std::string("cache_head.") + layer + ".";
+            Matrix matrix = makeMatrix(require(base + "weight"), &require(base + "bias"), precision);
+            matrix.decisionHead = true;
+            prepared->cacheHead.push_back(std::move(matrix));
+        }
+        if (prepared->cacheHead.back().out != 1) {
+            throw std::runtime_error("segmenter: the cache head must end in one logit");
+        }
+    }
+    if (static_cast<int>(prepared->globalFields.size()) + (prepared->cacheHead.empty() ? 0 : 1) !=
+        prepared->summaries) {
         throw std::runtime_error("segmenter: global fields do not match the summary tokens");
     }
     for (const auto &field : prepared->globalFields) {
@@ -1123,16 +1138,18 @@ Prediction Segmenter::run(const EncodedName &name) const {
 
     // The whole-name heads batch the same way through their shared trunk. Only the trunk: each
     // field has its OWN output matrix after it, and different matrices cannot share a call.
-    prediction.globals.resize(static_cast<std::size_t>(prepared.summaries));
-    if (prepared.summaries > 0) {
+    // The global fields' summary tokens come first; a cache head's is the one after them.
+    const int globalCount = static_cast<int>(prepared.globalFields.size());
+    prediction.globals.resize(static_cast<std::size_t>(globalCount));
+    if (globalCount > 0) {
         const int trunkOutWidth = prepared.globalTrunk.out;
-        std::vector<float> trunkOut(static_cast<std::size_t>(prepared.summaries) * trunkOutWidth);
-        prepared.applyMatrix(prepared.globalTrunk, summary.data(), prepared.summaries,
+        std::vector<float> trunkOut(static_cast<std::size_t>(globalCount) * trunkOutWidth);
+        prepared.applyMatrix(prepared.globalTrunk, summary.data(), globalCount,
                             trunkOut.data());
         for (auto &value : trunkOut) {
             value = prepared.activate(value);
         }
-        for (int field = 0; field < prepared.summaries; ++field) {
+        for (int field = 0; field < globalCount; ++field) {
             auto &out = prediction.globals[static_cast<std::size_t>(field)];
             const auto &head = prepared.globalHeads[static_cast<std::size_t>(field)];
             out.resize(static_cast<std::size_t>(head.out));
@@ -1141,6 +1158,27 @@ Prediction Segmenter::run(const EncodedName &name) const {
                                  1, out.data());
             softmaxInPlace(out.data(), head.out);
         }
+    }
+
+    if (!prepared.cacheHead.empty() && prepared.summaries > 0) {
+        const std::size_t width = summary.size() / static_cast<std::size_t>(prepared.summaries);
+        std::vector<float> input(summary.begin() + static_cast<std::ptrdiff_t>(globalCount * width),
+                                 summary.begin() +
+                                     static_cast<std::ptrdiff_t>((globalCount + 1) * width));
+        std::vector<float> output;
+        for (std::size_t layer = 0; layer < prepared.cacheHead.size(); ++layer) {
+            const auto &matrix = prepared.cacheHead[layer];
+            output.assign(static_cast<std::size_t>(matrix.out), 0.0F);
+            prepared.applyMatrix(matrix, input.data(), 1, output.data());
+            if (layer + 1 < prepared.cacheHead.size()) {
+                for (auto &value : output) {
+                    value = prepared.activate(value);
+                }
+            }
+            input.swap(output);
+        }
+        prediction.cacheEvaluated = true;
+        prediction.cachedProbability = 1.0F / (1.0F + std::exp(-input[0]));
     }
 
     const auto finished = Clock::now();

@@ -241,6 +241,9 @@ Analysis NameSegmenter::analyze(std::string_view name) {
         fieldSlots[field]->confidence = scores[static_cast<std::size_t>(best)];
     }
 
+    analysis.cacheEvaluated = prediction.cacheEvaluated;
+    analysis.cachedProbability = prediction.cachedProbability;
+
     // The token count the transformer actually ran on: one per run the character stage produced.
     analysis.tokens = static_cast<int>(encoded->runSpans.size());
 

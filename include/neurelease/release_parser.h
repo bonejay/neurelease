@@ -40,8 +40,9 @@ extern "C" {
 /* Bumped only on breaking change to an existing symbol. Additions do not bump it.
  * 4: rp_result_view grew release_version and release_real. Appending to a struct the CALLER
  * allocates is not a mere addition - a binding compiled against ABI 3 hands rp_view a buffer two
- * int32_t short of what it now writes - so the count moves even though no existing field did. */
-#define RP_ABI_VERSION 4u
+ * int32_t short of what it now writes - so the count moves even though no existing field did.
+ * 5: rp_result_view grew availability, for the same reason. */
+#define RP_ABI_VERSION 5u
 RP_API uint32_t rp_abi_version(void);
 
 typedef enum rp_status {
@@ -350,6 +351,10 @@ RP_API rp_adult_kind rp_adult(const rp_result* result);
 /* Whether the release is anime. Zero both for a release that is not and for a model that was never
  * asked; rp_verdict_confidence(result, RP_VERDICT_ANIME) is zero only in the second case. */
 RP_API int rp_anime(const rp_result* result);
+/* How likely the release is to be easy to get, 0 to 1, from the name alone; -1 when the model has
+ * no availability head. Learned from one debrid cache (TorBox, November 2026): a ranking hint for
+ * wanted, well-kept releases, not a quality judgement and not a promise. docs/AVAILABILITY.md. */
+RP_API float rp_availability(const rp_result* result);
 RP_API rp_resolution_tier rp_screen_size(const rp_result* result);
 RP_API rp_source_kind rp_source(const rp_result* result);
 RP_API rp_video_codec rp_video_codec_value(const rp_result* result);
@@ -414,6 +419,8 @@ typedef struct rp_result_view {
      * 32 absolute_episode, 64 absolute_episode_end, 128 episode_count. Derived from the located
      * evidence, so a zero with a span is stated and a zero without one is absent. */
     uint32_t stated;
+    /* rp_availability: 0 to 1, or -1 on a model without the head. ABI 5. */
+    float availability;
 } rp_result_view;
 
 RP_API rp_status rp_view(const rp_result* result, rp_result_view* out);

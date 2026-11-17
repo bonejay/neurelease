@@ -10,7 +10,7 @@
 # runtime by CPUID — the library itself runs on any x86-64.
 
 cmake_minimum_required(VERSION 3.24)
-project(neurelease VERSION 0.2.2 LANGUAGES C CXX)
+project(neurelease VERSION 0.3.0 LANGUAGES C CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -302,6 +302,12 @@ if(RP_BUILD_TESTS)
     target_link_libraries(timing_probe PRIVATE neurelease)
     target_include_directories(timing_probe PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
+endif()
+
+# The cache head's probability per name, for comparing the runtime with torch. Not a test.
+if(RP_BUILD_TESTS)
+    add_executable(cache_probe tests/cache_probe.cpp)
+    target_link_libraries(cache_probe PRIVATE neurelease)
 endif()
 
 if(RP_BUILD_TESTS)
