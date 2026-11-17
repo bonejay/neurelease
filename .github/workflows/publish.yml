@@ -7,13 +7,15 @@ name: publish
 # must build natively on each system. So the matrix is one wheel per platform, and the Python
 # version used to build is irrelevant to the result.
 #
-# EVERY PUSH BUILDS, NOTHING PUBLISHES. The wheels are uploaded as artifacts so they can be
-# installed and tried before anything reaches PyPI, where a version number can never be reused.
-# Publishing happens only for a pushed tag, and through Trusted Publishing: GitHub proves the
-# workflow's identity to PyPI directly, so there is no API token in this repository to leak.
+# WHEELS ARE BUILT FOR A TAG, OR BY HAND. A push to main no longer builds them: the build workflow
+# already tests every platform on each pull request, and the wheels on main only doubled the wait
+# for the scarce macOS runners. To try the wheels before tagging, run this workflow by hand
+# (Actions > publish > Run workflow); its artifacts can be installed, and nothing is published.
+# A tag publishes only when every wheel and the test job pass, so a tag whose build fails reaches
+# nobody and can be deleted and pushed again. Publishing goes through Trusted Publishing: GitHub
+# proves the workflow's identity to PyPI directly, so there is no API token here to leak.
 on:
   push:
-    branches: [main]
     tags: ['v*']
   workflow_dispatch:
 
