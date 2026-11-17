@@ -86,6 +86,20 @@ The [wheel](https://pypi.org/project/neurelease/) bundles the library and the mo
 `parse_batch` runs many names at once on several threads and returns them in input order. Titles
 and evidence keep their original script - Latin, Han, Kana, Cyrillic.
 
+### Availability
+
+Each result also says how likely the release is to be easy to get, as a number from 0 to 1, read
+from the name alone. It was learned from which torrents a debrid cache held, so it is useful for
+ranking candidates. It is not a quality score.
+
+```python
+parser.parse("Love.Through.a.Prism.S01.1080p.NF.WEB-DL.MULTi.Opus5.1.AV1.HDR10P-Trix").availability  # 0.98
+parser.parse("Love Through a Prism S01E01 XviD-AFG").availability                                     # 0.14
+```
+
+`None` (or `-1` in C/C++) means the model has no availability head. More in
+[docs/AVAILABILITY.md](docs/AVAILABILITY.md).
+
 - [docs/API.md](docs/API.md) - the C++ and C APIs
 - [docs/RESULT.md](docs/RESULT.md) - every field a result can carry
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#build) - building from source
