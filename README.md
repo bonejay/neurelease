@@ -95,9 +95,8 @@ and evidence keep their original script - Latin, Han, Kana, Cyrillic.
 
 ## Compared with GuessIt, Sonarr and Radarr
 
-Measured on 2026-09-22 with the shipped model (version 5). Every figure is the share of names
-answered completely correctly - every field the name states read right, nothing invented. One
-wrong field fails the name.
+Every figure is the share of names answered completely correctly - every field the name states
+read right, nothing invented. One wrong field fails the name.
 
 Sonarr answers only series and Radarr only films, and they model 16 and 14 fields against 29 here,
 so the table is split by content kind and scored only on the nine fields all four answer:
@@ -105,18 +104,22 @@ so the table is split by content kind and scored only on the nine fields all fou
 `audio_language`, `subtitle_language`, `crc32`. Our hard sets keep at most three names per
 franchise.
 
+<!-- fair-comparison:start -->
+Measured on 2026-11-17 with the shipped model (version 6).
+
 | | cases | NeuRelease | GuessIt | Radarr | Sonarr |
 |---|---:|---:|---:|---:|---:|
 | **our labelled names** | | | | | |
-| representative, films | 1,001 | **93.5%** | 78.0% | 69.7% | 2.5% |
+| representative, films | 1,001 | **95.1%** | 78.0% | 69.7% | 2.5% |
 | representative, series | 2,075 | **96.0%** | 60.9% | 8.1% | 65.5% |
-| hard, films | 1,037 | **54.1%** | 30.1% | 36.1% | 1.4% |
-| hard, series | 915 | **79.2%** | 42.2% | 5.8% | 55.0% |
+| hard, films | 1,037 | **57.0%** | 30.1% | 36.1% | 1.4% |
+| hard, series | 915 | **81.4%** | 42.2% | 5.8% | 55.0% |
 | **each parser's own suite** | | | | | |
-| GuessIt's corpus, films | 194 | 88.7% | **95.4%** | 49.5% | 2.1% |
-| GuessIt's corpus, series | 461 | 85.5% | **94.4%** | 7.2% | 57.3% |
-| Sonarr's suite, series | 935 | 91.0% | 80.7% | 45.0% | **95.2%** |
-| Radarr's suite, films | 535 | 88.0% | 76.8% | **98.5%** | 68.8% |
+| GuessIt's corpus, films | 194 | 86.6% | **95.4%** | 49.5% | 2.1% |
+| GuessIt's corpus, series | 461 | 87.6% | **94.4%** | 7.2% | 57.3% |
+| Sonarr's suite, series | 935 | 90.7% | 80.7% | 45.0% | **95.2%** |
+| Radarr's suite, films | 535 | 85.8% | 76.8% | **98.5%** | 68.8% |
+<!-- fair-comparison:end -->
 
 The lower half is each parser's own regression suite: strings written to pin its own regexes down,
 which is why every parser wins its own and why those wins say little about real names. NeuRelease
