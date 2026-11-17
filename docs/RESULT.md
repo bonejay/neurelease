@@ -154,10 +154,22 @@ group, its numbering and its title, is its own. An anime series is `content: ser
 | `special` | `none` `OVA` `special` `movie` | `S00E01` → `special`; `the.Movie` → `movie` |
 | `adult` | `no` `yes` | |
 
-**`availability`**, 0 to 1, sits beside the verdicts. It says how likely the release is to be easy to get, read from the name and learned from one debrid cache. It is a ranking hint and not a quality judgement. `None` in Python and `-1` in C/C++ mean the model has no availability head. See [AVAILABILITY.md](AVAILABILITY.md).
 
 `special` being `movie` marks a movie entry of a series, not that the release is a special. A named
 season marked complete is `season`; `complete` needs evidence that the whole work is present.
+
+## Availability
+
+| Field | Type | Meaning | Example |
+|---|---|---|---|
+| `availability` | `float` 0-1, or `None` | A rough chance that a debrid service already has the release cached, read from the name alone | `Love.Through.a.Prism.S01.1080p.NF.WEB-DL.MULTi.Opus5.1.AV1.HDR10P-Trix` → `0.98`, `Love Through a Prism S01E01 XviD-AFG` → `0.14` |
+
+The name does not state this, so the three rules above apply differently. Here `None` (`-1` in
+C/C++) never means that the name is silent. It means only that the model has no availability head. It carries no `.confidence`, because it is a probability itself. It was learned
+from real cache data, so it also hints at how wanted and well kept a release is. Use it for
+ranking, not as a quality judgement: a small, popular encode can score above a rare remux.
+`to_dict()` carries it as `availability`, rounded to three places. How it was learned, how well it
+works and its limits are in [AVAILABILITY.md](AVAILABILITY.md).
 
 ## Evidence: `origins`
 

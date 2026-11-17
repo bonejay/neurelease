@@ -44,7 +44,7 @@ r.streaming_service, r.release_group   # 'ATVP', ('NTb',)
 r.source == "WEB-DL"                   # True: enums equal their labels
 r.year                                 # None: the name does not say
 r.title.confidence, r.episode_title.confidence  # 1.00, 0.80: every value knows how sure the model was
-r.availability                         # 0.75: how likely a debrid service has it cached (see below)
+r.availability                         # 0.75: a rough chance a debrid service has it cached
 r.to_dict()                            # {'title': 'Ted Lasso', 'season': 3, 'episode': 3, ...}
 
 names = ["Blade.Runner.2049.2017.2160p.UHD.BluRay.x265-TERMiNAL.mkv",
@@ -64,18 +64,19 @@ r.to_dict()["other"]                   # ['Proper', 'Repack', 'Remux', 'HDR10', 
 
 r = parser.parse("The.Wire.S01E01.INTERNAL.RESTORED.1080p.BluRay.x265-SARTRE")
 r.edition                              # ('Internal', 'Restored'): a release is often several
+r.availability                         # 0.81: read from the name alone; a ranking hint, not quality
 
 SHOW = ("title", "alternative_title", "season", "episode", "absolute_episode",
-        "episode_title", "year", "content", "edition", "version")
+        "episode_title", "year", "content", "edition", "version", "availability")
 for r in releases:
     d = r.to_dict()
     print({k: d[k] for k in SHOW if d.get(k) is not None})
-# {'title': 'Blade Runner 2049', 'year': 2017, 'content': 'movie'}
-# {'title': 'Stray', 'content': 'game'}
-# {'title': 'La Casa de Papel', 'season': 3, 'episode': 5, 'content': 'series'}
-# {'title': 'Brother Next Door', 'alternative_title': '邻家哥哥给我爱', 'season': 1, 'episode': [5, 6], 'year': 2024, 'content': 'series'}
-# {'title': '葬送のフリーレン', 'absolute_episode': 28, 'episode_title': 'また会ったときに恥ずかしいからね', 'content': 'series'}
-# {'title': 'Blade Runner', 'year': 1982, 'content': 'movie', 'edition': 'Final Cut', 'version': 2}
+# {'title': 'Blade Runner 2049', 'year': 2017, 'content': 'movie', 'availability': 0.921}
+# {'title': 'Stray', 'content': 'game', 'availability': 0.096}
+# {'title': 'La Casa de Papel', 'season': 3, 'episode': 5, 'content': 'series', 'availability': 0.282}
+# {'title': 'Brother Next Door', 'alternative_title': '邻家哥哥给我爱', 'season': 1, 'episode': [5, 6], 'year': 2024, 'content': 'series', 'availability': 0.079}
+# {'title': '葬送のフリーレン', 'absolute_episode': 28, 'episode_title': 'また会ったときに恥ずかしいからね', 'content': 'series', 'availability': 0.029}
+# {'title': 'Blade Runner', 'year': 1982, 'content': 'movie', 'edition': 'Final Cut', 'version': 2, 'availability': 0.978}
 ```
 
 ```sh
@@ -87,23 +88,8 @@ The [wheel](https://pypi.org/project/neurelease/) bundles the library and the mo
 `parse_batch` runs many names at once on several threads and returns them in input order. Titles
 and evidence keep their original script - Latin, Han, Kana, Cyrillic.
 
-### Availability
-
-Each result also gives `availability`, a number from 0 to 1 read from the name alone: a rough
-estimate of how likely a debrid service already has the release cached. It is learned from real
-cache data, so it also hints at how wanted a release is. Use it for ranking. It is not a quality
-score.
-
-```python
-parser.parse("Love.Through.a.Prism.S01.1080p.NF.WEB-DL.MULTi.Opus5.1.AV1.HDR10P-Trix").availability  # 0.98
-parser.parse("Love Through a Prism S01E01 XviD-AFG").availability                                     # 0.14
-```
-
-`None` (or `-1` in C/C++) means the model has no availability head. More in
-[docs/AVAILABILITY.md](docs/AVAILABILITY.md).
-
 - [docs/API.md](docs/API.md) - the C++ and C APIs
-- [docs/RESULT.md](docs/RESULT.md) - every field a result can carry
+- [docs/RESULT.md](docs/RESULT.md) - every field a result can carry, `availability` included
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#build) - building from source
 - [CHANGELOG.md](CHANGELOG.md) - what changed in each version
 

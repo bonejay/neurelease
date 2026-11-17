@@ -591,7 +591,7 @@ class ParsedRelease:
         if self.degraded:
             out["degraded"] = True
         if self.availability is not None:
-            out["availability"] = self.availability   # itself a probability: no confidence entry
+            out["availability"] = round(self.availability, 3)   # itself a probability: no confidence entry
         out["confidence"] = confidence
         if origins:
             out["origins"] = [{"field": origin.field.name.lower(), "value": origin.value,
