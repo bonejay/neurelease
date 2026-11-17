@@ -128,9 +128,9 @@ is second on all three, having trained on none of them. GuessIt's suite is score
 values our closed vocabulary cannot express, all listed in the full report. Sonarr's and Radarr's
 suites run almost unfiltered.
 
-On the full twenty-field contract, video names, our validation split: **97.88% macro field F1 and
-91.54% exact** against GuessIt's 86.74% and 52.96%. About **3x faster on one thread**
-(2,793 us/name against 8,275), 949 us/name in batch on four threads.
+<!-- guessit-comparison:start -->
+On the full twenty-field contract, video names, our validation split (measured 2026-11-17, model 6): **97.76% macro field F1 and 92.25% exact** against GuessIt's 86.74% and 52.96%. About **3x faster on one thread** (2,658 us/name against 8,420), 1,010 us/name in batch on four threads.
+<!-- guessit-comparison:end -->
 
 Name-by-name: [docs/ANIME.md](docs/ANIME.md), [docs/LIVE_ACTION.md](docs/LIVE_ACTION.md).
 Method and reproduction: [docs/GUESSIT_COMPARISON.md](docs/GUESSIT_COMPARISON.md).

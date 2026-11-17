@@ -1,15 +1,14 @@
 # Comparison with GuessIt 4.4.0
 
-Rerun on 2026-09-22 using the installed **model version 5**, retained epoch 19 from
-`corrected/20260921-233603` - the first model trained after the corpus repairs: the DeepSeek second
-pass and its adjudication over every row that rested on a low-effort label, the settled `Part N`
-convention, the walk relabel, and the split that keeps every scored name out of training. The
-model SHA-256 is `7857dcdb813fac941198b4243384f51a91d291b4022258501c5317092d932c34`.
+<!-- comparison-run:start -->
+Rerun on 2026-11-17 using the installed **model version 6**, from `unified_2m_cache/20261117-013706`. The model SHA-256 is `a2e251fadd8ee3ee6b95ea541932fadb37f68dc6746e7eaf4ed45c3df5a766bc`.
+<!-- comparison-run:end -->
 
 The [scoring snapshot](SCORING_SNAPSHOT.json) records the model, dataset, library and scoring-source
 hashes, repository revisions, raw timing samples and per-field scores. The build was brought up to
-date with `cmake --build --preset release` before evaluation, which for this run mattered: the
-weights and the conversion layer both changed with the new form and anime fields.
+date with `cmake --build --preset release` before evaluation. The numbers in this document are
+written by `training/gap_mining/publish_comparison.py` in the training repository, from the run
+below.
 
 The headline table is in the [README](../README.md); this document is the method behind it.
 Name-by-name readings, where a difference can be seen rather than averaged, are in
@@ -48,33 +47,38 @@ selection are diagnostics and do not contribute to these headline scores.
 The name count is gold support, not necessarily the full set of names evaluated for false
 positives. Full evaluated counts, precision, recall and exact-present rates are in the snapshot.
 
+<!-- comparison-fields:start -->
 | Field | Names with it | NeuRelease F1 | GuessIt F1 |
 |---|---:|---:|---:|
-| `work_title` | 2,997 | 97.42% | 90.97% |
-| `episode_title` | 173 | 91.57% | 73.66% |
-| `year` | 1,175 | 99.74% | 98.68% |
-| `season` | 1,227 | 99.15% | 91.30% |
+| `work_title` | 2,997 | 97.87% | 90.97% |
+| `episode_title` | 173 | 91.62% | 73.66% |
+| `year` | 1,175 | 99.75% | 98.68% |
+| `season` | 1,227 | 99.23% | 91.30% |
 | `season_end` | 25 | 95.83% | 82.14% |
-| `episode` | 1,280 | 97.86% | 90.70% |
-| `episode_end` | 130 | 95.38% | 82.87% |
+| `episode` | 1,280 | 99.30% | 90.70% |
+| `episode_end` | 130 | 96.92% | 82.87% |
 | `resolution` | 2,372 | 99.81% | 99.73% |
-| `source_family` | 1,913 | 98.61% | 96.95% |
-| `platform` | 415 | 98.31% | 69.45% |
+| `source_family` | 1,913 | 99.45% | 96.95% |
+| `platform` | 415 | 98.42% | 69.45% |
 | `video_codec` | 1,818 | 99.23% | 98.58% |
 | `audio_codec` | 927 | 99.12% | 97.73% |
 | `audio_channels` | 550 | 99.73% | 99.46% |
-| `audio_language` | 265 | 97.01% | 66.31% |
-| `subtitle_language` | 154 | 95.76% | 45.81% |
-| `bit_depth` | 253 | 98.64% | 97.86% |
-| `container` | 999 | 99.85% | 99.50% |
+| `audio_language` | 265 | 95.04% | 66.31% |
+| `subtitle_language` | 154 | 93.38% | 45.81% |
+| `bit_depth` | 253 | 98.44% | 97.86% |
+| `container` | 999 | 99.90% | 99.50% |
 | `crc32` | 164 | 100.00% | 98.80% |
-| `release_group` | 2,320 | 99.28% | 69.76% |
-| `release_variant` | 125 | 95.37% | 84.58% |
+| `release_group` | 2,320 | 99.04% | 69.76% |
+| `release_variant` | 125 | 93.01% | 84.58% |
+<!-- comparison-fields:end -->
 
 ## External case sets
 
-On GuessIt's regression corpus NeuRelease passes **693/859** cases (4,386/4,613 field assertions),
-GuessIt **804/859** (4,552/4,613). The corpus is GuessIt's own test suite: fixture strings such as
+<!-- comparison-corpus:start -->
+On GuessIt's regression corpus NeuRelease passes **694/859** cases (4,395/4,613 field assertions), GuessIt **804/859** (4,552/4,613).
+<!-- comparison-corpus:end -->
+
+The corpus is GuessIt's own test suite: fixture strings such as
 `FooBar.307.PDTV-FlexGet` and filesystem paths, written to exercise its rules, with every input
 assumed to be a video. NeuRelease parses a single release name and classifies it before assuming
 anything, so the shapes it misses here are largely the fixtures and conventions, not real names.
@@ -85,9 +89,11 @@ and only fields a case explicitly states are checked.
 The native `guessit_corpus_tests` uses a stricter title contract and a different denominator; its
 score must not be substituted for the comparison harness's 859-case score.
 
-On the 22 cases from GuessIt's documented limitations, NeuRelease passes **21/22** cases and
-**71/72** assertions; GuessIt passes **0/22** and **31/72**. These are selected failure cases for
-GuessIt, not a representative accuracy sample. They are scored separately from validation.
+<!-- comparison-limitations:start -->
+On the 22 cases from GuessIt's documented limitations, NeuRelease passes **18/22** cases and **66/72** assertions; GuessIt passes **0/22** and **31/72**.
+<!-- comparison-limitations:end -->
+
+These are selected failure cases for GuessIt, not a representative accuracy sample. They are scored separately from validation.
 
 ## Timing
 
