@@ -897,6 +897,27 @@ ReleaseInfo releaseInfoFromAnalysis(std::string_view name, const Analysis& analy
         }
     }
 
+    // `3D` AND A LAYOUT TOGETHER, wherever they stand: `3D anime SBS .Final Fantasy- The Spirits
+    // Within 4K ... P5.mov` puts both before the title, where the rule above does not read. A
+    // title may be `3D Kanojo`, and `SBS` alone may be the Korean broadcaster, but a name carrying
+    // the two words both is a 3D layout. Bare `OU` and `TAB` stay out (English words).
+    if (!info.threeD) {
+        static const text::Regex threeDWord(R"((?:^|[ ._\-\[(])3D(?=$|[ ._\-\])]))", true);
+        static const text::Regex layoutWord(
+            R"((?:^|[ ._\-\[(])((?:Half|Full)[ ._-]?SBS|HSBS|SBS|(?:Half|Full)[ ._-]?OU|HOU)(?=$|[ ._\-\])]))", true);
+        if (threeDWord.match(name)) {
+            if (const text::Match found = layoutWord.match(name)) {
+                SegmentedSpan layoutSpan;
+                layoutSpan.type = SpanType::Edition;
+                layoutSpan.begin = static_cast<std::int32_t>(found.capturedStart(1));
+                layoutSpan.end = static_cast<std::int32_t>(found.capturedEnd(1));
+                layoutSpan.confidence = 1.0F;
+                info.threeD = true;
+                builder.record(Field::ThreeD, "yes", layoutSpan, found.captured(1));
+            }
+        }
+    }
+
     // A BRACKETED DUB TAG THE SEGMENTER STOPPED MARKING. `[Pn8] Date A Live S02 [1080p] [Dub]`:
     // model 3 located `Dub` as an audio language, models 4 and 5 return no span for it, and the
     // English dub - the one fact an anime release states this way - was lost. Only the bracketed

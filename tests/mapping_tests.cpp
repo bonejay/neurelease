@@ -466,6 +466,19 @@ TEST_CASE("a 3D layout tag with no span of its own is still a 3D rip") {
     inTitle.spans = {span(title, SpanType::Main, "3D.Kanojo.Real.Girl"),
                      span(title, SpanType::Resolution, "1080p")};
     CHECK(!releaseInfoFromAnalysis(title, inTitle).threeD);
+
+    // `3D` AND A LAYOUT BEFORE THE TITLE: a Usenet post of a film's 3D parts (2026-11-21).
+    const std::string before = "3D anime SBS .Final Fantasy- The Spirits Within 4K 80% MORE  DEPTH  P5.mov";
+    Analysis leading;
+    leading.valid = true;
+    leading.spans = {span(before, SpanType::Main, "Final Fantasy- The Spirits Within")};
+    CHECK(releaseInfoFromAnalysis(before, leading).threeD);
+    // The broadcaster alone is no layout.
+    const std::string broadcaster = "Running.Man.E700.SBS.1080p.WEB-DL-GRP";
+    Analysis korean;
+    korean.valid = true;
+    korean.spans = {span(broadcaster, SpanType::Main, "Running.Man")};
+    CHECK(!releaseInfoFromAnalysis(broadcaster, korean).threeD);
 }
 
 TEST_CASE("a bracketed dub tag with no span of its own is still the English dub") {
